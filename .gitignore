@@ -1,0 +1,41 @@
+# ── Secrets / API keys ─────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+secrets.json
+
+# Local frontend config containing API keys (create from *.example.js)
+StepHeal-Loop/**/config.local.js
+**/config.local.js
+
+# ── macOS ──────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Editors / IDE ──────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Node / build ───────────────────────────────
+node_modules/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ── Python ─────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ── Generated data (keep raw dataset only) ─────
+StepHeal-Loop/output/
+StepHeal-Loop/data/*.generated.json
