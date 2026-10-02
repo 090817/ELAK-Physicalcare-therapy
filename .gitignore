@@ -6,7 +6,6 @@
 secrets.json
 
 # Local frontend config containing API keys (create from *.example.js)
-StepHeal-Loop/**/config.local.js
 **/config.local.js
 
 # ── macOS ──────────────────────────────────────
@@ -37,5 +36,5 @@ venv/
 .ipynb_checkpoints/
 
 # ── Generated data (keep raw dataset only) ─────
-StepHeal-Loop/output/
-StepHeal-Loop/data/*.generated.json
+output/
+data/*.generated.json
