@@ -49,12 +49,24 @@ const CHART_SECTIONS = [
   { title: "活动", keys: ["steps", "move_kcal"] },
 ];
 
+const CATEGORY_COLORS = {
+  Mobility: "#5ac8fa",
+  Strength: "#af52de",
+  Aerobic: "#34c759",
+  Balance: "#ff9500",
+  Functional: "#007aff",
+};
+
 /* ── 工具 ─────────────────────────────────── */
-const fmt = (v, dec) =>
-  typeof v === "number" && !isNaN(v) ? v.toFixed(dec) : "—";
+const isNum = (v) => typeof v === "number" && !isNaN(v);
+const fmt = (v, dec) => (isNum(v) ? v.toFixed(dec) : "—");
 
 function series(p, key) {
   return p.daily_records.map((d) => METRICS[key].get(d));
+}
+
+function hasData(vals) {
+  return vals.some(isNum);
 }
 
 function ringSVG(rings) {
@@ -142,8 +154,37 @@ function highlightCard(p, key) {
 }
 
 function metricRow(label, value, extra = "") {
+  if (value === null || value === undefined || String(value).includes("—")) return "";
   return `<div class="metric-row"><span class="k">${label}</span>
     <span class="v">${value}${extra}</span></div>`;
+}
+
+function valueTable(days, key) {
+  const m = METRICS[key];
+  const rows = days
+    .map((d) => ({ date: d.date, v: m.get(d) }))
+    .filter((r) => isNum(r.v));
+  return `<div class="table-wrap">
+    <table class="dtable">
+      <thead><tr><th>日期</th><th>${m.label}${m.unit ? ` (${m.unit})` : ""}</th></tr></thead>
+      <tbody>
+        ${rows
+          .map((r) => `<tr><td>${r.date}</td><td>${fmt(r.v, m.dec)}</td></tr>`)
+          .join("")}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function metricPanel(p, key) {
+  const m = METRICS[key];
+  return `<div class="card metric-panel">
+    <h3><span class="dot" style="background:${m.color}"></span>${m.label}</h3>
+    <div class="metric-panel__body">
+      ${valueTable(p.daily_records, key)}
+      <div class="chart" data-chart="${key}"></div>
+    </div>
+  </div>`;
 }
 
 function renderDetail(p) {
@@ -151,7 +192,6 @@ function renderDetail(p) {
 
   const days = p.daily_records;
   const latest = days.at(-1);
-  const prev = days.at(-2) || latest;
   const completed = days.filter((d) => d.rehab.exercise_completed).length;
   const adherence = Math.round((completed / days.length) * 100);
   const rr = latest.activity_rings;
@@ -168,8 +208,10 @@ function renderDetail(p) {
     metricRow("年龄 / 性别", `${p.age} 岁 / ${p.gender === "Male" ? "男" : "女"}`),
     metricRow("BMI", p.bmi),
     metricRow("足姿", p.foot_posture),
-    metricRow("基线疼痛", `${p.baseline.pain_vas} VAS`),
-    metricRow("基线步速", `${p.baseline.walking_speed_mps} m/s`),
+    metricRow("设备", p.has_apple_watch ? "Apple Watch" : "无（无心脏/睡眠数据）"),
+    metricRow("康复轨迹", p.rehab_trajectory),
+    metricRow("基线疼痛", `${p.baseline.pain_vas}`),
+    metricRow("基线步速", `${p.baseline.walking_speed_mps}`),
   ];
 
   const statusRows = [
@@ -188,21 +230,96 @@ function renderDetail(p) {
     metricRow("步数", `${fmt(latest.activity_rings.step_count, 0)}`),
   ];
 
-  const trendHtml = CHART_SECTIONS.map(
-    (s) => `
+  const exercises = latest.assigned_exercises || [];
+  const byEx = {};
+  for (const d of days) {
+    for (const e of d.assigned_exercises || []) {
+      if (e.completed_reps > 0 && isNum(e.accuracy_pct)) {
+        (byEx[e.exercise_name] ||= { category: e.category, vals: [] }).vals.push(e.accuracy_pct);
+      }
+    }
+  }
+  const exStats = Object.entries(byEx)
+    .map(([name, o]) => ({
+      name,
+      category: o.category,
+      avg: o.vals.reduce((a, b) => a + b, 0) / o.vals.length,
+    }))
+    .sort((a, b) => b.avg - a.avg);
+
+  const trendHtml = CHART_SECTIONS.map((s) => {
+    const keys = s.keys.filter((k) => hasData(series(p, k)));
+    if (keys.length === 0) return "";
+    return `
     <div class="section-title">${s.title}</div>
-    <div class="grid">
-      ${s.keys
-        .map(
-          (k) => `
-        <div class="card chart-card">
-          <h3><span class="dot" style="background:${METRICS[k].color}"></span>${METRICS[k].label}</h3>
-          <div class="chart" data-chart="${k}"></div>
+    <div class="panel-row">
+      ${keys.map((k) => metricPanel(p, k)).join("")}
+    </div>`;
+  }).join("");
+
+  const exerciseHtml =
+    exercises.length === 0
+      ? ""
+      : `
+    <div class="section-title">训练处方 · 最近一日</div>
+    <div class="card metric-panel">
+      <h3>处方动作</h3>
+      <div class="metric-panel__body metric-panel__body--wide">
+        <div class="table-wrap">
+          <table class="dtable">
+            <thead>
+              <tr><th>动作</th><th>类别</th><th>处方</th><th>完成</th><th>准确率</th></tr>
+            </thead>
+            <tbody>
+              ${exercises
+                .map((e) => {
+                  const color = CATEGORY_COLORS[e.category] || "#007aff";
+                  const done = e.completed_reps > 0;
+                  const pain = isNum(e.pain_during_exercise)
+                    ? `<span class="td-sub">痛 ${fmt(e.pain_during_exercise, 1)}</span>`
+                    : "";
+                  return `<tr>
+                  <td>
+                    <span class="td-name">${e.exercise_name}</span>
+                    <span class="td-sub">${e.target_area}</span>
+                  </td>
+                  <td><span class="cat" style="color:${color}">${e.category}</span>
+                    <span class="td-sub">难度 ${"●".repeat(e.difficulty_level)}${"○".repeat(Math.max(0, 3 - e.difficulty_level))}</span></td>
+                  <td>${e.prescribed_reps} × ${e.prescribed_sets}</td>
+                  <td>${e.completed_reps} / ${e.prescribed_reps}</td>
+                  <td>${
+                    done
+                      ? `${fmt(e.accuracy_pct, 1)}%${pain}`
+                      : `<span class="muted">未完成</span>`
+                  }</td>
+                </tr>`;
+                })
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+        ${
+          exStats.length
+            ? `<div>
+          <div class="subhead">按动作平均准确率（30 天）</div>
+          <div class="bars">
+            ${exStats
+              .map(
+                (s) => `<div class="bar-row">
+                <span class="bar-label" title="${s.name}">${s.name}</span>
+                <span class="bar-track">
+                  <span class="bar-fill" style="width:${s.avg.toFixed(1)}%;background:${CATEGORY_COLORS[s.category] || "#007aff"}"></span>
+                </span>
+                <span class="bar-val">${s.avg.toFixed(1)}%</span>
+              </div>`
+              )
+              .join("")}
+          </div>
         </div>`
-        )
-        .join("")}
-    </div>`
-  ).join("");
+            : ""
+        }
+      </div>
+    </div>`;
 
   const meds = p.medications_prescribed;
   const medHtml = meds.length
@@ -228,7 +345,9 @@ function renderDetail(p) {
 
     <div class="section-title">概览 · 最近一日（${latest.date}）</div>
     <div class="highlights">
-      ${HIGHLIGHT_KEYS.map((k) => highlightCard(p, k)).join("")}
+      ${HIGHLIGHT_KEYS.filter((k) => hasData(series(p, k)))
+        .map((k) => highlightCard(p, k))
+        .join("")}
     </div>
 
     <div class="grid" style="margin-top:16px">
@@ -261,6 +380,8 @@ function renderDetail(p) {
         <div class="metric-list">${infoRows.join("")}</div>
       </div>
     </div>
+
+    ${exerciseHtml}
 
     ${trendHtml}
 
