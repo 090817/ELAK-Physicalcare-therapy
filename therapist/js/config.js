@@ -9,7 +9,8 @@ export const CONFIG = {
   role: "therapist",
 
   // 数据集路径（相对于本文件所在目录）
-  dataFile: "模拟数据集（22人30天）.json",
+  dataFile: "青少年每日状态模拟数据.json",
+  scheduleFile: "青少年时间表.json",
 
   // AI 服务配置（留空则不启用）
   ai: {
