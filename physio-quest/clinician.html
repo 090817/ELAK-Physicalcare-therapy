@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELAK — Ankle rehab</title>
+<link rel="icon" href="elak-logo.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2a241c;
+    --muted: #6e6458;
+    --paper: rgba(255, 250, 242, 0.97);
+    --line: rgba(111, 88, 64, 0.22);
+    --terra: #6f5840;
+    --terra-deep: #5c4632;
+    --leaf: #5f7d62;
+    --leaf-soft: rgba(95, 125, 98, 0.18);
+    --sky: #8a7355;
+    --shadow: 0 18px 40px rgba(90, 70, 40, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  html { color-scheme: light; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: Outfit, "Avenir Next", "Segoe UI", sans-serif;
+    background: #f4efe4;
+  }
+  .shape-grid {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
+  }
+  .shapegrid-canvas { width: 100%; height: 100%; display: block; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  input, select, textarea {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    width: 100%;
+  }
+  textarea { resize: vertical; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--sky);
+    outline-offset: 2px;
+  }
+  button { cursor: pointer; }
+  a.ghost { text-decoration: none; display: inline-flex; align-items: center; }
+  #app {
+    position: relative;
+    z-index: 2;
+    max-width: 1480px;
+    margin: 0 auto;
+    min-height: 100%;
+    padding: 8px 56px 56px;
+  }
+  header {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+    margin-bottom: 20px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-family: Fraunces, Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 680;
+    letter-spacing: -0.03em;
+  }
+  .tabs {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255, 250, 242, 0.98);
+  }
+  .tab {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 8px 16px;
+    font-size: 0.92rem;
+    font-weight: 650;
+  }
+  .tab + .tab { border-left: 1px solid var(--line); }
+  .tab.sel { background: #6f5840; color: #f7f1e6; }
+  #clinic-home.on, #clinic-home:not([hidden]) {
+    display: grid;
+    grid-template-columns: minmax(22rem, 34rem) minmax(220px, 320px);
+    column-gap: clamp(28px, 4vw, 64px);
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 140px);
+    padding: 6vh 24px 8vh;
+  }
+  #clinic-home[hidden] { display: none !important; }
+  #clinic-home .home-copy { min-width: 0; margin-left: 0; }
+  #clinic-home .home-hero { justify-self: start; margin-top: 0; transform: none; }
+  #clinic-home .home-hero img { width: min(320px, 28vw); height: auto; display: block; }
+  #clinic-home h1 { white-space: nowrap; font-size: clamp(2.6rem, 5.4vw, 4.6rem); }
+  .lede { font-size: 1.18rem; color: var(--ink); }
+  .mark { width: 88px; height: 74px; object-fit: contain; display: block; }
+  .header-actions { display: flex; align-items: center; gap: 8px; }
+  .chip, .ghost {
+    border: 1px solid var(--line);
+    background: rgba(255, 250, 242, 0.98);
+    border-radius: 999px;
+    padding: 8px 12px;
+    color: var(--ink);
+    font-size: 0.92rem;
+    backdrop-filter: blur(4px);
+  }
+  .kicker {
+    margin: 0 0 8px;
+    color: #8a6a45;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+  }
+  h1, h2 { font-family: Fraunces, Georgia, serif; font-weight: 680; letter-spacing: -0.03em; margin: 0; }
+  h1 { font-size: clamp(2.6rem, 6vw, 4.2rem); line-height: 0.95; }
+  .lede, .note { max-width: 40rem; line-height: 1.45; }
+  .note { color: var(--muted); font-size: 0.92rem; }
+  #clinic-login-error:not(:empty) { color: #8a3b2a; font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .primary, .secondary { border-radius: 999px; padding: 14px 22px; border: 0; font-weight: 650; }
+  .primary { background: var(--terra); color: #f7f1e6; }
+  .primary:hover { background: #5c4632; }
+  .secondary { background: rgba(255,250,242,0.72); border: 1px solid var(--line); color: var(--ink); }
+  .gate {
+    width: min(480px, 100%);
+    background: rgba(255, 250, 242, 0.97);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    backdrop-filter: blur(6px);
+    box-shadow: var(--shadow);
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 14px;
+    font-size: 0.95rem;
+    color: var(--ink);
+    cursor: pointer;
+    user-select: none;
+  }
+  .remember input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--terra);
+    flex: none;
+  }
+  .field label, .ex-row label { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+  .clinic-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .clinic-side, .clinic-main {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .clinic-side { display: flex; flex-direction: column; gap: 8px; }
+  .patient {
+    text-align: left;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .patient.sel, .patient:focus-visible {
+    background: var(--leaf-soft);
+    border-color: var(--leaf);
+    box-shadow: none;
+  }
+  .patient small { display: block; color: var(--muted); margin-top: 2px; }
+  .ex-row {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: grid;
+    gap: 8px;
+    background: #fff;
+  }
+  .ex-grid { display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 8px; }
+  .ex-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .plan-code { font-family: Fraunces, Georgia, serif; font-size: 2.2rem; letter-spacing: 0.18em; margin: 4px 0 8px; }
+  .saved-box {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .saved-box.on, .ex-row.on {
+    background: var(--leaf-soft);
+    border-color: var(--leaf);
+    outline: none;
+  }
+  .account-chip {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .account-chip p { margin: 0; }
+  .account-chip-row { align-items: center; gap: 16px; }
+  .account-injury { min-width: 0; flex: 1; }
+  .account-injury p:last-child { color: var(--leaf); }
+  .patient .injury { color: var(--leaf); font-weight: 650; }
+  #visit-toolbar { margin: 0 0 14px; }
+  .spread { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .icon-row { display: flex; gap: 6px; justify-content: flex-end; }
+  .icon-row button { padding: 6px 10px; }
+  .texty { border: 0; background: transparent; color: var(--terra-deep, #5c4632); font-weight: 700; padding: 6px 0; }
+  .secondary.sel { background: #6f5840; color: #f7f1e6; border-color: #6f5840; }
+  .done-list { list-style: none; padding: 0; margin: 8px 0 0; }
+  .done-list li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .cal-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .cal-table th, .cal-table td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .cal-table th { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .cal-table .day { font-weight: 700; white-space: nowrap; }
+  .cal-wrap { max-height: 280px; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+  .visit-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .visit-item { display: flex; flex-direction: column; gap: 8px; }
+  .visit-btn {
+    text-align: left;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .visit-btn.sel, .visit-btn:focus-visible {
+    background: var(--leaf-soft);
+    border-color: var(--leaf);
+    box-shadow: none;
+  }
+  .visit-btn small { display: block; color: var(--muted); margin-top: 2px; }
+  .visit-detail { margin: 0; }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    background: rgba(42, 36, 28, 0.28);
+    padding: 24px;
+  }
+  .overlay[hidden] { display: none !important; }
+  .overlay .card {
+    width: min(420px, 100%);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+  @media (max-width: 900px) {
+    .shape-grid { inset: 0; }
+    #app { padding: 8px 40px 104px; }
+    .mark { width: 64px; height: 54px; }
+    #clinic-home.on, #clinic-home:not([hidden]) { grid-template-columns: minmax(0, 34rem); min-height: 0; padding: 24px 0 48px; }
+    #clinic-home .home-copy { margin-left: 0; }
+    #clinic-home .home-hero { margin-top: 16px; transform: none; justify-self: center; }
+    #clinic-home h1 { white-space: normal; }
+    .clinic-layout, .ex-grid { grid-template-columns: 1fr; }
+    .brand { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+<div id="shape-grid" class="shape-grid" aria-hidden="true"></div>
+<script type="module" src="shape-grid.js?v=29"></script>
+<div id="app">
+  <header>
+    <button class="brand" id="clinic-home-btn" type="button"><img class="mark" src="elak-logo.png?v=2" alt=""> ELAK</button>
+    <div class="header-actions">
+      <span class="chip" id="who" hidden></span>
+      <button class="ghost" id="clinic-home-open" type="button" hidden>Home</button>
+      <div class="tabs" id="clinic-tabs" hidden>
+        <button class="tab" id="tab-current" type="button">Current patients</button>
+        <button class="tab" id="tab-archive" type="button">Patient archive</button>
+      </div>
+      <button class="ghost" id="sign-out" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <section class="gate" id="gate" hidden>
+    <p class="kicker" id="gate-kicker">Clinician</p>
+    <h1 id="gate-title">Sign in</h1>
+    <p class="lede" id="gate-lede" hidden></p>
+    <div class="row" style="margin-bottom:14px">
+      <button class="secondary sel" id="gate-login" type="button">Log in</button>
+      <button class="secondary" id="gate-signup" type="button">Sign up</button>
+    </div>
+    <form id="gate-form">
+      <div class="field" id="name-field">
+        <label for="clinician-name">Your name</label>
+        <input id="clinician-name" autocomplete="name" maxlength="60" required>
+      </div>
+      <div class="field">
+        <label for="clinician-pass">Password</label>
+        <input id="clinician-pass" type="password" minlength="8" required>
+      </div>
+      <div class="field" id="confirm-field">
+        <label for="clinician-confirm">Confirm password</label>
+        <input id="clinician-confirm" type="password" minlength="8" autocomplete="new-password">
+      </div>
+      <label class="remember" for="clinic-remember">
+        <input id="clinic-remember" type="checkbox">
+        Remember me
+      </label>
+      <p class="note" id="gate-error"></p>
+      <button class="primary" id="gate-submit" type="submit">Sign in</button>
+    </form>
+  </section>
+
+  <section id="clinic-home" hidden>
+    <div class="home-copy">
+      <h1>Today's clinic</h1>
+      <div class="row" style="margin:12px 0 16px">
+        <button class="primary" id="home-current" type="button">Current patients</button>
+        <button class="secondary" id="home-archive" type="button">Patient archive</button>
+      </div>
+    </div>
+    <div class="home-hero">
+      <img src="hero.png?v=22" alt="A physiotherapist with a clipboard stands beside a patient practising at parallel bars.">
+    </div>
+  </section>
+
+  <section id="editor" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:6px">After today's ankle visit</h2>
+    <p class="note" style="margin-top:0" id="editor-lede" hidden></p>
+    <div class="clinic-layout">
+      <aside class="clinic-side">
+        <button class="secondary" id="clinic-new" type="button">New patient</button>
+        <div id="clinic-patients"></div>
+      </aside>
+      <form class="clinic-main" id="clinic-form" novalidate>
+        <div class="saved-box account-chip" id="account-summary" hidden tabindex="0">
+          <div class="spread account-chip-row">
+            <div>
+              <p class="kicker" style="margin:0">Sign-in</p>
+              <p id="account-summary-line" style="font-weight:650;margin-top:4px"></p>
+            </div>
+            <div class="account-injury" id="account-injury-wrap" hidden>
+              <p class="kicker" style="margin:0">Injury</p>
+              <p id="account-injury-line" style="font-weight:650;margin-top:4px"></p>
+            </div>
+            <button class="secondary" id="clinic-switch-login" type="button">Switch sign-in</button>
+          </div>
+        </div>
+        <div class="saved-box" id="account-box" tabindex="0">
+          <h3 id="account-box-title" style="font-size:1.7rem;margin:4px 0 8px">Username and password</h3>
+          <p class="note" id="clinic-pass-note" hidden></p>
+          <div class="field">
+            <label for="clinic-patient">Patient name</label>
+            <input id="clinic-patient" maxlength="60" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="clinic-injury">Type of injury</label>
+            <input id="clinic-injury" maxlength="80" placeholder="e.g. Right ankle sprain">
+          </div>
+          <div class="ex-grid">
+            <div class="field">
+              <label for="clinic-username">Username</label>
+              <input id="clinic-username" maxlength="24" autocapitalize="none" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="field">
+              <label for="clinic-pass">Password</label>
+              <input id="clinic-pass" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+            </div>
+          </div>
+          <div class="field">
+            <label for="clinic-pass-confirm">Confirm password</label>
+            <input id="clinic-pass-confirm" type="password" autocomplete="new-password" placeholder="Repeat the password">
+          </div>
+          <div class="spread">
+            <button class="secondary" id="clinic-copy" type="button">Copy username</button>
+            <button class="primary" id="clinic-save-login" type="button">Create patient</button>
+          </div>
+          <p class="note" id="clinic-login-error"></p>
+          <p class="note" id="account-box-foot" hidden></p>
+        </div>
+        <div class="saved-box" id="clinic-calendar" hidden tabindex="0">
+          <div class="spread">
+            <strong>Your calendar</strong>
+            <button class="ghost" id="clinic-cal-sync" type="button">Sync this device</button>
+          </div>
+          <p class="note" id="clinic-cal-status"></p>
+          <div id="clinic-cal-table"></div>
+          <p style="font-weight:650;margin:16px 0 8px">Patient calendar</p>
+          <p class="note" id="patient-cal-status"></p>
+          <div id="patient-cal-table"></div>
+          <p class="note" id="clinic-appoint-line"></p>
+        </div>
+        <div id="visit-toolbar" hidden>
+          <div class="row">
+            <button class="primary" id="clinic-new-visit" type="button">New visit</button>
+            <button class="secondary" id="clinic-archive-patient" type="button">Move to archive</button>
+            <button class="primary" id="clinic-reopen-patient" type="button" hidden>Reopen patient</button>
+          </div>
+        </div>
+        <div id="visit-draft">
+        <input id="clinic-until" type="date" hidden>
+        <input id="clinic-part" type="time" value="09:00" hidden>
+        <div class="saved-box" tabindex="0">
+          <div class="ex-grid">
+            <div class="field">
+              <label for="clinic-lead-days">Days until next visit</label>
+              <input id="clinic-lead-days" type="number" min="1" max="90" value="14">
+            </div>
+            <div class="field">
+              <label for="clinic-days">Practice days each week</label>
+              <input id="clinic-days" type="number" min="1" max="7" value="7">
+            </div>
+            <div class="field">
+              <label for="clinic-min-choice">Minimum exercises per day</label>
+              <select id="clinic-min-choice">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" id="clinic-min-other" hidden>
+            <label for="clinic-min">Other amount</label>
+            <input id="clinic-min" type="number" min="1" max="20" value="1">
+          </div>
+        </div>
+        <div class="spread"><strong>Ankle exercises</strong><button class="ghost" id="clinic-add" type="button">Add exercise</button></div>
+        <div id="clinic-rows"></div>
+        <div class="saved-box" tabindex="0">
+          <div class="field" style="margin:0">
+            <label for="clinic-note">Extra notes</label>
+            <textarea id="clinic-note" rows="3" maxlength="240" placeholder="Anything else to keep with this visit."></textarea>
+          </div>
+        </div>
+        <p class="note" id="clinic-error"></p>
+        <div class="row">
+          <button class="primary" type="submit">Save this visit</button>
+          <button class="secondary" id="clinic-cancel-visit" type="button">Cancel</button>
+        </div>
+        </div>
+        <div id="clinic-report" class="saved-box" hidden tabindex="0"></div>
+        <div id="clinic-history"></div>
+      </form>
+    </div>
+  </section>
+</div>
+<div class="overlay" id="overlay-appoint" hidden>
+  <div class="card">
+    <h2>Next visit</h2>
+    <p id="appoint-when"></p>
+    <p id="appoint-msg"></p>
+    <div class="row">
+      <button class="primary" id="appoint-close" type="button">OK</button>
+    </div>
+  </div>
+</div>
+<script src="shared.js?v=74"></script>
+<script src="calendar-plugin.js?v=74"></script>
+<script src="agent.js?v=74"></script>
+<script src="clinic.js?v=74"></script>
+</body>
+</html>

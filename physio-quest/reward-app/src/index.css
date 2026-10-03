@@ -1,0 +1,239 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Outfit, "Avenir Next", "Segoe UI", sans-serif;
+  --font-round: Nunito, Outfit, sans-serif;
+  --color-cream: #f6f3ec;
+  --color-ink: #2c3a34;
+  --color-mist: #5e6c65;
+  --color-leaf: #1f6b45;
+  --color-peach: #9a6230;
+  --color-paper: #fffdf9;
+  --animate-node-pop: node-pop 0.62s cubic-bezier(0.2, 1.5, 0.36, 1);
+  --animate-pulse-ring: pulse-ring 1.15s ease-out 2;
+  --animate-count-pop: count-pop 0.48s cubic-bezier(0.2, 1.35, 0.32, 1);
+  --animate-float-up: float-up 0.95s ease-out forwards;
+  --animate-modal-in: modal-in 0.42s cubic-bezier(0.16, 0.84, 0.32, 1) both;
+  --animate-backdrop-in: backdrop-in 0.28s ease both;
+  --animate-sheen: sheen 2.6s ease-in-out infinite;
+  --animate-orb: orb-breathe 2.8s ease-in-out infinite;
+  --animate-award-pop: award-pop 0.72s cubic-bezier(0.16, 1.25, 0.32, 1) both;
+  --animate-ray-spin: ray-spin 14s linear infinite;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--color-ink);
+  background:
+    radial-gradient(900px 520px at 8% -10%, rgba(186, 224, 196, 0.65), transparent 60%),
+    radial-gradient(720px 480px at 110% 8%, rgba(244, 196, 150, 0.42), transparent 55%),
+    radial-gradient(680px 420px at 50% 115%, rgba(190, 220, 198, 0.45), transparent 52%),
+    var(--color-cream);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #cfeedd;
+}
+
+.reserve-fill {
+  transition: width 0.8s cubic-bezier(0.22, 0.86, 0.28, 1);
+}
+
+.tip-ripple {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  transform: translate(50%, -50%);
+  animation: tip-ripple 0.72s ease-out forwards;
+  pointer-events: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -12px;
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.15, 0.65, 0.3, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes node-pop {
+  0% {
+    transform: scale(0.55);
+  }
+  55% {
+    transform: scale(1.16);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.86);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.38);
+    opacity: 0;
+  }
+}
+
+@keyframes count-pop {
+  0% {
+    transform: scale(0.86);
+  }
+  55% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheen {
+  0% {
+    transform: translateX(-140%);
+  }
+  55%,
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@keyframes orb-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.38),
+      0 0 12px rgba(120, 210, 150, 0.8);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgba(255, 255, 255, 0.18),
+      0 0 18px rgba(120, 210, 150, 1);
+  }
+}
+
+@keyframes tip-ripple {
+  to {
+    opacity: 0;
+    transform: translate(50%, -50%) scale(4.6);
+  }
+}
+
+.award-rays {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 248, 232, 0) 0deg 14deg,
+    rgba(243, 196, 138, 0.9) 14deg 20deg
+  );
+  -webkit-mask-image: radial-gradient(circle, transparent 34%, #000 48%, transparent 74%);
+  mask-image: radial-gradient(circle, transparent 34%, #000 48%, transparent 74%);
+}
+
+@keyframes ray-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes award-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(-16deg);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.12) rotate(4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+    transform: translate3d(var(--drift), 108vh, 0) rotate(var(--spin));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reserve-fill,
+  .animate-node-pop,
+  .animate-pulse-ring,
+  .animate-count-pop,
+  .animate-float-up,
+  .animate-modal-in,
+  .animate-backdrop-in,
+  .animate-sheen,
+  .animate-orb,
+  .animate-award-pop,
+  .animate-ray-spin,
+  .tip-ripple,
+  .confetti-piece {
+    animation: none !important;
+    transition: none !important;
+  }
+}

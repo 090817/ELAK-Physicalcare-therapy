@@ -1,0 +1,4968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELAK — Ankle rehab</title>
+<link rel="icon" href="elak-logo.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4efe4;
+    --ink: #2a241c;
+    --muted: #6e6458;
+    --paper: rgba(255, 250, 242, 0.97);
+    --line: rgba(111, 88, 64, 0.22);
+    --terra: #6f5840;
+    --terra-deep: #5c4632;
+    --leaf: #5f7d62;
+    --leaf-soft: rgba(95, 125, 98, 0.18);
+    --sky: #8a7355;
+    --gold: #a6843d;
+    --shadow: 0 18px 40px rgba(90, 70, 40, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  html { color-scheme: light; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: Outfit, "Avenir Next", "Segoe UI", sans-serif;
+    background: #f4efe4;
+  }
+  .shape-grid {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
+  }
+  .shapegrid-canvas { width: 100%; height: 100%; display: block; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  input, select, textarea {
+    border: 1px solid var(--line);
+    background: #fffaf3;
+    border-radius: 12px;
+    padding: 10px 12px;
+    width: 100%;
+  }
+  textarea { resize: vertical; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 3px solid var(--sky);
+    outline-offset: 2px;
+  }
+  button { cursor: pointer; }
+  a.ghost { text-decoration: none; display: inline-flex; align-items: center; }
+  button:focus-visible, .brand:focus-visible, a.ghost:focus-visible {
+    outline: 3px solid var(--sky);
+    outline-offset: 3px;
+  }
+  #app {
+    position: relative;
+    z-index: 2;
+    max-width: 1480px;
+    margin: 0 auto;
+    min-height: 100%;
+    padding: 8px 56px 56px;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    z-index: 5;
+    min-height: 48px;
+    margin-bottom: 20px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-family: Fraunces, Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 680;
+    letter-spacing: -0.03em;
+  }
+  .mark {
+    width: 88px;
+    height: 74px;
+    object-fit: contain;
+    display: block;
+  }
+  .header-actions { display: flex; align-items: center; gap: 8px; }
+  .chip, .ghost {
+    border: 1px solid var(--line);
+    background: rgba(255, 250, 242, 0.98);
+    border-radius: 999px;
+    padding: 8px 12px;
+    color: var(--ink);
+    font-size: 0.92rem;
+    backdrop-filter: blur(4px);
+  }
+  .ghost:hover { border-color: rgba(247, 244, 238, 0.4); color: white; }
+  .screen { display: none; flex: 1; min-height: 0; }
+  .screen.on { display: flex; flex-direction: column; }
+  .screen[hidden] { display: none !important; }
+  .slot-card, .busy-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 16px;
+    margin: 0 0 12px;
+  }
+  .slot-card .row { margin-top: 10px; }
+  .slot-card.ok { border-color: var(--leaf); }
+  .choice-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: rgba(255,250,242,0.8);
+  }
+  .choice.sel { border-color: var(--leaf); box-shadow: inset 0 0 0 1px var(--leaf); }
+  .choice small { display: block; color: var(--muted); }
+  #overlay-nudge {
+    background: rgba(18, 14, 10, 0.55);
+    place-items: center;
+    padding: 18px;
+    pointer-events: auto;
+  }
+  #overlay-nudge .card {
+    width: min(440px, calc(100vw - 32px));
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 50px rgba(42, 36, 28, 0.28);
+  }
+  .cal-pop {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 16px;
+    align-items: center;
+    margin: 0 0 14px;
+  }
+  .cal-pop-date {
+    background: #fffaf3;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    text-align: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+  }
+  .cal-pop-month {
+    display: block;
+    background: #b23a2f;
+    color: #fffaf3;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    font-weight: 800;
+    padding: 6px 4px 4px;
+  }
+  .cal-pop-date strong {
+    display: block;
+    font-family: Fraunces, Georgia, serif;
+    font-size: 2.2rem;
+    line-height: 1;
+    padding: 8px 4px 0;
+  }
+  .cal-pop-dow {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 4px 8px;
+  }
+  #nudge-when { margin: 0 0 6px; font-weight: 700; color: var(--terra-deep); }
+  #screen-story.on {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .reward-shell { width: 100%; }
+  #reward-frame {
+    width: 100%;
+    height: min(78vh, 840px);
+    border: 0;
+    border-radius: 24px;
+    background: #f6f3ec;
+    box-shadow: var(--shadow);
+  }
+  .reel-shell { width: min(420px, 100%); }
+  .story-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    height: auto;
+    max-height: min(86vh, 780px);
+    background: #0c0b0a;
+    color: #f7f1e6;
+    border-radius: 28px;
+    padding: 0;
+    box-shadow: 0 22px 48px rgba(20, 16, 12, 0.35);
+    overflow: hidden;
+  }
+  .reel-bars {
+    position: absolute;
+    top: 10px; left: 10px; right: 10px;
+    z-index: 7;
+    display: flex;
+    gap: 3px;
+  }
+  .reel-bars i {
+    flex: 1;
+    height: 3px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.22);
+  }
+  .reel-bars i.done { background: rgba(255,255,255,0.72); }
+  .reel-bars i.on { background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+  .reel-meta {
+    position: absolute;
+    top: 22px; left: 14px; right: 14px;
+    z-index: 6;
+    pointer-events: none;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.45);
+  }
+  .reel-meta .kicker { color: #f3d9a4; }
+  .reel-meta h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+    margin: 2px 0 4px;
+    color: #fffaf3;
+  }
+  .reel-meta .note { color: rgba(247,241,230,0.78); max-width: none; }
+  .reel-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .reel-hit button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+  .story-set {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transition: background 0.8s ease;
+  }
+  .story-set[data-set="ward"] { background: radial-gradient(ellipse at 20% 10%, #3a2a1c 0%, #1a1410 55%, #0e0c0a 100%); }
+  .story-set[data-set="gym"] { background: radial-gradient(ellipse at 80% 0%, #243040 0%, #141820 60%, #0c0e12 100%); }
+  .story-set[data-set="hall"] { background: linear-gradient(180deg, #2a2420 0%, #161310 48%, #0f0d0b 100%); }
+  .story-set[data-set="garden"] { background: radial-gradient(ellipse at 50% 120%, #2a3a28 0%, #141910 70%, #0c100c 100%); }
+  .story-set[data-set="office"] { background: radial-gradient(ellipse at 10% 0%, #2c3340 0%, #161820 60%, #0c0d10 100%); }
+  .story-set[data-set="room"] { background: radial-gradient(ellipse at 70% 20%, #2a221c 0%, #16130f 60%, #0e0c0a 100%); }
+  .story-set::before, .story-set::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+  .story-set[data-set="ward"]::before {
+    width: 120px; height: 160px; right: 12%; top: 8%;
+    background: linear-gradient(#f3d9a4, #c9a36a);
+    opacity: 0.18;
+    filter: blur(18px);
+    animation: storyGlow 4.5s ease-in-out infinite;
+  }
+  .story-set[data-set="ward"]::after {
+    left: 8%; bottom: 18%; width: 38%; height: 18%;
+    background: #2a221c;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -10px 0 #3a3028;
+    opacity: 0.55;
+  }
+  .story-set[data-set="gym"]::before {
+    inset: 22% 8% auto;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #6a7a88 0 18px, transparent 18px 36px);
+    opacity: 0.35;
+  }
+  .story-set[data-set="garden"]::before {
+    width: 180px; height: 180px; left: -20px; bottom: -40px;
+    background: #2f4a32;
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+  .story-set[data-set="garden"]::after {
+    width: 140px; height: 140px; right: -10px; top: 20px;
+    background: #3a5a3c;
+    border-radius: 50%;
+    opacity: 0.28;
+    animation: storyFloat 7s ease-in-out infinite;
+  }
+  .story-set[data-set="hall"]::before {
+    inset: 0 18%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    animation: storySweep 6s linear infinite;
+  }
+  .story-dust span {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(255,236,200,0.45);
+    animation: storyDust 9s linear infinite;
+  }
+  .story-set { animation: reelKen 18s ease-in-out infinite alternate; }
+  .story-stage.talk-close .story-set { animation-duration: 10s; }
+  .story-cast {
+    position: absolute;
+    left: 0; right: 0; bottom: 132px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    min-height: 260px;
+    z-index: 2;
+    padding: 0 12px;
+    transition: transform 0.6s ease;
+  }
+  .story-stage.talk-close .story-cast { transform: scale(1.18) translateY(18px); }
+  .story-actor {
+    width: 104px;
+    text-align: center;
+    transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+    opacity: 0.5;
+  }
+  .story-actor.talk {
+    opacity: 1;
+    transform: translateY(-18px) scale(1.22);
+    z-index: 3;
+  }
+  .story-actor.talk .puppet::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: 70px;
+    height: 16px;
+    margin-left: -35px;
+    background: radial-gradient(ellipse, rgba(226,196,138,0.45), transparent 70%);
+    filter: blur(2px);
+  }
+  .story-actor.dim { opacity: 0.3; filter: saturate(0.6); }
+  .story-stage.narrate .story-actor { opacity: 0.2; transform: scale(0.96); }
+  .puppet {
+    position: relative;
+    height: 186px;
+    margin: 0 auto;
+  }
+  .puppet .head {
+    position: absolute;
+    left: 50%; top: 28px;
+    width: 52px; height: 52px;
+    margin-left: -26px;
+    border-radius: 50%;
+    background: #f0d0b0;
+    box-shadow: inset 0 -8px 0 rgba(0,0,0,0.06), 0 0 0 3px rgba(255,236,200,0.08);
+    z-index: 3;
+  }
+  .puppet .hair {
+    position: absolute;
+    left: 50%; top: 16px;
+    width: 58px; height: 26px;
+    margin-left: -29px;
+    border-radius: 24px 24px 10px 10px;
+    background: #1a1410;
+    z-index: 4;
+  }
+  .puppet .eye {
+    position: absolute;
+    top: 22px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1c1612;
+    box-shadow: 0 0 0 2px #fff6ea;
+  }
+  .puppet .eye.l { left: 12px; }
+  .puppet .eye.r { right: 12px; }
+  .puppet .mouth {
+    position: absolute;
+    left: 50%; bottom: 11px;
+    width: 14px; height: 4px;
+    margin-left: -7px;
+    border-radius: 0 0 10px 10px;
+    background: #a45a4a;
+  }
+  .story-actor.talk .mouth { animation: storyTalk 0.28s ease-in-out infinite; }
+  .story-actor.talk .puppet { animation: storyBreathe 1.4s ease-in-out infinite; }
+  .story-actor.talk .eye { animation: storyBlink 3.2s ease-in-out infinite; }
+  .puppet .body {
+    position: absolute;
+    left: 50%; top: 76px;
+    width: 64px; height: 86px;
+    margin-left: -32px;
+    border-radius: 18px 18px 12px 12px;
+    background: #1d2a44;
+    box-shadow: inset 10px 0 0 rgba(255,255,255,0.06);
+  }
+  .puppet .arm {
+    position: absolute;
+    top: 84px;
+    width: 15px; height: 56px;
+    border-radius: 10px;
+    background: #1d2a44;
+    transform-origin: top center;
+  }
+  .puppet .arm.l { left: 18px; }
+  .puppet .arm.r { right: 18px; }
+  .story-actor.talk .arm.r { animation: storyGesture 1.6s ease-in-out infinite; }
+  .actor-tag {
+    margin: 6px 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: #d8cbb6;
+  }
+  .story-actor[data-look="su"] .hair { background: #4a3428; height: 34px; border-radius: 24px 24px 12px 12px; }
+  .story-actor[data-look="su"] .body, .story-actor[data-look="su"] .arm { background: #f3eee6; }
+  .story-actor[data-look="su"] .body { box-shadow: inset 0 0 0 2px #d8cfc3; }
+  .story-actor[data-look="zhou"] .hair { background: #2c241c; height: 22px; }
+  .story-actor[data-look="zhou"] .body, .story-actor[data-look="zhou"] .arm { background: #6d7380; }
+  .story-actor[data-look="gu"] .hair { width: 40px; margin-left: -20px; height: 16px; top: 16px; background: #3a3228; }
+  .story-actor[data-look="gu"] .body, .story-actor[data-look="gu"] .arm { background: #4a3828; }
+  .story-actor[data-look="wang"] .body, .story-actor[data-look="wang"] .arm { background: #2a4a4a; }
+  .story-actor[data-look="zhao"] .body, .story-actor[data-look="zhao"] .arm { background: #3a2a4a; }
+  .story-actor[data-look="other"] .body, .story-actor[data-look="other"] .arm { background: #3a4038; }
+  .story-caption {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 6;
+    background: linear-gradient(180deg, transparent, rgba(8,6,4,0.88) 38%);
+    border: 0;
+    border-radius: 0;
+    padding: 48px 16px 22px;
+    min-height: 128px;
+    backdrop-filter: none;
+    pointer-events: none;
+  }
+  .story-caption .who {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #f3d9a4;
+    margin-bottom: 6px;
+    font-weight: 800;
+  }
+  .story-caption .line {
+    margin: 0;
+    font-size: 1.22rem;
+    line-height: 1.35;
+    min-height: 2.6em;
+    font-weight: 650;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+  }
+  .story-caption.talking .who::after {
+    content: " · speaking";
+    letter-spacing: 0.08em;
+    color: #b9a888;
+  }
+  .story-log { display: none; }
+  .story-line {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: storyIn 0.7s ease forwards;
+    margin: 0 0 12px;
+    line-height: 1.55;
+  }
+  .story-line .who {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a7d6c;
+    margin-bottom: 4px;
+  }
+  .story-line .line { font-size: 0.98rem; color: var(--ink); }
+  @keyframes storyIn { to { opacity: 1; transform: none; } }
+  @keyframes storyTalk {
+    0%, 100% { height: 3px; border-radius: 8px; }
+    50% { height: 9px; border-radius: 8px; }
+  }
+  @keyframes storyBlink {
+    0%, 88%, 100% { transform: scaleY(1); }
+    92% { transform: scaleY(0.15); }
+  }
+  @keyframes storyBreathe {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes storyGesture {
+    0%, 100% { transform: rotate(8deg); }
+    50% { transform: rotate(-12deg); }
+  }
+  @keyframes storyGlow {
+    0%, 100% { opacity: 0.12; }
+    50% { opacity: 0.28; }
+  }
+  @keyframes storyFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes storySweep { to { transform: translateX(18%); } }
+  @keyframes storyDust {
+    0% { transform: translateY(20px); opacity: 0; }
+    15% { opacity: 0.6; }
+    100% { transform: translateY(-220px); opacity: 0; }
+  }
+  @keyframes reelKen {
+    0% { transform: scale(1) translate3d(0, 0, 0); }
+    100% { transform: scale(1.08) translate3d(-2%, 1%, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .story-actor.talk .mouth, .story-actor.talk .puppet, .story-actor.talk .arm.r,
+    .story-set, .story-set::before, .story-set::after, .story-dust span { animation: none; }
+  }
+  .story-stage.paused .story-actor.talk .mouth,
+  .story-stage.paused .story-actor.talk .puppet,
+  .story-stage.paused .story-actor.talk .arm.r,
+  .story-stage.paused .story-actor.talk .eye,
+  .story-stage.paused .story-set::before,
+  .story-stage.paused .story-set::after,
+  .story-stage.paused .story-dust span { animation-play-state: paused; }
+  .story-transport { flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+  .story-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .cal-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .cal-table th, .cal-table td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; color: var(--ink); }
+  .cal-table th { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .cal-table .day { font-weight: 700; white-space: nowrap; }
+  .cal-wrap { max-height: 280px; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,250,242,0.55); }
+  #screen-title.on {
+    display: grid;
+    grid-template-columns: minmax(36rem, 1.55fr) minmax(240px, 0.55fr);
+    column-gap: clamp(20px, 4vw, 48px);
+    align-items: start;
+  }
+  #screen-title .home-copy { min-width: 0; margin-left: 40px; }
+  #screen-title .home-hero {
+    justify-self: end;
+    align-self: start;
+    margin-top: 5.2rem;
+    transform: translateX(-40px);
+  }
+  #screen-title .home-hero img { width: min(340px, 28vw); height: auto; }
+  #home-title {
+    white-space: nowrap;
+    font-size: clamp(2.6rem, 5.4vw, 4.6rem);
+  }
+  #screen-title .lede { max-width: 46rem; }
+  #screen-signin.on {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+    align-items: center;
+  }
+  #screen-signin .gate { margin: 0; width: min(480px, 100%); }
+  .home-start {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0 8px;
+  }
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 14px;
+    font-size: 0.95rem;
+    color: var(--ink);
+    cursor: pointer;
+    user-select: none;
+  }
+  .remember input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--terra);
+    flex: none;
+  }
+  .kicker {
+    margin: 0 0 8px;
+    color: #8a6a45;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+  }
+  h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 680; letter-spacing: -0.03em; margin: 0; }
+  h1 { font-size: clamp(3rem, 7vw, 5.4rem); line-height: 0.92; }
+  .lede { font-size: 1.18rem; line-height: 1.45; max-width: 38rem; color: var(--ink); }
+  .note { color: var(--muted); font-size: 0.92rem; line-height: 1.45; max-width: 40rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .primary, .secondary {
+    border-radius: 999px;
+    padding: 14px 22px;
+    border: 0;
+    font-weight: 650;
+  }
+  .primary { background: var(--terra); color: #f7f1e6; box-shadow: 0 8px 20px rgba(90, 70, 40, 0.16); }
+  .primary:hover { background: #5c4632; }
+  .secondary { background: rgba(255, 250, 242, 0.98); border: 1px solid var(--line); color: var(--ink); backdrop-filter: blur(4px); }
+  .secondary:hover { border-color: rgba(111, 88, 64, 0.45); }
+  .secondary.sel { background: #6f5840; color: #f7f1e6; border-color: #6f5840; }
+  .hero-card {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-card img { width: min(100%, 520px); height: auto; display: block; }
+  .modes { display: flex; gap: 8px; margin: 8px 0 14px; flex-wrap: wrap; }
+  .mode {
+    flex: 1;
+    min-width: 220px;
+    text-align: left;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 12px 14px;
+    backdrop-filter: blur(6px);
+  }
+  .mode.sel { border-color: var(--leaf); box-shadow: inset 0 0 0 1px var(--leaf); background: rgba(158, 216, 184, 0.12); }
+  .mode strong { display: block; margin-bottom: 2px; }
+  .mode span { color: var(--muted); font-size: 0.9rem; line-height: 1.35; display: block; }
+  #quest-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .quest {
+    text-align: left;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    min-height: 230px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .quest:hover { transform: translateY(-2px); }
+  .quest .time { color: var(--leaf); font-weight: 700; font-size: 0.86rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .quest p { margin: 0; color: var(--muted); line-height: 1.4; flex: 1; }
+  .quest .go { color: var(--terra-deep); font-weight: 700; }
+  .plan-list { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 10px; }
+  .plan-list li {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+  }
+  .plan-list strong { display: block; font-size: 1.05rem; }
+  .plan-list span { color: var(--leaf); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .plan-list p { margin: 6px 0 0; color: var(--muted); }
+  .clinic-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .clinic-side, .clinic-main {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+  }
+  .clinic-side { display: flex; flex-direction: column; gap: 8px; }
+  .patient {
+    text-align: left;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .patient.sel { border-color: var(--leaf); box-shadow: inset 0 0 0 1px var(--leaf); }
+  .patient small { display: block; color: var(--muted); margin-top: 2px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .field label, .ex-row label { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+  .ex-row {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: grid;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .ex-grid { display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 8px; }
+  .plan-code {
+    font-family: Fraunces, Georgia, serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.18em;
+    margin: 4px 0 8px;
+  }
+  .saved-box {
+    background: var(--leaf-soft);
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .history { margin-top: 8px; }
+  .history li { padding: 8px 0; border-top: 1px solid var(--line); color: var(--muted); }
+  .icon-row { display: flex; gap: 6px; justify-content: flex-end; }
+  .icon-row button { padding: 6px 10px; }
+  #screen-play.on {
+    display: block;
+  }
+  .play-studio { position: relative; min-height: calc(100vh - 140px); padding-bottom: 88px; }
+  .play-grid { display: grid; gap: 16px; }
+  .play-studio.watch .play-grid { grid-template-columns: 1fr; }
+  .play-studio.watch .teach { width: min(920px, 100%); margin: 0 auto; }
+  .play-studio.film .play-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+  .play-studio.watch #film-booth { display: none; }
+  .play-studio.film #watch-ready { display: none; }
+  .teach {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 10px;
+    min-height: 0;
+  }
+  .teach[hidden] { display: none; }
+  .teach-screen {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #1c1914;
+    border: 1px solid rgba(111, 88, 64, 0.22);
+  }
+  .teach-screen iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  .teach-cap {
+    margin: 0;
+    text-align: center;
+    color: #6e6458;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .film-pane {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+  }
+  .film-pane video {
+    width: 100%;
+    border-radius: 16px;
+    background: #111;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .play-submit {
+    position: fixed;
+    right: 40px;
+    bottom: 28px;
+    z-index: 6;
+  }
+  .play-submit:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  #banner {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.08));
+  }
+  #banner[hidden] { display: none; }
+  #banner strong {
+    font-family: Fraunces, Georgia, serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    color: #2a241c;
+    text-shadow: none;
+    line-height: 0.9;
+  }
+  #banner span { display: block; color: #2a241c; font-weight: 650; font-size: 1.1rem; margin-top: 6px; }
+  .hud {
+    background: var(--paper);
+    border-radius: 28px;
+    padding: 18px 18px 14px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid var(--line);
+    backdrop-filter: blur(6px);
+    min-height: 0;
+    max-height: min(720px, calc(100vh - 118px));
+    overflow: auto;
+  }
+  .hud h2 { font-size: 1.7rem; line-height: 1.05; }
+  .step, .coach-line, .side-line { margin: 0; }
+  .step { color: var(--muted); font-size: 0.92rem; }
+  .coach-line { font-size: 1.05rem; line-height: 1.35; min-height: 2.7em; }
+  .side-line { color: var(--sky); font-weight: 700; min-height: 1.2em; }
+  .block { display: flex; flex-direction: column; gap: 6px; }
+  .spread { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.92rem; color: var(--muted); }
+  .pips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+  .pip { width: 12px; height: 12px; border-radius: 99px; background: rgba(111, 88, 64, 0.18); display: block; }
+  .pip.on { background: var(--terra); }
+  .bar { height: 12px; background: rgba(111, 88, 64, 0.12); border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; width: 0; background: var(--leaf); border-radius: inherit; }
+  .combo { min-height: 1.2em; margin: 0; font-weight: 700; color: var(--gold); }
+  #hold {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    border-radius: 18px;
+    min-height: 84px;
+    background: var(--leaf);
+    color: white;
+    font-weight: 750;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+  #hold.release { background: var(--sky); }
+  #hold.down { transform: translateY(1px); filter: saturate(1.1); }
+  #hold-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: rgba(255,255,255,0.18);
+  }
+  #hold-label { position: relative; }
+  .hold-hint, .keys, .fine { margin: 0; color: var(--muted); font-size: 0.84rem; line-height: 1.35; }
+  .texty {
+    border: 0;
+    background: transparent;
+    color: var(--terra-deep);
+    font-weight: 700;
+    padding: 6px 0;
+    text-align: left;
+  }
+  .hud-actions { display: flex; justify-content: space-between; gap: 8px; }
+  #screen-done.on { align-items: center; justify-content: center; }
+  .done {
+    width: min(680px, 100%);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 28px 26px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+  }
+  .stars { font-size: 1.8rem; letter-spacing: 0.12em; color: var(--gold); margin: 8px 0; }
+  .stars i { font-style: normal; color: rgba(255,255,255,0.22); }
+  .stars i.on { color: var(--gold); }
+  .done-list { list-style: none; padding: 0; margin: 12px 0 18px; }
+  .done-list li {
+    display: block;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+  .posture-report { margin: 6px 0 0; font-size: 0.88rem; line-height: 1.45; color: var(--muted); }
+  .posture-report .ok { color: var(--leaf); }
+  .posture-report .off { color: var(--terra-deep); }
+  #posture-line { min-height: 1.2em; margin: 8px 0 0; }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 6;
+    background: rgba(244, 239, 228, 0.82);
+    display: grid;
+    place-items: center;
+    padding: 18px;
+  }
+  .overlay[hidden] { display: none !important; }
+  .card {
+    width: min(480px, 100%);
+    background: rgba(255, 250, 242, 0.98);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+  }
+  .card h2 { font-size: 2rem; margin: 4px 0 8px; }
+  .card p { line-height: 1.45; }
+  .gate {
+    width: min(480px, 100%);
+    margin: 6vh auto 0;
+    background: rgba(255, 250, 242, 0.97);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+  .profile-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 22px; align-items: start; }
+  .field-label { margin: 0 0 6px; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+  .swatches, .styles { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+  .style-chip { border-radius: 999px; padding: 8px 12px; border: 1px solid var(--line); background: rgba(255,250,242,0.72); }
+  .style-chip.sel { background: #6f5840; color: #f7f1e6; border-color: #6f5840; }
+  .swatch { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; padding: 0; }
+  .swatch.sel { border-color: #2a241c; }
+  #avatar-preview { width: 100%; height: auto; background: #f3ead7; border-radius: 24px; border: 1px solid var(--line); display: block; }
+  .sr {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  @media (max-width: 900px) {
+    .shape-grid { inset: 0; }
+    #app { padding: 8px 40px 104px; }
+    .mark { width: 64px; height: 54px; }
+    #screen-title.on, #screen-signin.on, #quest-cards, #screen-play.on, .clinic-layout, .ex-grid, .profile-layout, .play-studio.film .play-grid { grid-template-columns: 1fr; }
+    #screen-title.on { grid-template-columns: 1fr; }
+    #screen-title .home-hero { margin-top: 8px; justify-self: start; }
+    #home-title { white-space: normal; }
+    .play-submit { right: 20px; bottom: 18px; }
+    .brand { white-space: nowrap; font-size: 1.15rem; }
+    header { align-items: center; }
+    h1 { font-size: 3.2rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .quest { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div id="page-fade" style="position:fixed;inset:0;background:#0b0b0f;z-index:99999;pointer-events:none;opacity:1;transition:opacity .55s ease"></div>
+<div id="shape-grid" class="shape-grid" aria-hidden="true"></div>
+<script type="module" src="shape-grid.js?v=29"></script>
+<div id="app">
+  <header>
+    <button class="brand" id="home" type="button"><img class="mark" src="elak-logo.png?v=2" alt=""> ELAK</button>
+    <div class="header-actions">
+      <span class="chip" id="streak" hidden></span>
+      <button class="ghost" id="home-open" type="button" hidden>Home</button>
+      <button class="ghost" id="book-open" type="button" hidden>Book plan</button>
+      <button class="ghost" id="films-open" type="button" hidden>Films</button>
+      <button class="ghost" id="stories-open" type="button" hidden>Rewards</button>
+      <button class="ghost" id="patient-out" type="button">Sign out</button>
+      <button class="ghost" id="mute" type="button">Sound on</button>
+    </div>
+  </header>
+
+  <section class="screen" id="screen-signin" hidden>
+    <form class="gate" id="patient-form">
+      <p class="kicker">Patient</p>
+      <h1>Sign in</h1>
+      <div class="field">
+        <label for="patient-user">Username</label>
+        <input id="patient-user" autocapitalize="none" autocomplete="username" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label for="patient-pass">Password</label>
+        <input id="patient-pass" type="password" autocomplete="current-password" required>
+      </div>
+      <label class="remember" for="patient-remember">
+        <input id="patient-remember" type="checkbox">
+        Remember me
+      </label>
+      <p class="note" id="patient-error"></p>
+      <button class="primary" type="submit">Sign in</button>
+    </form>
+    <div class="hero-card">
+      <img src="hero.png?v=22" alt="A physiotherapist with a clipboard stands beside a patient practising at parallel bars.">
+    </div>
+  </section>
+
+  <section class="screen on" id="screen-title">
+    <div class="home-copy">
+      <h1 id="home-title">Today's practice</h1>
+      <p class="lede" id="home-lede" hidden></p>
+      <div class="home-start row">
+        <button class="primary" id="start-btn" type="button" hidden>Book exercise plan</button>
+        <button class="secondary" id="how-open" type="button" hidden>How to play</button>
+      </div>
+      <p class="note" id="nudge-line"></p>
+      <p class="note" id="plan-status"></p>
+      <p class="note" id="best-line" hidden></p>
+      <div id="home-plan" class="busy-box" hidden></div>
+      <div id="home-schedule" class="busy-box" hidden></div>
+      <div id="home-story" class="busy-box" hidden></div>
+    </div>
+    <div class="hero-card home-hero">
+      <img src="hero.png?v=22" alt="A physiotherapist with a clipboard stands beside a patient practising at parallel bars.">
+    </div>
+  </section>
+
+  <section class="screen" id="screen-book" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:6px">Book plan</h2>
+    <p class="note" id="book-lede" hidden></p>
+    <div class="busy-box" id="book-plan"></div>
+    <div class="busy-box">
+      <div class="spread">
+        <strong>Device calendar</strong>
+        <button class="ghost" id="book-cal-sync" type="button">Sync this device</button>
+      </div>
+      <p class="note" id="book-cal-status"></p>
+      <div id="busy-list"></div>
+    </div>
+    <div class="field" hidden>
+      <label for="book-sentence">Nudge</label>
+      <input id="book-sentence" maxlength="120">
+    </div>
+    <div id="book-slots"></div>
+    <p class="note" id="book-error"></p>
+    <div class="row">
+      <button class="primary" id="book-save" type="button">Submit times</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-quests" hidden>
+    <p class="kicker" id="plan-kicker" hidden>Your ankle set</p>
+    <h2 id="plan-title" style="font-size:2.4rem;margin-bottom:6px">Ankle set</h2>
+    <p class="note" id="plan-note" style="margin-top:0" hidden></p>
+    <ol class="plan-list" id="plan-list"></ol>
+    <div class="row">
+      <button class="primary" id="plan-start" type="button">Start the ankle set</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-play" hidden>
+    <div class="play-studio watch" id="play-studio">
+      <p class="kicker" id="play-kicker" hidden></p>
+      <h2 id="play-name">Exercise</h2>
+      <p class="note" id="play-step"></p>
+      <div class="play-grid">
+        <div class="teach" id="teach">
+          <div class="teach-screen">
+            <iframe id="teach-frame" title="Teaching video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+          <p class="teach-cap" id="teach-cap"></p>
+        </div>
+        <div class="film-pane" id="film-booth">
+          <p class="kicker" style="margin:0">Your film</p>
+          <video id="film-live" autoplay muted playsinline></video>
+          <video id="film-replay" controls playsinline hidden></video>
+          <div class="row">
+            <button class="primary" id="film-bout" type="button">Start filming</button>
+            <button class="secondary" id="film-stop" type="button">Stop and keep</button>
+            <button class="secondary" id="film-again" type="button">Refilm</button>
+          </div>
+          <p class="note" id="film-status"></p>
+        </div>
+      </div>
+      <div class="row">
+        <button class="primary" id="watch-ready" type="button">I'm ready to film</button>
+        <button class="texty" id="pain" type="button">Stop if it hurts</button>
+      </div>
+      <button class="primary play-submit" id="play-submit" type="button" hidden disabled>Submit this practice</button>
+    </div>
+    <div class="sr" aria-hidden="true" hidden>
+      <canvas id="stage"></canvas>
+      <div id="banner" hidden><div><strong id="banner-title"></strong><span id="banner-sub"></span></div></div>
+      <p id="coach-line"></p>
+      <p id="side-line"></p>
+      <span id="meter-label"></span>
+      <strong id="form-num"></strong>
+      <span id="form-fill"></span>
+      <div id="accuracy-row"><strong id="accuracy-num"></strong></div>
+      <div id="accuracy-bar"><span id="accuracy-fill"></span></div>
+      <p id="posture-line"></p>
+      <div id="pips"></div>
+      <p id="combo"></p>
+      <strong id="score"></strong>
+      <button id="hold" type="button"><span id="hold-fill"></span><span id="hold-label"></span></button>
+      <p id="hold-hint"></p>
+      <button id="pause" type="button">Pause</button>
+      <button id="skip" type="button">Skip</button>
+      <p id="keys"></p>
+      <button id="mode-button" type="button">Follow</button>
+      <button id="mode-camera" type="button">Camera</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-films" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:6px">Films</h2>
+    <div id="film-list"></div>
+    <div class="row">
+      <button class="primary" id="films-back" type="button">Back home</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-story" hidden>
+    <div class="reward-shell">
+      <p class="kicker" id="story-kicker" hidden>Reward</p>
+      <h2 id="story-title" style="font-size:2.1rem;margin-bottom:8px">Rewards</h2>
+      <p class="note" id="story-scene" hidden></p>
+      <iframe id="reward-frame" title="ELAK reward game" src="about:blank"></iframe>
+      <div class="row story-transport">
+        <button class="secondary" id="story-home" type="button">Back home</button>
+      </div>
+    </div>
+    <div hidden>
+      <div id="story-stage"><div id="story-set"></div><div id="story-dust"></div><div id="story-cast"></div><div id="reel-bars"></div></div>
+      <div id="story-caption"><span id="story-who"></span><p id="story-caption-text"></p></div>
+      <div id="story-lines"></div>
+      <p id="story-voice-note"></p>
+      <button id="story-play" type="button"></button>
+      <button id="story-pause" type="button"></button>
+      <button id="story-next" type="button"></button>
+      <button id="reel-back" type="button"></button>
+      <button id="reel-fwd" type="button"></button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-done" hidden>
+    <div class="done">
+      <p class="kicker" id="done-kicker" hidden>Ankle set complete</p>
+      <h2 id="done-title">You finished.</h2>
+      <p id="done-sub" class="lede" hidden></p>
+      <div class="stars" id="done-stars"></div>
+      <ul class="done-list" id="done-list"></ul>
+      <div class="row">
+        <button class="primary" id="done-again" type="button">Play this ankle set again</button>
+        <button class="secondary" id="done-more" type="button">Back home</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay-how" hidden>
+  <div class="card">
+    <h2>How to play</h2>
+    <button class="primary" id="how-close" type="button">Close</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-brief" hidden>
+  <div class="card">
+    <p class="kicker" id="brief-kicker">Exercise</p>
+    <h2 id="brief-name">Name</h2>
+    <p id="brief-cue"></p>
+    <p id="brief-why" class="note" hidden></p>
+    <p id="brief-how" hidden></p>
+    <div class="row">
+      <button class="primary" id="brief-ready" type="button">I’m ready</button>
+      <button class="secondary" id="brief-back" type="button">Back</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-pause" hidden>
+  <div class="card">
+    <h2>Paused</h2>
+    <div class="row">
+      <button class="primary" id="pause-resume" type="button">Resume</button>
+      <button class="secondary" id="pause-quit" type="button">End set</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-leave" hidden>
+  <div class="card">
+    <h2>Leave this set?</h2>
+    <div class="row">
+      <button class="primary" id="leave-yes" type="button">Leave</button>
+      <button class="secondary" id="leave-no" type="button">Keep going</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-cam" hidden>
+  <div class="card">
+    <h2>Camera isn’t available</h2>
+    <p id="cam-msg"></p>
+    <div class="row">
+      <button class="primary" id="cam-switch" type="button">Follow the video</button>
+      <button class="secondary" id="cam-retry" type="button">Try camera again</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-stop" hidden>
+  <div class="card">
+    <p class="kicker">Stopped</p>
+    <h2 id="stop-title">You stopped.</h2>
+    <p id="stop-msg"></p>
+    <div class="row">
+      <button class="primary" id="stop-next" type="button">Next exercise</button>
+      <button class="secondary" id="stop-end" type="button">End set</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-appoint" hidden>
+  <div class="card">
+    <h2>Next visit</h2>
+    <p id="appoint-when"></p>
+    <p id="appoint-msg"></p>
+    <div class="row">
+      <button class="primary" id="appoint-close" type="button">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-nudge" hidden>
+  <div class="card">
+    <div class="cal-pop">
+      <div class="cal-pop-date">
+        <span class="cal-pop-month" id="nudge-month">OCT</span>
+        <strong id="nudge-day">3</strong>
+        <span class="cal-pop-dow" id="nudge-dow">Friday</span>
+      </div>
+      <div>
+        <h2 id="nudge-title">Practice</h2>
+        <p id="nudge-when">Today</p>
+      </div>
+    </div>
+    <p id="nudge-msg"></p>
+    <p class="note" id="nudge-rule" hidden></p>
+    <div class="row">
+      <button class="primary" id="nudge-start" type="button">Start this practice</button>
+      <button class="secondary" id="nudge-later" type="button">Not now</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-miss" hidden>
+  <div class="card">
+    <h2>Missed practice</h2>
+    <div class="field">
+      <label for="miss-reason">Reason</label>
+      <select id="miss-reason">
+        <option value="forgot">I forgot</option>
+        <option value="tired">I was too tired</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="miss-note">If other, write it here</label>
+      <input id="miss-note" maxlength="80">
+    </div>
+    <div class="row">
+      <button class="primary" id="miss-freeze" type="button">Freeze and draft</button>
+      <button class="secondary" id="miss-move" type="button">Move the nudge</button>
+      <button class="secondary" id="miss-replay" type="button">Replay instruction</button>
+      <button class="secondary" id="miss-rebook" type="button">Rebook</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-feedback" hidden>
+  <div class="card">
+    <h2>How did that practice feel?</h2>
+    <div class="field">
+      <label for="fb-pain">Pain now, 0 to 10</label>
+      <input id="fb-pain" type="number" min="0" max="10" value="2">
+    </div>
+    <div class="field">
+      <label for="fb-stop">Did you stop for pain?</label>
+      <select id="fb-stop">
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fb-mob">Mobility today, 0 to 10</label>
+      <input id="fb-mob" type="number" min="0" max="10" value="5">
+    </div>
+    <div class="field">
+      <label for="fb-note">Anything else</label>
+      <input id="fb-note" maxlength="80">
+    </div>
+    <button class="primary" id="fb-save" type="button">Log this practice</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-verify" hidden>
+  <div class="card">
+    <h2>Submit video</h2>
+    <video id="verify-preview" playsinline muted style="width:100%;border-radius:16px;background:#111;max-height:220px"></video>
+    <p class="note" id="verify-msg"></p>
+    <div class="row">
+      <button class="primary" id="verify-ok" type="button">Use this video</button>
+      <button class="secondary" id="verify-skip" type="button">No video this time</button>
+    </div>
+  </div>
+</div>
+
+<p id="live" class="sr" aria-live="polite"></p>
+<video id="cam" playsinline muted hidden></video>
+
+<script src="shared.js?v=74"></script>
+<script src="calendar-plugin.js?v=74"></script>
+<script src="agent.js?v=74"></script>
+<script>
+const SAVE_KEY = "full-range-v1";
+const UP = 0.40;
+const HOLD_AT = 0.56;
+
+const $ = (id) => document.getElementById(id);
+const canvas = $("stage");
+const ctx = canvas.getContext("2d");
+const video = $("cam");
+
+const S = {
+  screen: "title",
+  mode: "button",
+  questId: null,
+  exIndex: 0,
+  results: [],
+  saved: false,
+  phaseName: "brief",
+  paused: false,
+  running: false,
+  holding: false,
+  muted: false,
+  t: 0,
+  last: performance.now(),
+  phase: 0,
+  player: 0,
+  form: 0,
+  rising: false,
+  peakSync: 0,
+  peakPlayer: 0,
+  formSum: 0,
+  formN: 0,
+  reps: 0,
+  repScores: [],
+  exPoints: 0,
+  combo: 0,
+  logged: false,
+  celebrate: 0,
+  countdown: 0,
+  struggle: 0,
+  lastRepAt: 0,
+  calLeft: 0,
+  calWait: 0,
+  samples: [],
+  baseline: null,
+  noise: 0,
+  rawSmooth: 0,
+  rawReady: false,
+  camSmooth: 0,
+  camPhase: "seek",
+  camHold: 0,
+  camReturn: 0,
+  lock: null,
+  lockCand: [],
+  lockMiss: 0,
+  trackLost: false,
+  trackOthers: false,
+  drawLm: null,
+  filters: null,
+  camAssess: false,
+  accPeak: 0,
+  accSum: 0,
+  accN: 0,
+  accLive: 0,
+  accScores: [],
+  pendingAcc: null,
+  sliceSum: 0,
+  sliceN: 0,
+  goodTime: 0,
+  landmarks: null,
+  landmarker: null,
+  stream: null,
+  lastTs: 0,
+  parts: [],
+  floats: [],
+  youX: 0,
+  youY: 0,
+  w: 640,
+  h: 520,
+  pipKey: "",
+  stopReason: "pain",
+  slotId: null,
+  videoOk: false,
+  videoBlob: null,
+  recorder: null,
+  chunks: [],
+  filmMs: 0,
+  filmAt: 0,
+  filmStream: null
+};
+
+let audioCtx = null;
+
+function emptyProgress() {
+  return { streak: 0, lastDay: "", sessions: 0, best: 0, muted: false };
+}
+function load() {
+  const plan = activePlan();
+  if (!plan) return emptyProgress();
+  if (!plan.progress) {
+    let migrated = emptyProgress();
+    try {
+      const raw = JSON.parse(localStorage.getItem(SAVE_KEY) || "{}");
+      const bestMap = raw.best && typeof raw.best === "object" ? raw.best : {};
+      migrated = {
+        streak: raw.streak || 0,
+        lastDay: raw.lastDay || "",
+        sessions: 0,
+        best: bestMap[plan.code] || 0,
+        muted: !!raw.muted
+      };
+    } catch { /* start fresh on this account */ }
+    const data = loadPlans();
+    if (data.plans[plan.code]) {
+      data.plans[plan.code].progress = migrated;
+      savePlans(data);
+    }
+    return migrated;
+  }
+  const raw = plan.progress;
+  return {
+    streak: raw.streak || 0,
+    lastDay: raw.lastDay || "",
+    sessions: raw.sessions || 0,
+    best: raw.best || 0,
+    muted: !!raw.muted
+  };
+}
+function persist(extra) {
+  const plan = activePlan();
+  if (!plan) return;
+  const data = loadPlans();
+  const cur = data.plans[plan.code].progress || emptyProgress();
+  data.plans[plan.code].progress = { ...cur, ...extra };
+  savePlans(data);
+}
+function dayStamp(d = new Date()) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function prevDay(stamp) {
+  const [y, m, d] = stamp.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() - 1);
+  return dayStamp(dt);
+}
+
+function ac() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, dur, type, gain, when = 0) {
+  if (S.muted) return;
+  const a = ac();
+  const o = a.createOscillator();
+  const g = a.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(gain, a.currentTime + when);
+  g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + when + dur);
+  o.connect(g); g.connect(a.destination);
+  o.start(a.currentTime + when);
+  o.stop(a.currentTime + when + dur + 0.02);
+}
+function sfxClick() { tone(520, 0.06, "sine", 0.04); }
+function sfxRep(good) {
+  if (good) {
+    tone(523, 0.1, "sine", 0.07);
+    tone(659, 0.14, "sine", 0.06, 0.07);
+    tone(784, 0.18, "sine", 0.05, 0.14);
+  } else tone(294, 0.12, "triangle", 0.035);
+}
+function sfxWin() {
+  [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.18, "sine", 0.06, i * 0.08));
+}
+
+function ease(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+function quest() {
+  const plan = activePlan();
+  const visit = latestVisit(plan);
+  if (!plan || !visit) return null;
+  let exercises = ankleExercises(visit.exercises);
+  if (cycleOf(plan)) exercises = exercises.filter((item) => item.essential !== false);
+  if (!exercises.length) return null;
+  const seconds = exercises.reduce((sum, item) => {
+    const base = EX[item.pattern];
+    return sum + (base ? base.period / 1000 * (item.reps || base.reps) : 0);
+  }, 0);
+  return {
+    id: plan.code,
+    title: plan.patient,
+    minutes: "About " + Math.max(1, Math.round(seconds / 60)) + " min",
+    blurb: visit.note || "",
+    updated: visit.date,
+    exercises
+  };
+}
+function spec() {
+  const item = quest().exercises[S.exIndex];
+  const base = EX[item.pattern];
+  const cap = base.type === "sustain" ? 8 : 20;
+  return {
+    ...base,
+    reps: clamp(Number(item.reps) || base.reps, 1, cap),
+    cue: (item.cue || "").trim() || base.cue,
+    why: (item.note || "").trim() || base.why
+  };
+}
+function teachClip() {
+  const id = spec().id;
+  return TEACH[id] || TEACH.pump;
+}
+function teachSrc(clip) {
+  const id = clip.yt;
+  return "https://www.youtube.com/embed/" + id + "?rel=0&modestbranding=1&playsinline=1&autoplay=1&mute=1&loop=1&playlist=" + encodeURIComponent(id) + "&enablejsapi=1";
+}
+function teachShowing() {
+  return S.screen === "play" && !!S.questId;
+}
+function teachCommand(fn) {
+  const frame = $("teach-frame");
+  if (!frame.contentWindow) return;
+  frame.contentWindow.postMessage(JSON.stringify({ event: "command", func: fn, args: [] }), "*");
+}
+function syncTeach() {
+  const box = $("teach");
+  const frame = $("teach-frame");
+  const showClip = teachShowing();
+  box.hidden = !showClip;
+  if (!showClip) {
+    if (frame.dataset.yt) {
+      frame.src = "";
+      frame.dataset.yt = "";
+    }
+    return;
+  }
+  const clip = teachClip();
+  if (frame.dataset.yt !== clip.yt) {
+    frame.dataset.yt = clip.yt;
+    frame.src = teachSrc(clip);
+  }
+  $("teach-cap").textContent = clip.title + " · " + clip.by;
+}
+function neededReps() { return spec().reps; }
+function sessionScore() { return S.results.reduce((s, r) => s + r.points, 0) + S.exPoints; }
+function anyOverlay() { return [...document.querySelectorAll(".overlay")].some((el) => !el.hidden); }
+
+function coachEffort(phase) {
+  if (phase < UP) return ease(phase / UP);
+  if (phase < HOLD_AT) return 1;
+  return ease(1 - (phase - HOLD_AT) / (1 - HOLD_AT));
+}
+function breathLevel(phase) { return phase < 0.5 ? ease(phase / 0.5) : ease(1 - (phase - 0.5) / 0.5); }
+
+function show(screen) {
+  S.screen = screen;
+  for (const id of ["signin", "title", "book", "films", "quests", "play", "done", "story"]) {
+    const el = $("screen-" + id);
+    const on = id === screen;
+    el.classList.toggle("on", on);
+    el.toggleAttribute("hidden", !on);
+  }
+  if (screen !== "play") S.holding = false;
+  if (screen === "play") requestAnimationFrame(resize);
+  if (screen !== "story") stopStoryVoice();
+  syncTeach();
+}
+
+function updateChrome() {
+  const plan = activePlan();
+  const inApp = patientUiOn() && S.screen !== "signin";
+  $("stories-open").hidden = !plan || !inApp;
+  $("films-open").hidden = !plan || !inApp;
+  $("patient-out").hidden = !inApp;
+  if ($("home-open")) $("home-open").hidden = !inApp;
+  $("book-open").hidden = !inApp || !cycleNeedsBooking(cycleOf(plan));
+  $("mute").hidden = !plan || !inApp;
+}
+function refreshMeta() {
+  updateChrome();
+  const plan = activePlan();
+  if (!plan) {
+    $("streak").hidden = true;
+    return;
+  }
+  const s = load();
+  S.muted = s.muted;
+  $("mute").textContent = S.muted ? "Sound off" : "Sound on";
+  $("mute").setAttribute("aria-pressed", String(S.muted));
+  const streak = $("streak");
+  if (s.streak > 0) {
+    streak.hidden = false;
+    streak.textContent = s.streak === 1 ? "1 day streak" : s.streak + " day streak";
+  } else streak.hidden = true;
+  const visit = latestVisit(plan);
+  const ankle = visit ? ankleExercises(visit.exercises) : [];
+  const cycle = cycleOf(plan);
+  markPhoneDay(plan);
+  $("book-open").hidden = !patientUiOn() || S.screen === "signin" || !cycleNeedsBooking(cycle);
+  $("start-btn").hidden = !ankle.length;
+  if (cycleNeedsBooking(cycle)) $("start-btn").textContent = "Book exercise plan";
+  else $("start-btn").textContent = "Start today's exercise";
+  $("plan-status").textContent = ankle.length
+    ? plan.patient + " · " + formatWhen(visit.date)
+    : (plan.patient || "");
+  if ($("best-line")) $("best-line").hidden = true;
+  paintNudgeLine(plan, cycle);
+  renderHomePlan(plan);
+  renderHomeSchedule(plan);
+  renderHomeStories(plan);
+  if (plan) {
+    ensureCalendarOnPlan(plan).then(() => {
+      if (S.screen === "title") renderHomeSchedule(activePlan() || plan);
+    });
+  }
+  if (S.screen === "title") maybePromptCycle();
+  if (S.screen === "title") maybeShowAppointment(plan);
+}
+function maybeShowAppointment(plan) {
+  const appt = plan && plan.appointment;
+  if (!appt || !appt.start || appt.patientSeen) return;
+  showAppointmentNotice(appt, "patient");
+}
+
+function paintNudgeLine(plan, cycle) {
+  const line = $("nudge-line");
+  if ($("home-lede")) {
+    $("home-lede").hidden = true;
+    $("home-lede").textContent = "";
+  }
+  if ($("home-title")) $("home-title").textContent = "Today's practice";
+  if (!cycle) {
+    line.textContent = "";
+    return;
+  }
+  if (cycleNeedsBooking(cycle)) {
+    const left = cycle.slots.filter(slotNeedsPick).length;
+    line.textContent = left ? left + (left === 1 ? " day" : " days") + " to book" : "";
+    return;
+  }
+  const due = dueSlot(cycle);
+  if (due) {
+    line.textContent = cycle.sentence || "";
+    return;
+  }
+  const left = cycle.slots.filter((slot) => slot.status === "accepted").length;
+  line.textContent = left ? left + " left" : "";
+}
+
+function toLocalInput(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+async function openBook() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (!cycle) {
+    show("title");
+    return;
+  }
+  $("book-sentence").value = cycle.sentence || "";
+  $("book-error").textContent = "";
+  $("busy-list").textContent = "Reading your calendar…";
+  S.bookPicks = {};
+  show("book");
+  refreshMeta();
+  await ensureCalendarOnPlan(plan);
+  renderBookPlan(plan);
+  renderBusy();
+  renderBookSlots();
+}
+
+function renderBusy() {
+  const plan = activePlan();
+  if ($("book-cal-status")) $("book-cal-status").textContent = deviceCalStatus(plan);
+  renderCalendarTable($("busy-list"), plan, "patient");
+}
+
+function bookPickOf(slot) {
+  S.bookPicks = S.bookPicks || {};
+  if (!S.bookPicks[slot.id]) {
+    const offerIndex = slot.start && slot.offers ? slot.offers.indexOf(slot.start) : -1;
+    S.bookPicks[slot.id] = {
+      choice: offerIndex >= 0 ? "offer-" + offerIndex : (slot.start ? "custom" : ""),
+      custom: slot.start ? toLocalInput(slot.start) : slot.date + "T09:00"
+    };
+  }
+  return S.bookPicks[slot.id];
+}
+function appendExerciseItems(root, plan) {
+  const visit = latestVisit(plan);
+  const items = visit ? ankleExercises(visit.exercises) : [];
+  if (!items.length) {
+    const empty = document.createElement("p");
+    empty.className = "note";
+    empty.textContent = "No ankle set yet.";
+    root.appendChild(empty);
+    return;
+  }
+  const ol = document.createElement("ol");
+  ol.className = "plan-list";
+  items.forEach((item, index) => {
+    const base = EX[item.pattern];
+    if (!base) return;
+    const li = document.createElement("li");
+    const kicker = document.createElement("span");
+    const count = base.type === "sustain" ? item.reps + " breaths" : item.reps + " reps";
+    const days = clamp(Number(item.daysPerWeek) || (cycleOf(plan) && cycleOf(plan).daysPerWeek) || 7, 1, 7);
+    kicker.textContent = (index + 1) + " · " + count + " · " + days + (days === 1 ? " day" : " days");
+    const name = document.createElement("strong");
+    name.textContent = base.name;
+    li.append(kicker, name);
+    ol.appendChild(li);
+  });
+  root.appendChild(ol);
+}
+function renderBookPlan(plan) {
+  const root = $("book-plan");
+  if (!root) return;
+  root.replaceChildren();
+  const title = document.createElement("h3");
+  title.style.cssText = "font-size:1.4rem;margin:4px 0 8px";
+  title.textContent = plan.patient;
+  root.append(title);
+  appendExerciseItems(root, plan);
+}
+function renderHomePlan(plan) {
+  const root = $("home-plan");
+  if (!root) return;
+  if (!plan || !latestVisit(plan)) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
+  }
+  root.hidden = false;
+  root.replaceChildren();
+  const kicker = document.createElement("p");
+  kicker.className = "kicker";
+  kicker.style.margin = "0";
+  kicker.textContent = "Exercise plan";
+  root.appendChild(kicker);
+  appendExerciseItems(root, plan);
+}
+async function syncHomeCalendar() {
+  const plan = activePlan();
+  if (!plan) return;
+  try {
+    const next = await syncDeviceCalendarToPlan(plan);
+    renderHomeSchedule(next);
+    if (S.screen === "book") {
+      renderBusy();
+      renderBookSlots();
+    }
+  } catch (err) {
+    renderHomeSchedule(activePlan() || plan);
+  }
+}
+function renderHomeSchedule(plan) {
+  const root = $("home-schedule");
+  if (!root) return;
+  if (!plan) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
+  }
+  const cycle = cycleOf(plan);
+  root.hidden = false;
+  root.replaceChildren();
+  const top = document.createElement("div");
+  top.className = "spread";
+  const kicker = document.createElement("p");
+  kicker.className = "kicker";
+  kicker.style.margin = "0";
+  kicker.textContent = "Schedule";
+  const sync = document.createElement("button");
+  sync.type = "button";
+  sync.className = "ghost";
+  sync.textContent = "Sync this device";
+  sync.addEventListener("click", syncHomeCalendar);
+  top.append(kicker, sync);
+  root.appendChild(top);
+  const status = document.createElement("p");
+  status.className = "note";
+  status.textContent = deviceCalStatus(plan);
+  root.appendChild(status);
+  if (cycle && cycle.slots && cycle.slots.length) {
+    const table = document.createElement("table");
+    table.className = "cal-table";
+    const head = document.createElement("thead");
+    const hr = document.createElement("tr");
+    ["Day", "Practice time", "Status"].forEach((label) => {
+      const th = document.createElement("th");
+      th.textContent = label;
+      hr.appendChild(th);
+    });
+    head.appendChild(hr);
+    const body = document.createElement("tbody");
+    cycle.slots.forEach((slot) => {
+      const tr = document.createElement("tr");
+      const day = document.createElement("td");
+      day.className = "day";
+      day.textContent = slot.date;
+      const time = document.createElement("td");
+      time.textContent = slot.start
+        ? new Date(slot.start).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+        : "Not chosen";
+      const status = document.createElement("td");
+      status.textContent = slotNeedsPick(slot)
+        ? "Needs a time"
+        : (slot.status === "accepted" ? "Booked" : (slot.status || "Saved"));
+      tr.append(day, time, status);
+      body.appendChild(tr);
+    });
+    table.append(head, body);
+    const wrap = document.createElement("div");
+    wrap.className = "cal-wrap";
+    wrap.appendChild(table);
+    root.appendChild(wrap);
+  }
+  const cal = document.createElement("div");
+  if (cycle && cycle.slots && cycle.slots.length) cal.style.marginTop = "12px";
+  if (plan.appointment && plan.appointment.start) {
+    const appt = document.createElement("p");
+    appt.style.fontWeight = "650";
+    appt.textContent = "Next visit · " + formatAppointmentWhen(plan.appointment);
+    root.appendChild(appt);
+  }
+  renderCalendarTable(cal, plan, "patient");
+  root.appendChild(cal);
+}
+function renderHomeStories(plan) {
+  const root = $("home-story");
+  if (!root || !plan) {
+    if (root) { root.hidden = true; root.replaceChildren(); }
+    return;
+  }
+  root.hidden = false;
+  root.replaceChildren();
+  const kicker = document.createElement("p");
+  kicker.className = "kicker";
+  kicker.textContent = "Rewards";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "secondary";
+  btn.textContent = "Open reward game";
+  btn.addEventListener("click", () => { sfxClick(); openReward(); });
+  root.append(kicker, btn);
+}
+const REWARD_TRAINING = {
+  pump: "anklePumps",
+  toe: "toeRaises",
+  ever: "ankleEversion",
+  invert: "ankleInversion",
+  heel: "heelRaises",
+  squat: "heelsDownSquat",
+  balance: "singleLegBalance",
+  alphabet: "ankleAlphabet"
+};
+function creditsFromSession() {
+  const cmds = [];
+  (S.results || []).forEach((row) => {
+    if (row.stopped) return;
+    const id = REWARD_TRAINING[row.id];
+    if (!id) return;
+    const base = EX[row.id];
+    const sec = Math.max(30, Math.round(((base && base.period) || 5000) * (row.reps || (base && base.reps) || 6) / 1000));
+    cmds.push({ type: "checkin", trainingId: id });
+    cmds.push({ type: "addTime", seconds: sec, trainingId: id });
+  });
+  return cmds;
+}
+function rewardUser() {
+  const plan = activePlan();
+  return normalizeUsername(plan && plan.username) || "guest";
+}
+function sendRewardCommands(commands, frame) {
+  const win = (frame || $("reward-frame")) && (frame || $("reward-frame")).contentWindow;
+  if (!win || !commands || !commands.length) return;
+  let i = 0;
+  const next = () => {
+    if (i >= commands.length) return;
+    try {
+      const result = win.RehabAwards && win.RehabAwards.dispatch(commands[i]);
+      if (!result || result.error === "not-ready") {
+        setTimeout(next, 80);
+        return;
+      }
+      i += 1;
+      setTimeout(next, 40);
+    } catch {
+      setTimeout(next, 80);
+    }
+  };
+  next();
+}
+function openReward(credits) {
+  stopStoryVoice();
+  const frame = $("reward-frame");
+  if (!frame) return;
+  S.pendingReward = Array.isArray(credits) ? credits : [];
+  if ($("story-kicker")) {
+    $("story-kicker").textContent = "";
+    $("story-kicker").hidden = true;
+  }
+  if ($("story-title")) $("story-title").textContent = "Rewards";
+  if ($("story-scene")) {
+    $("story-scene").textContent = "";
+    $("story-scene").hidden = true;
+  }
+  frame.onload = () => {
+    sendRewardCommands(S.pendingReward || [], frame);
+    S.pendingReward = [];
+  };
+  frame.src = "reward/index.html?embed=1&user=" + encodeURIComponent(rewardUser()) + "&t=" + Date.now();
+  show("story");
+}
+const STORY_CAST = {
+  Narration: { look: "narrator", gender: "narrator", name: "Narrator", voiceRole: "narrator", pitch: 0.96, rate: 0.92, vol: 0.96, pause: 340 },
+  Narrator: { look: "narrator", gender: "narrator", name: "Narrator", voiceRole: "narrator", pitch: 0.96, rate: 0.92, vol: 0.96, pause: 340 },
+  旁白: { look: "narrator", gender: "narrator", name: "Narrator", voiceRole: "narrator", pitch: 0.96, rate: 0.92, vol: 0.96, pause: 340 },
+  Ethan: { look: "lu", gender: "male", name: "Ethan", voiceRole: "ceo", pitch: 0.94, rate: 0.9, vol: 1, pause: 420 },
+  陆珩: { look: "lu", gender: "male", name: "Ethan", voiceRole: "ceo", pitch: 0.94, rate: 0.9, vol: 1, pause: 420 },
+  Sophie: { look: "su", gender: "female", name: "Sophie", voiceRole: "sophie", pitch: 1.04, rate: 0.94, vol: 0.98, pause: 300 },
+  苏晚: { look: "su", gender: "female", name: "Sophie", voiceRole: "sophie", pitch: 1.04, rate: 0.94, vol: 0.98, pause: 300 },
+  Miles: { look: "zhou", gender: "male", name: "Miles", voiceRole: "joe", pitch: 1.02, rate: 0.96, vol: 0.98, pause: 240 },
+  小周: { look: "zhou", gender: "male", name: "Miles", voiceRole: "joe", pitch: 1.02, rate: 0.96, vol: 0.98, pause: 240 },
+  Adrian: { look: "gu", gender: "male", name: "Adrian", voiceRole: "rival", pitch: 0.95, rate: 0.93, vol: 1, pause: 320 },
+  顾衍: { look: "gu", gender: "male", name: "Adrian", voiceRole: "rival", pitch: 0.95, rate: 0.93, vol: 1, pause: 320 },
+  "Mr. Wallace": { look: "wang", gender: "male", name: "Mr. Wallace", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.96, pause: 280 },
+  "Mr. Donovan": { look: "zhao", gender: "male", name: "Mr. Donovan", voiceRole: "male", pitch: 0.99, rate: 0.95, vol: 0.96, pause: 280 },
+  王总: { look: "wang", gender: "male", name: "Mr. Wallace", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.96, pause: 280 },
+  赵总: { look: "zhao", gender: "male", name: "Mr. Donovan", voiceRole: "male", pitch: 0.99, rate: 0.95, vol: 0.96, pause: 280 },
+  "Client A": { look: "other", gender: "male", name: "Client A", voiceRole: "male", pitch: 1.0, rate: 0.95, vol: 0.94, pause: 240 },
+  "Client B": { look: "other", gender: "female", name: "Client B", voiceRole: "female", pitch: 1.05, rate: 0.96, vol: 0.94, pause: 240 },
+  "Client C": { look: "other", gender: "male", name: "Client C", voiceRole: "male", pitch: 0.98, rate: 0.95, vol: 0.94, pause: 240 },
+  "Board Member A": { look: "gu", gender: "male", name: "Board Member A", voiceRole: "rival", pitch: 0.95, rate: 0.92, vol: 0.95, pause: 300 },
+  "Board Member B": { look: "other", gender: "male", name: "Board Member B", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.95, pause: 300 },
+  客户甲: { look: "other", gender: "male", name: "Client A", voiceRole: "male", pitch: 1.0, rate: 0.95, vol: 0.94, pause: 240 },
+  客户乙: { look: "other", gender: "female", name: "Client B", voiceRole: "female", pitch: 1.05, rate: 0.96, vol: 0.94, pause: 240 },
+  客户丙: { look: "other", gender: "male", name: "Client C", voiceRole: "male", pitch: 0.98, rate: 0.95, vol: 0.94, pause: 240 },
+  董事甲: { look: "gu", gender: "male", name: "Board Member A", voiceRole: "rival", pitch: 0.95, rate: 0.92, vol: 0.95, pause: 300 },
+  董事乙: { look: "other", gender: "male", name: "Board Member B", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.95, pause: 300 }
+};
+function storyLang() {
+  const ep = storyEpisodes()[0];
+  return ep && ep.lang === "en" ? "en" : "zh";
+}
+function storyCastOf(who) {
+  return STORY_CAST[who] || { look: "other", gender: /Sophie|Reed|女|晚/i.test(who) ? "female" : "male", name: who, voiceRole: "male", pitch: 1, rate: 1, vol: 0.92, pause: 200 };
+}
+function storyDisplayName(who) {
+  return storyCastOf(who).name || who;
+}
+function storySetKind(scene) {
+  const s = String(scene || "");
+  if (/训练|train|gym|exercise/i.test(s)) return "gym";
+  if (/花园|garden/i.test(s)) return "garden";
+  if (/走廊|hall|corridor/i.test(s)) return "hall";
+  if (/办公|董事|会议|office|board|meeting/i.test(s)) return "office";
+  if (/病房|VIP|ward|hospital/i.test(s)) return "ward";
+  return "room";
+}
+function storyVoiceList() {
+  if (!window.speechSynthesis) return [];
+  return S.storyVoiceList && S.storyVoiceList.length ? S.storyVoiceList : speechSynthesis.getVoices();
+}
+function scoreStoryVoice(voice, gender) {
+  const n = ((voice && voice.name) || "") + " " + ((voice && voice.lang) || "");
+  const t = n.toLowerCase();
+  const en = storyLang() === "en";
+  let s = 0;
+  if (en && /en[-_]/.test(t)) s += 8;
+  if (en && /english|united states|united kingdom|australia|ireland/.test(t)) s += 5;
+  if (!en && /zh|cmn|chinese|中文|普通话|粤/.test(t)) s += 8;
+  if (!en && /zh-cn|zh_cn|cmn-hans|普通话/.test(t)) s += 5;
+  if (/premium|enhanced|neural|natural|siri|online \(natural\)|aria|guy|ava|allison|zoe/.test(t)) s += 10;
+  if (/compact|novelty|bad news|good news|jester|organ|whisper|zarvox|trinoids|boing|bubbles|cellos/.test(t)) s -= 12;
+  if (/fred|ralph|junior|kathy/.test(t)) s -= 6;
+  if (voice && voice.localService) s += 2;
+  if (gender === "female" && /female|samantha|karen|moira|tessa|allison|ava|zoe|nicky|fiona|susan|samantha|aria|ting|xiao/.test(t)) s += 7;
+  if (gender === "male" && /male|daniel|aaron|alex|nathan|evan|tom|guy|rishi|reed|albert/.test(t)) s += 7;
+  if (gender === "narrator" && /daniel|aaron|alex|guy|nathan|moira|karen/.test(t)) s += 5;
+  if (gender === "female" && /male|daniel|alex|fred|eddy|joe|aaron|nathan/.test(t)) s -= 4;
+  if (gender === "male" && /female|samantha|sandy|karen|moira|aria|ting/.test(t)) s -= 4;
+  return s;
+}
+const STORY_VOICE_PREFS = {
+  ceo: ["Daniel", "Aaron", "Alex", "Nathan", "Microsoft Guy Online (Natural) - English (United States)", "Google UK English Male", "Eddy (English (United States))"],
+  joe: ["Tom", "Evan", "Nicky", "Google US English", "Daniel", "Eddy (English (United States))"],
+  sophie: ["Samantha", "Karen", "Moira", "Tessa", "Allison", "Ava", "Microsoft Aria Online (Natural) - English (United States)", "Google UK English Female", "Sandy (English (United States))"],
+  narrator: ["Daniel", "Moira", "Karen", "Aaron", "Microsoft Aria Online (Natural) - English (United States)"],
+  rival: ["Aaron", "Alex", "Daniel", "Albert"],
+  male: ["Daniel", "Aaron", "Alex", "Google UK English Male"],
+  female: ["Samantha", "Karen", "Moira", "Tessa", "Allison"]
+};
+function voiceForCharacter(who) {
+  const list = storyVoiceList();
+  if (!list.length) return null;
+  const role = storyCastOf(who).voiceRole || "male";
+  const prefs = STORY_VOICE_PREFS[role] || STORY_VOICE_PREFS.male;
+  for (const name of prefs) {
+    const want = name.toLowerCase();
+    const hit = list.find((v) => {
+      const have = (v.name || "").toLowerCase();
+      return have === want || have.includes(want) || want.includes(have);
+    });
+    if (hit) return hit;
+  }
+  const langRe = storyLang() === "en" ? /en[-_]|english/i : /zh|cmn|chinese|中文|普通话|粤/i;
+  const pool = list.filter((v) => langRe.test((v.lang || "") + " " + (v.name || "")));
+  const use = pool.length ? pool : list;
+  return use.slice().sort((a, b) => scoreStoryVoice(b, storyCastOf(who).gender) - scoreStoryVoice(a, storyCastOf(who).gender))[0] || null;
+}
+function lineWait(text, who) {
+  const n = String(text || "").length;
+  const rate = storyCastOf(who).rate || 1;
+  return Math.max(900, Math.min(9000, 400 + (n * (storyLang() === "en" ? 75 : 170)) / rate));
+}
+function storyPhrases(text) {
+  return String(text || "")
+    .split(/(?<=[。！？…—,.!?;；])/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+function cancelStorySpeech() {
+  S.storyGen = (S.storyGen || 0) + 1;
+  if (S.storyTimer) clearTimeout(S.storyTimer);
+  if (S.storyType) clearTimeout(S.storyType);
+  if (S.storySpeakAt) clearTimeout(S.storySpeakAt);
+  S.storyTimer = null;
+  S.storyType = null;
+  S.storySpeakAt = null;
+  S.storyUtter = null;
+  if (window.speechSynthesis) {
+    try { speechSynthesis.cancel(); } catch (err) { /* ignore */ }
+  }
+}
+function stopStoryVoice() {
+  S.storyPlaying = false;
+  S.storyPaused = false;
+  cancelStorySpeech();
+  if ($("story-stage")) $("story-stage").classList.remove("paused");
+  if ($("story-caption")) $("story-caption").classList.remove("talking");
+  document.querySelectorAll(".story-actor.talk").forEach((el) => el.classList.remove("talk"));
+  updateStoryTransport();
+}
+function updateStoryTransport() {
+  const ep = S.storyEp;
+  const done = !ep || S.storyIndex >= (ep.dialogue || []).length;
+  const play = $("story-play");
+  const pause = $("story-pause");
+  const skip = $("story-next");
+  if (!play || !pause || !skip) return;
+  play.hidden = false;
+  pause.hidden = false;
+  skip.hidden = false;
+  play.disabled = false;
+  skip.textContent = "Skip line";
+  if (done && !S.storyPlaying) {
+    play.textContent = S.storyIndex ? "Play again" : "Start";
+    pause.disabled = true;
+    skip.disabled = true;
+  } else if (S.storyPaused) {
+    play.textContent = "Resume";
+    pause.disabled = true;
+    skip.disabled = false;
+  } else if (S.storyPlaying) {
+    play.textContent = "Playing";
+    play.disabled = true;
+    pause.disabled = false;
+    skip.disabled = false;
+  } else {
+    play.textContent = "Start";
+    pause.disabled = true;
+    skip.disabled = !ep;
+  }
+}
+function typeStoryCaption(text) {
+  const el = $("story-caption-text");
+  if (!el) return;
+  if (S.storyType) clearTimeout(S.storyType);
+  el.textContent = "";
+  let i = 0;
+  const step = Math.max(22, Math.min(64, 1400 / Math.max((text || "").length, 1)));
+  const tick = () => {
+    i += 1;
+    el.textContent = text.slice(0, i);
+    if (i < text.length) S.storyType = setTimeout(tick, step);
+  };
+  tick();
+}
+function renderStoryDust() {
+  const root = $("story-dust");
+  if (!root || root.childElementCount) return;
+  for (let i = 0; i < 8; i++) {
+    const dot = document.createElement("span");
+    dot.style.left = (8 + i * 11) + "%";
+    dot.style.bottom = (6 + (i % 4) * 8) + "%";
+    dot.style.animationDelay = (i * 0.7) + "s";
+    root.appendChild(dot);
+  }
+}
+function renderStoryCast(ep) {
+  const root = $("story-cast");
+  if (!root) return;
+  const names = [];
+  (ep.dialogue || []).forEach((line) => {
+    if (!line.who || /^(旁白|Narration|Narrator)$/.test(line.who)) return;
+    if (!names.includes(line.who)) names.push(line.who);
+  });
+  root.replaceChildren();
+  names.slice(0, 4).forEach((who) => {
+    const cast = storyCastOf(who);
+    const actor = document.createElement("div");
+    actor.className = "story-actor";
+    actor.dataset.who = who;
+    actor.dataset.look = cast.look;
+    actor.innerHTML = '<div class="puppet"><div class="hair"></div><div class="head"><span class="eye l"></span><span class="eye r"></span><span class="mouth"></span></div><div class="arm l"></div><div class="body"></div><div class="arm r"></div></div>';
+    const tag = document.createElement("p");
+    tag.className = "actor-tag";
+    tag.textContent = storyDisplayName(who);
+    actor.appendChild(tag);
+    root.appendChild(actor);
+  });
+}
+function markStorySpeaker(who) {
+  const stage = $("story-stage");
+  const narrating = /^(旁白|Narration|Narrator)$/.test(who);
+  if (stage) {
+    stage.classList.toggle("narrate", narrating);
+    stage.classList.toggle("talk-close", !narrating && !!who);
+  }
+  document.querySelectorAll(".story-actor").forEach((el) => {
+    const on = el.dataset.who === who;
+    el.classList.toggle("talk", on);
+    el.classList.toggle("dim", narrating || !on);
+  });
+}
+function renderReelBars(index) {
+  const root = $("reel-bars");
+  const ep = S.storyEp;
+  if (!root || !ep) return;
+  const n = Math.max(1, (ep.dialogue || []).length);
+  root.replaceChildren();
+  for (let i = 0; i < n; i++) {
+    const bar = document.createElement("i");
+    if (i < index) bar.className = "done";
+    else if (i === index) bar.className = "on";
+    root.appendChild(bar);
+  }
+}
+function speakStoryChunk(text, who, onDone) {
+  const gen = S.storyGen;
+  let once = false;
+  const done = () => {
+    if (once || S.storyGen !== gen) return;
+    once = true;
+    if (S.storyTimer) clearTimeout(S.storyTimer);
+    onDone();
+  };
+  if (S.muted || !window.speechSynthesis) {
+    S.storyTimer = setTimeout(done, lineWait(text, who));
+    return;
+  }
+  const spoken = String(text || "").replace(/([,;:—–-])\s+/g, "$1 … ");
+  const utter = new SpeechSynthesisUtterance(spoken);
+  const cast = storyCastOf(who);
+  const question = /[？?]$/.test(text.trim());
+  utter.lang = storyLang() === "en" ? "en-US" : "zh-CN";
+  utter.pitch = Math.max(0.9, Math.min(1.12, cast.pitch + (question ? 0.04 : 0)));
+  utter.rate = Math.max(0.86, Math.min(1.05, cast.rate + (text.length > 90 ? -0.04 : 0)));
+  utter.volume = cast.vol;
+  const voice = voiceForCharacter(who);
+  if (voice) {
+    utter.voice = voice;
+    if (voice.lang) utter.lang = voice.lang;
+  }
+  utter.onend = done;
+  utter.onerror = () => {
+    if (S.storyGen !== gen) return;
+    if (!speechSynthesis.speaking && !speechSynthesis.pending) done();
+  };
+  S.storyUtter = utter;
+  S.storySpeakAt = setTimeout(() => {
+    if (S.storyGen !== gen || S.storyPaused) return;
+    try {
+      speechSynthesis.resume();
+      speechSynthesis.speak(utter);
+      S.storyTimer = setTimeout(done, Math.max(lineWait(text, who) * 2.2, 10000));
+    } catch (err) {
+      S.storyTimer = setTimeout(done, lineWait(text, who));
+    }
+  }, 80);
+}
+function speakStoryLine(line, onDone) {
+  const gen = S.storyGen;
+  const phrases = storyPhrases(line.text);
+  const parts = phrases.length ? phrases : [line.text];
+  const cast = storyCastOf(line.who);
+  let i = 0;
+  const next = () => {
+    if (S.storyGen !== gen || S.storyPaused) return;
+    if (i >= parts.length) {
+      onDone();
+      return;
+    }
+    const chunk = parts[i++];
+    speakStoryChunk(chunk, line.who, () => {
+      if (S.storyGen !== gen || S.storyPaused) return;
+      if (i >= parts.length) onDone();
+      else S.storyTimer = setTimeout(next, cast.pause || 220);
+    });
+  };
+  next();
+}
+function appendStoryLog(line) {
+  const p = document.createElement("p");
+  p.className = "story-line";
+  const who = document.createElement("span");
+  who.className = "who";
+  who.textContent = line.who;
+  const text = document.createElement("span");
+  text.className = "line";
+  text.textContent = line.text;
+  p.append(who, text);
+  $("story-lines").appendChild(p);
+  $("story-lines").scrollTop = $("story-lines").scrollHeight;
+}
+function showStoryReady() {
+  const ep = S.storyEp;
+  $("story-who").textContent = "Ready";
+  $("story-caption").classList.remove("talking");
+  $("story-caption-text").textContent = "Press Start when you want the voices to begin. Pause any time.";
+  markStorySpeaker("");
+  updateStoryTransport();
+}
+async function openStory(n, revise) {
+  openReward();
+  return;
+  await preloadStory();
+  const ep = storyEpisodes()[n - 1];
+  if (!ep) {
+    show("title");
+    refreshMeta();
+    return;
+  }
+  stopStoryVoice();
+  S.storyIndex = 0;
+  S.storyLogged = -1;
+  S.storyEp = ep;
+  S.storyPlaying = false;
+  S.storyPaused = false;
+  $("story-kicker").textContent = revise ? "Rewatch" : "New episode unlocked";
+  $("story-title").textContent = ep.title || ep.label;
+  $("story-scene").textContent = ep.scene || "";
+  $("story-set").dataset.set = storySetKind(ep.scene);
+  $("story-lines").replaceChildren();
+  $("story-voice-note").textContent = S.muted
+    ? "Sound is off. Turn Sound on to hear the episode."
+    : "Tap the left side to go back, the right side to skip. Voices stay on this device.";
+  renderStoryDust();
+  renderStoryCast(ep);
+  renderReelBars(0);
+  show("story");
+  showStoryReady();
+}
+function playCurrentLine() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  cancelStorySpeech();
+  if (S.storyIndex >= ep.dialogue.length) {
+    S.storyPlaying = false;
+    S.storyPaused = false;
+    $("story-who").textContent = "End";
+    $("story-caption").classList.remove("talking");
+    $("story-caption-text").textContent = "This episode is finished. Press Play again to restart.";
+    $("story-stage").classList.remove("paused");
+    markStorySpeaker("");
+    updateStoryTransport();
+    return;
+  }
+  const line = ep.dialogue[S.storyIndex];
+  const gen = S.storyGen;
+  renderReelBars(S.storyIndex);
+  $("story-who").textContent = storyDisplayName(line.who);
+  $("story-caption").classList.add("talking");
+  $("story-stage").classList.remove("paused");
+  typeStoryCaption(line.text);
+  markStorySpeaker(line.who);
+  if (S.storyLogged !== S.storyIndex) {
+    appendStoryLog(Object.assign({}, line, { who: storyDisplayName(line.who) }));
+    S.storyLogged = S.storyIndex;
+  }
+  updateStoryTransport();
+  speakStoryLine(line, () => {
+    if (S.storyGen !== gen || S.storyPaused || !S.storyPlaying) return;
+    S.storyIndex += 1;
+    playCurrentLine();
+  });
+}
+function startStory() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  if (S.storyPaused) {
+    resumeStory();
+    return;
+  }
+  if (S.storyIndex >= ep.dialogue.length) S.storyIndex = 0;
+  if (S.storyIndex === 0) {
+    $("story-lines").replaceChildren();
+    S.storyLogged = -1;
+  }
+  S.storyPlaying = true;
+  S.storyPaused = false;
+  playCurrentLine();
+}
+function pauseStory() {
+  if (!S.storyPlaying) return;
+  S.storyPaused = true;
+  S.storyPlaying = false;
+  if (S.storyTimer) clearTimeout(S.storyTimer);
+  if (S.storyType) clearTimeout(S.storyType);
+  if (S.storySpeakAt) clearTimeout(S.storySpeakAt);
+  if (window.speechSynthesis) {
+    try { speechSynthesis.pause(); } catch (err) { /* ignore */ }
+    if (!speechSynthesis.paused) {
+      try { speechSynthesis.cancel(); } catch (err2) { /* ignore */ }
+    }
+  }
+  $("story-stage").classList.add("paused");
+  $("story-caption").classList.remove("talking");
+  updateStoryTransport();
+}
+function resumeStory() {
+  S.storyPaused = false;
+  S.storyPlaying = true;
+  $("story-stage").classList.remove("paused");
+  $("story-caption").classList.add("talking");
+  const synth = window.speechSynthesis;
+  if (synth && synth.paused && synth.speaking) {
+    try { synth.resume(); } catch (err) { /* ignore */ }
+    updateStoryTransport();
+    return;
+  }
+  playCurrentLine();
+}
+function skipStoryLine() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  S.storyIndex = Math.min(ep.dialogue.length, S.storyIndex + 1);
+  if (S.storyPlaying && !S.storyPaused) playCurrentLine();
+  else {
+    cancelStorySpeech();
+    if (S.storyIndex >= ep.dialogue.length) playCurrentLine();
+    else {
+      const line = ep.dialogue[S.storyIndex];
+      renderReelBars(S.storyIndex);
+      $("story-who").textContent = storyDisplayName(line.who);
+      $("story-caption-text").textContent = line.text;
+      markStorySpeaker(line.who);
+      updateStoryTransport();
+    }
+  }
+}
+function prevStoryLine() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  S.storyIndex = Math.max(0, (S.storyIndex || 0) - 1);
+  if (S.storyPlaying && !S.storyPaused) playCurrentLine();
+  else {
+    cancelStorySpeech();
+    const line = ep.dialogue[S.storyIndex];
+    if (!line) return;
+    renderReelBars(S.storyIndex);
+    $("story-who").textContent = storyDisplayName(line.who);
+    $("story-caption-text").textContent = line.text;
+    markStorySpeaker(line.who);
+    updateStoryTransport();
+  }
+}
+function playStoryLine() {
+  startStory();
+}
+function renderBookSlots() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const root = $("book-slots");
+  root.replaceChildren();
+  if (!cycle) return;
+  for (const slot of cycle.slots.filter(slotNeedsPick)) {
+    const pick = bookPickOf(slot);
+    const card = document.createElement("div");
+    card.className = "slot-card" + (pick.choice ? " ok" : "");
+    const head = document.createElement("p");
+    const strong = document.createElement("strong");
+    strong.textContent = slot.date;
+    head.append(strong);
+    const list = document.createElement("div");
+    list.className = "choice-list";
+    const group = "slot-" + slot.id;
+    slot.offers.forEach((iso, index) => {
+      const value = "offer-" + index;
+      const label = document.createElement("label");
+      label.className = "choice" + (pick.choice === value ? " sel" : "");
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = group;
+      radio.value = value;
+      radio.checked = pick.choice === value;
+      radio.addEventListener("change", () => {
+        pick.choice = value;
+        renderBookSlots();
+      });
+      const text = document.createElement("span");
+      const title = document.createElement("strong");
+      title.textContent = "Option " + (index + 1);
+      const when = document.createElement("small");
+      when.textContent = new Date(iso).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      text.append(title, when);
+      label.append(radio, text);
+      list.appendChild(label);
+    });
+    const customLabel = document.createElement("label");
+    customLabel.className = "choice" + (pick.choice === "custom" ? " sel" : "");
+    const customRadio = document.createElement("input");
+    customRadio.type = "radio";
+    customRadio.name = group;
+    customRadio.value = "custom";
+    customRadio.checked = pick.choice === "custom";
+    customRadio.addEventListener("change", () => {
+      pick.choice = "custom";
+      renderBookSlots();
+    });
+    const customText = document.createElement("span");
+    const customTitle = document.createElement("strong");
+    customTitle.textContent = "Use my own time";
+    const customInput = document.createElement("input");
+    customInput.type = "datetime-local";
+    customInput.value = pick.custom || slot.date + "T09:00";
+    customInput.addEventListener("input", () => {
+      pick.custom = customInput.value;
+      pick.choice = "custom";
+    });
+    customText.append(customTitle, customInput);
+    customLabel.append(customRadio, customText);
+    list.appendChild(customLabel);
+    card.append(head, list);
+    root.appendChild(card);
+  }
+}
+
+function saveBook() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (!cycle) return;
+  const pending = cycle.slots.filter(slotNeedsPick);
+  for (const slot of pending) {
+    const pick = (S.bookPicks || {})[slot.id];
+    if (!pick || !pick.choice) {
+      $("book-error").textContent = "Choose an option for every date, then submit.";
+      return;
+    }
+    if (pick.choice === "custom") {
+      if (!pick.custom) {
+        $("book-error").textContent = "Add your own time for " + slot.date + ", or pick one of the offered times.";
+        return;
+      }
+      customSlot(cycle, slot.id, new Date(pick.custom).toISOString());
+    } else {
+      const index = Number(String(pick.choice).replace("offer-", ""));
+      const iso = slot.offers[index];
+      if (!iso) {
+        $("book-error").textContent = "Choose an option for " + slot.date + ".";
+        return;
+      }
+      acceptSlot(cycle, slot.id, iso);
+    }
+  }
+  if (cycle.slots.some(slotNeedsPick)) {
+    $("book-error").textContent = "Choose an option for every date, then submit.";
+    return;
+  }
+  cycle.sentence = ($("book-sentence").value || "").trim() || cycle.sentence;
+  writeAcceptedEvents(plan, cycle);
+  S.bookPicks = {};
+  $("book-error").textContent = "";
+  refreshMeta();
+  show("title");
+}
+
+function scheduleWindow(plan) {
+  const cycle = cycleOf(plan);
+  if (cycle && cycle.periodStart && cycle.periodEnd) {
+    return { start: cycle.periodStart, end: cycle.periodEnd };
+  }
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 14);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+function persistPlanCalendar(plan) {
+  const data = loadPlans();
+  if (!plan || !data.plans[plan.code]) return plan;
+  const cycle = cycleOf(plan);
+  data.plans[plan.code].calendar = plan.calendar;
+  data.plans[plan.code].calendarId = plan.calendarId;
+  data.plans[plan.code].deviceCalendar = plan.deviceCalendar;
+  data.plans[plan.code].patientCalendar = plan.patientCalendar;
+  data.plans[plan.code].clinicianCalendar = plan.clinicianCalendar;
+  data.plans[plan.code].appointment = plan.appointment;
+  if (cycle) data.plans[plan.code].cycle = cycle;
+  savePlans(data);
+  return data.plans[plan.code];
+}
+async function ensureCalendarOnPlan(plan) {
+  if (!plan) return;
+  const window = displayWindowForPlan(plan);
+  applyRoleCalendarsToPlan(plan, window.start, window.end);
+  refreshPlanOffers(plan);
+  persistPlanCalendar(plan);
+  try {
+    const next = await syncDeviceCalendarToPlan(plan, false, "patient");
+    if (next) {
+      plan.patientCalendar = next.patientCalendar;
+      plan.deviceCalendar = next.deviceCalendar;
+      plan.calendar = next.calendar;
+      plan.cycle = next.cycle || plan.cycle;
+    }
+  } catch (err) { /* keep this device's last patient calendar */ }
+}
+
+function formatSlotWhen(iso, minutes) {
+  const start = new Date(iso);
+  if (Number.isNaN(start.getTime())) return "On your calendar";
+  const end = new Date(start.getTime() + (minutes || 15) * 60000);
+  const clock = (d) => d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  return start.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }) + " · " + clock(start) + " – " + clock(end);
+}
+function openNudge(slot) {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (!slot || !cycle) return;
+  if (S.nudgeSnooze && Date.now() < S.nudgeSnooze && S.nudgeSlot === slot.id) return;
+  S.slotId = slot.id;
+  S.nudgeSlot = slot.id;
+  const when = new Date(slot.start || Date.now());
+  const title = cycle.sentence || "Time for your ankle practice.";
+  if ($("nudge-month")) $("nudge-month").textContent = when.toLocaleDateString(undefined, { month: "short" }).toUpperCase();
+  if ($("nudge-day")) $("nudge-day").textContent = String(when.getDate());
+  if ($("nudge-dow")) $("nudge-dow").textContent = when.toLocaleDateString(undefined, { weekday: "long" });
+  if ($("nudge-when")) $("nudge-when").textContent = formatSlotWhen(slot.start || when.toISOString(), cycle.minutes);
+  $("nudge-title").textContent = title;
+  $("nudge-msg").textContent = "This time is on your practice calendar. Finish " + cycle.minBout + " ankle exercise" + (cycle.minBout === 1 ? "" : "s") + " and film it so the visit log can count it.";
+  if ($("nudge-rule")) {
+    $("nudge-rule").textContent = "";
+    $("nudge-rule").hidden = true;
+  }
+  $("overlay-nudge").hidden = false;
+}
+
+function startDueBout() {
+  $("overlay-nudge").hidden = true;
+  startDailyExercise();
+}
+
+function openMiss(slot) {
+  if (!slot) return;
+  S.slotId = slot.id;
+  $("miss-reason").value = "forgot";
+  $("miss-note").value = "";
+  $("overlay-miss").hidden = false;
+}
+
+function handleMiss(action) {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const slot = cycle && cycle.slots.find((item) => item.id === S.slotId);
+  if (!plan || !slot) {
+    $("overlay-miss").hidden = true;
+    return;
+  }
+  let reason = $("miss-reason").value;
+  if (reason === "other") reason = ($("miss-note").value || "").trim() || "other";
+  missBout(plan, slot, reason, action);
+  $("overlay-miss").hidden = true;
+  S.slotId = null;
+  refreshMeta();
+  if (action === "rebook") openBook();
+  else if (action === "replay") {
+    $("overlay-how").hidden = false;
+    show("title");
+  } else {
+    show("title");
+    maybePromptCycle();
+  }
+}
+
+function maybePromptCycle() {
+  const plan = activePlan();
+  if (!plan || S.screen === "play" || S.screen === "book" || S.screen === "story") return;
+  if (anyOverlay() && $("overlay-nudge").hidden) return;
+  const cycle = cycleOf(plan);
+  if (!cycle || cycleNeedsBooking(cycle)) return;
+  const due = dueSlot(cycle);
+  if (due) openNudge(due);
+}
+
+async function ensureFilmStream() {
+  if (S.filmStream && S.filmStream.getTracks().some((track) => track.readyState === "live")) {
+    $("film-live").srcObject = S.filmStream;
+    return S.filmStream;
+  }
+  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error("Open this page through localhost to film.");
+  }
+  S.filmStream = await navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 360 } }
+  });
+  $("film-live").srcObject = S.filmStream;
+  await $("film-live").play();
+  return S.filmStream;
+}
+function stopFilmStream() {
+  if (S.filmStream && S.filmStream !== S.stream) {
+    S.filmStream.getTracks().forEach((track) => track.stop());
+  }
+  S.filmStream = null;
+  $("film-live").srcObject = null;
+}
+async function startFilm() {
+  if (S.recorder && S.recorder.state === "recording") {
+    $("film-status").textContent = "Already filming this practice.";
+    return;
+  }
+  try {
+    const stream = await ensureFilmStream();
+    if (typeof MediaRecorder === "undefined") {
+      $("film-status").textContent = "Cannot record.";
+      S.filmAt = performance.now();
+      return;
+    }
+    S.chunks = [];
+    S.videoBlob = null;
+    S.filmAt = performance.now();
+    S.filmMs = 0;
+    S.recorder = new MediaRecorder(stream);
+    S.recorder.ondataavailable = (event) => {
+      if (event.data && event.data.size) S.chunks.push(event.data);
+    };
+    S.recorder.onstop = () => {
+      S.filmMs = performance.now() - S.filmAt;
+      S.videoBlob = new Blob(S.chunks, { type: S.recorder.mimeType || "video/webm" });
+      const replay = $("film-replay");
+      replay.src = URL.createObjectURL(S.videoBlob);
+      replay.hidden = false;
+      $("film-status").textContent = "Kept.";
+      $("film-live").hidden = true;
+      syncSubmit();
+    };
+    S.recorder.start();
+    $("film-replay").hidden = true;
+    $("film-live").hidden = false;
+    $("film-status").textContent = "Filming";
+    $("film-bout").textContent = "Filming…";
+    syncSubmit();
+  } catch (err) {
+    $("film-status").textContent = err && err.message ? err.message : "Could not start the camera film.";
+  }
+}
+
+function stopFilm() {
+  if (S.filmAt && !S.filmMs) S.filmMs = performance.now() - S.filmAt;
+  if (S.recorder && S.recorder.state !== "inactive") {
+    try { S.recorder.stop(); } catch (err) { /* already stopped */ }
+  }
+  $("film-bout").textContent = "Start filming";
+  syncSubmit();
+}
+
+async function openFilms() {
+  const plan = activePlan();
+  const root = $("film-list");
+  root.replaceChildren();
+  const films = planFilms(plan);
+  if (!films.length) {
+    const empty = document.createElement("p");
+    empty.className = "note";
+    empty.textContent = "No films yet. Film a practice after you watch the teaching clip.";
+    root.appendChild(empty);
+  }
+  for (const item of films) {
+    const card = document.createElement("div");
+    card.className = "slot-card";
+    const head = document.createElement("p");
+    const strong = document.createElement("strong");
+    strong.textContent = item.date || formatWhen(item.at);
+    const review = item.review === "refilm"
+      ? " · please refilm"
+      : (item.review === "keep" ? " · kept by clinician" : " · submitted");
+    head.append(strong, document.createTextNode((item.name ? " · " + item.name : "") + review));
+    card.appendChild(head);
+    if (item.reviewNote) {
+      const note = document.createElement("p");
+      note.className = "note";
+      note.textContent = "Clinician note: " + item.reviewNote;
+      card.appendChild(note);
+    }
+    const player = document.createElement("video");
+    player.controls = true;
+    player.playsInline = true;
+    player.style.cssText = "width:100%;border-radius:16px;background:#111;max-height:220px";
+    try {
+      const row = await getFilm(plan.code, item.slotId);
+      if (row && row.blob) player.src = URL.createObjectURL(row.blob);
+    } catch (err) { /* skip missing clip */ }
+    card.appendChild(player);
+    root.appendChild(card);
+  }
+  show("films");
+}
+
+async function keepCurrentFilm() {
+  const plan = activePlan();
+  const slotId = filmSlotId();
+  if (!plan || !S.videoBlob) return;
+  await putFilm(plan.code, slotId, S.videoBlob, {
+    date: dayKey(new Date()),
+    name: spec().name,
+    ok: true,
+    seconds: S.filmMs / 1000
+  });
+}
+
+function verifyBoutVideo() {
+  const filmed = !!(S.videoBlob && S.videoBlob.size > 8000) || S.filmMs >= 5000;
+  const moved = S.results.some((row) => row.accuracy != null || row.stars > 0) || S.reps > 0;
+  S.videoOk = filmed && moved;
+  return S.videoOk;
+}
+
+function openVerify() {
+  stopFilm();
+  const preview = $("verify-preview");
+  if (S.videoBlob) {
+    preview.src = URL.createObjectURL(S.videoBlob);
+    preview.hidden = false;
+  } else {
+    preview.removeAttribute("src");
+    preview.hidden = true;
+  }
+  const ok = verifyBoutVideo();
+  $("verify-msg").textContent = ok
+    ? "The agent saw a filmed practice and movement. This checks completion only."
+    : (S.videoBlob
+      ? "A video is here, but the agent did not see enough movement yet. You can still log the practice."
+      : "No video yet. Film the next practice, or continue without one.");
+  $("overlay-verify").hidden = false;
+}
+
+function boutLevelFromSession() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const q = quest();
+  if (!cycle || !q) return "";
+  const done = S.results.filter((row) => !row.stopped).length;
+  if (done >= q.exercises.length) return "full plan";
+  if (done >= (cycle.minBout || 1)) return "minimum";
+  return "";
+}
+
+function openFeedback() {
+  $("overlay-verify").hidden = true;
+  $("fb-pain").value = "2";
+  $("fb-stop").value = "no";
+  $("fb-mob").value = "5";
+  $("fb-note").value = "";
+  $("overlay-feedback").hidden = false;
+}
+
+function saveFeedback() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const slot = cycle && cycle.slots.find((item) => item.id === S.slotId);
+  const pain = clamp(Number($("fb-pain").value) || 0, 0, 10);
+  const mobility = clamp(Number($("fb-mob").value) || 0, 0, 10);
+  const painStop = $("fb-stop").value === "yes" || S.results.some((row) => row.stopped);
+  const feedback = ($("fb-note").value || "").trim();
+  const level = boutLevelFromSession() || (S.results.some((row) => row.filmed && !row.stopped) ? "minimum" : "");
+  $("overlay-feedback").hidden = true;
+  if (plan && level) {
+    if (slot) completeBout(plan, slot, { level, videoOk: S.videoOk, pain, mobility, feedback, painStop });
+    else window.ELAKReward.grant({ type: "story", level });
+    $("done-sub").textContent = "";
+    $("done-sub").hidden = true;
+    keepCurrentFilm().catch(() => {});
+    openReward(creditsFromSession());
+    S.slotId = null;
+    S.videoOk = false;
+    S.videoBlob = null;
+    refreshMeta();
+    return;
+  } else if (plan && slot) {
+    missBout(plan, slot, "short practice", "freeze");
+    $("done-sub").textContent = "";
+    $("done-sub").hidden = true;
+  } else if (plan) {
+    const data = loadPlans();
+    const cur = data.plans[plan.code];
+    if (!cur.logs) cur.logs = [];
+    cur.logs.push({
+      at: new Date().toISOString(),
+      slotId: "",
+      pain,
+      mobility,
+      feedback,
+      painStop
+    });
+    savePlans(data);
+  }
+  keepCurrentFilm().catch(() => {});
+  S.slotId = null;
+  S.videoOk = false;
+  S.videoBlob = null;
+  refreshMeta();
+}
+
+function homeFromStart() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (cycleNeedsBooking(cycle)) {
+    openBook();
+    return;
+  }
+  sfxClick();
+  startDailyExercise();
+}
+
+function renderPlan() {
+  const q = quest();
+  const list = $("plan-list");
+  list.replaceChildren();
+  if (!q) {
+    $("plan-kicker").textContent = "Your ankle set";
+    $("plan-title").textContent = "No ankle set yet";
+    $("plan-note").textContent = "";
+    $("plan-note").hidden = true;
+    $("plan-start").hidden = true;
+    return;
+  }
+  $("plan-start").hidden = false;
+  $("plan-kicker").textContent = "";
+  $("plan-kicker").hidden = true;
+  $("plan-title").textContent = q.title;
+  $("plan-note").textContent = "";
+  $("plan-note").hidden = true;
+  q.exercises.forEach((item, index) => {
+    const base = EX[item.pattern];
+    if (!base) return;
+    const li = document.createElement("li");
+    const kicker = document.createElement("span");
+    const count = base.type === "sustain" ? item.reps + " breaths" : item.reps + " reps";
+    const days = clamp(Number(item.daysPerWeek) || (cycleOf(activePlan()) && cycleOf(activePlan()).daysPerWeek) || 7, 1, 7);
+    kicker.textContent = (index + 1) + " · " + count + " · " + days + (days === 1 ? " day" : " days");
+    const name = document.createElement("strong");
+    name.textContent = base.name;
+    li.append(kicker, name);
+    list.appendChild(li);
+  });
+}
+
+function setMode(mode) {
+  S.mode = mode;
+  $("mode-button").classList.toggle("sel", mode === "button");
+  $("mode-camera").classList.toggle("sel", mode === "camera");
+  $("mode-button").setAttribute("aria-checked", String(mode === "button"));
+  $("mode-camera").setAttribute("aria-checked", String(mode === "camera"));
+  $("hold").hidden = mode === "camera";
+  $("hold-hint").textContent = mode === "camera"
+    ? "Do the ankle movement where the camera can see your feet."
+    : "Copy the ankle clip with your body while you hold.";
+  $("keys").textContent = mode === "camera" ? "Esc to pause" : "Space to hold · Esc to pause";
+  syncTeach();
+}
+
+function startDailyExercise() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const today = dayKey(new Date());
+  const pick = (cycle && cycle.slots || []).find((slot) => slot.date === today && slot.status === "accepted")
+    || (cycle && cycle.slots || []).find((slot) => slot.status === "accepted");
+  if (pick) S.slotId = pick.id;
+  startPlan();
+}
+function startPlan() {
+  const q = quest();
+  if (!q || !q.exercises.length) return;
+  sfxClick();
+  S.studio = true;
+  S.questId = q.id;
+  S.exIndex = 0;
+  S.results = [];
+  S.saved = false;
+  S.logged = false;
+  resetFilmTake();
+  show("play");
+  enterWatch();
+}
+function resetFilmTake() {
+  if (S.recorder && S.recorder.state === "recording") {
+    try { S.recorder.stop(); } catch (err) { /* already stopped */ }
+  }
+  S.recorder = null;
+  S.chunks = [];
+  S.videoBlob = null;
+  S.videoOk = false;
+  S.filmMs = 0;
+  S.filmAt = 0;
+  if ($("film-replay")) {
+    $("film-replay").hidden = true;
+    $("film-replay").removeAttribute("src");
+  }
+  if ($("film-live")) $("film-live").hidden = false;
+  if ($("film-bout")) $("film-bout").textContent = "Start filming";
+  syncSubmit();
+}
+function hasFilmedClip() {
+  return !!(S.videoBlob && S.videoBlob.size > 4000) || S.filmMs >= 2500;
+}
+function syncSubmit() {
+  const btn = $("play-submit");
+  if (!btn) return;
+  const recording = S.recorder && S.recorder.state === "recording";
+  btn.disabled = !hasFilmedClip() || recording;
+}
+function enterWatch() {
+  S.studio = true;
+  S.studioPhase = "watch";
+  S.phaseName = "watch";
+  S.logged = false;
+  resetFilmTake();
+  const studio = $("play-studio");
+  studio.classList.remove("film");
+  studio.classList.add("watch");
+  $("watch-ready").hidden = false;
+  $("play-submit").hidden = true;
+  $("play-submit").disabled = true;
+  const sp = spec();
+  const q = quest();
+  $("play-kicker").textContent = "";
+  $("play-kicker").hidden = true;
+  $("play-name").textContent = sp.name;
+  $("play-step").textContent = (S.exIndex + 1) + " / " + q.exercises.length;
+  $("film-status").textContent = "";
+  syncTeach();
+}
+async function enterFilm() {
+  S.studioPhase = "film";
+  S.phaseName = "film";
+  const studio = $("play-studio");
+  studio.classList.remove("watch");
+  studio.classList.add("film");
+  $("watch-ready").hidden = true;
+  $("play-submit").hidden = false;
+  $("play-kicker").textContent = "Film this practice";
+  syncSubmit();
+  syncTeach();
+  try {
+    await ensureFilmStream();
+    $("film-status").textContent = "";
+  } catch (err) {
+    $("film-status").textContent = err && err.message ? err.message : "Camera film is not available.";
+  }
+}
+function filmSlotId() {
+  return (S.slotId || ("practice-" + dayKey(new Date()))) + "-" + spec().id;
+}
+function refilmPractice() {
+  resetFilmTake();
+  $("film-status").textContent = "Ready to film again.";
+  ensureFilmStream().catch((err) => {
+    $("film-status").textContent = err && err.message ? err.message : "Camera film is not available.";
+  });
+}
+async function submitPractice() {
+  if (!hasFilmedClip()) return;
+  S.videoOk = true;
+  await keepCurrentFilm();
+  if (!S.logged) {
+    S.results.push({
+      id: spec().id,
+      name: spec().name,
+      stars: 1,
+      avg: 100,
+      accuracy: null,
+      points: 0,
+      stopped: false,
+      reps: spec().reps,
+      filmed: true
+    });
+    S.logged = true;
+  }
+  if (S.exIndex >= quest().exercises.length - 1) {
+    stopFilmStream();
+    finishSession();
+  } else {
+    S.exIndex += 1;
+    enterWatch();
+  }
+}
+
+function openBrief() {
+  const sp = spec();
+  const q = quest();
+  S.phaseName = "brief";
+  S.running = false;
+  S.holding = false;
+  S.paused = false;
+  S.logged = false;
+  S.reps = 0;
+  S.repScores = [];
+  S.exPoints = 0;
+  S.combo = 0;
+  S.player = 0;
+  S.form = 0;
+  S.rising = false;
+  S.celebrate = 0;
+  S.struggle = 0;
+  S.camSmooth = 0;
+  S.camPhase = "seek";
+  S.camReturn = 0;
+  S.goodTime = 0;
+  S.baseline = null;
+  S.noise = 0;
+  S.rawSmooth = 0;
+  S.rawReady = false;
+  S.accScores = [];
+  S.accLive = 0;
+  S.pendingAcc = null;
+  S.repReports = [];
+  S.areaTally = {};
+  S.postureLive = [];
+  S.trace = null;
+  clearAccuracyWindow();
+  S.pipKey = "";
+  $("play-kicker").textContent = q.title + " · " + sp.focus;
+  $("play-name").textContent = sp.name;
+  $("play-step").textContent = "Exercise " + (S.exIndex + 1) + " of " + q.exercises.length;
+  $("brief-kicker").textContent = sp.focus;
+  $("brief-name").textContent = sp.name;
+  $("brief-cue").textContent = sp.cue;
+  $("brief-why").textContent = sp.why;
+  $("brief-how").textContent = howLine(sp);
+  $("overlay-brief").hidden = false;
+  $("banner").hidden = true;
+  syncHud();
+  syncTeach();
+}
+
+function howLine(sp) {
+  if (S.mode === "camera" && sp.type === "sustain") {
+    return "The camera stays locked on you. Hold the ankle posture. The report lists which areas matched.";
+  }
+  if (S.mode === "camera") {
+    return "The camera stays locked on you and will not switch. Match the ankle posture, then return to the start.";
+  }
+  if (sp.type === "sustain") {
+    return "Hold the button through the posture. The camera writes which ankle areas matched.";
+  }
+  return "Hold the button while you copy the ankle clip. The camera writes a posture report for the ankle areas it can see.";
+}
+
+function resetCycleFlags() {
+  S.rising = false;
+  S.peakSync = 0;
+  S.peakPlayer = 0;
+  S.formSum = 0;
+  S.formN = 0;
+  clearAccuracyWindow();
+}
+function clearAccuracyWindow() {
+  S.accPeak = 0;
+  S.accSum = 0;
+  S.accN = 0;
+}
+function takeAccuracy() {
+  if (!S.camAssess || S.accN < 1) return null;
+  return clamp(0.65 * S.accPeak + 0.35 * (S.accSum / S.accN), 0, 1);
+}
+function blendCoachAccuracy(timing, accuracy) {
+  if (accuracy == null) return clamp(timing, 0, 1);
+  return clamp(0.4 * timing + 0.6 * accuracy, 0, 1);
+}
+function sampleAccuracy(dt) {
+  if (!S.camAssess || !S.baseline) {
+    S.accLive = 0;
+    return;
+  }
+  const m = S.landmarks ? metricsOf(S.landmarks) : null;
+  if (!bodyReady(m)) {
+    S.accLive = 0;
+    return;
+  }
+  const read = cameraRead(m, S.baseline, dt);
+  S.camTip = read.tip;
+  S.accLive = clamp(read.progress, 0, 1);
+  const tracking = spec().type === "sustain" || S.rising || S.holding;
+  if (!tracking) return;
+  S.accPeak = Math.max(S.accPeak, S.accLive);
+  S.accSum += S.accLive;
+  S.accN += 1;
+}
+
+function withTimeout(promise, ms, message) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then((value) => { clearTimeout(timer); resolve(value); }, (err) => { clearTimeout(timer); reject(err); });
+  });
+}
+
+async function onReady() {
+  sfxClick();
+  $("overlay-brief").hidden = true;
+  resetCycleFlags();
+  S.reps = 0;
+  S.repScores = [];
+  S.accScores = [];
+  S.pendingAcc = null;
+  S.repReports = [];
+  S.areaTally = {};
+  S.postureLive = [];
+  S.trace = null;
+  S.exPoints = 0;
+  S.combo = 0;
+  S.logged = false;
+  S.player = 0;
+  S.camPhase = "seek";
+  S.camHold = 0;
+  S.goodTime = 0;
+  S.sliceSum = 0;
+  S.sliceN = 0;
+  S.struggle = 0;
+  S.lastRepAt = S.t;
+  S.bootId = (S.bootId || 0) + 1;
+  const bootId = S.bootId;
+  S.camAssess = false;
+  S.phaseName = "boot";
+  try {
+    await withTimeout(
+      setupCamera(bootId),
+      22000,
+      "The camera didn't start. You can still follow the ankle video, or try the camera again."
+    );
+    if (bootId !== S.bootId) return;
+    if (S.mode === "button") S.camAssess = true;
+    S.samples = [];
+    S.calLeft = 1.7;
+    S.calWait = 0;
+    S.phaseName = "calibrate";
+  } catch (err) {
+    if (bootId !== S.bootId) return;
+    S.camAssess = false;
+    S.phaseName = "camerror";
+    $("cam-msg").textContent = (err && err.message) ? err.message : "Allow the camera, or continue and follow the ankle video.";
+    $("cam-switch").textContent = S.mode === "camera" ? "Follow the video" : "Continue without the camera";
+    $("overlay-cam").hidden = false;
+  }
+  syncTeach();
+}
+function beginCountdown() {
+  S.phaseName = "countdown";
+  S.countdown = 3;
+  S.phase = 0;
+}
+
+async function setupCamera(bootId) {
+  if (!window.isSecureContext) {
+    throw new Error("Open this page through localhost to use the camera. Follow the video works either way.");
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("This browser has no camera API. Follow the video instead.");
+  }
+  if (!S.landmarker) await loadModel();
+  if (bootId !== S.bootId) return;
+  if (!S.stream) {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    if (bootId !== S.bootId) {
+      stream.getTracks().forEach((track) => track.stop());
+      return;
+    }
+    S.stream = stream;
+    video.srcObject = S.stream;
+    await video.play();
+  }
+}
+
+async function loadModel() {
+  const vision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17");
+  const files = await vision.FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/wasm"
+  );
+  const full = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task";
+  const lite = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+  const opts = (path, delegate, poses) => ({
+    baseOptions: { modelAssetPath: path, delegate },
+    runningMode: "VIDEO",
+    numPoses: poses,
+    minPoseDetectionConfidence: 0.65,
+    minPosePresenceConfidence: 0.65,
+    minTrackingConfidence: 0.6
+  });
+  const attempts = [
+    [full, "GPU", 2],
+    [full, "CPU", 2],
+    [lite, "GPU", 2],
+    [lite, "CPU", 1]
+  ];
+  let lastErr = null;
+  for (const [path, delegate, poses] of attempts) {
+    try {
+      S.landmarker = await vision.PoseLandmarker.createFromOptions(files, opts(path, delegate, poses));
+      return;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr || new Error("The pose model did not load.");
+}
+
+function stopCamera() {
+  if (S.stream) {
+    for (const track of S.stream.getTracks()) track.stop();
+    S.stream = null;
+  }
+  video.srcObject = null;
+  S.landmarks = null;
+  S.drawLm = null;
+  S.lock = null;
+  S.lockCand = [];
+  S.lockMiss = 0;
+  S.trackLost = false;
+  S.trackOthers = false;
+  S.filters = null;
+}
+
+function detectPose(dt) {
+  if (!S.landmarker || video.readyState < 2) return;
+  const ts = performance.now();
+  if (ts <= S.lastTs) return;
+  try {
+    const res = S.landmarker.detectForVideo(video, ts);
+    S.lastTs = ts;
+    const poses = res.landmarks || [];
+    const lm = selectLocked(poses);
+    if (!lm) {
+      S.landmarks = null;
+      return;
+    }
+    const smooth = smoothLandmarks(lm, dt);
+    S.landmarks = smooth;
+    S.drawLm = smooth;
+  } catch (err) {
+    S.landmarks = null;
+  }
+}
+
+function poseSignature(lm) {
+  const ids = [11, 12, 23, 24];
+  for (const i of ids) {
+    const p = lm[i];
+    if (!p || (p.visibility ?? 0) < 0.45) return null;
+  }
+  const cx = (lm[11].x + lm[12].x + lm[23].x + lm[24].x) / 4;
+  const cy = (lm[11].y + lm[12].y + lm[23].y + lm[24].y) / 4;
+  const scale = Math.hypot(lm[11].x - lm[12].x, lm[11].y - lm[12].y);
+  if (scale < 0.03) return null;
+  return { cx, cy, scale };
+}
+
+function poseDistance(a, b) {
+  const scale = Math.max(a.scale, b.scale, 0.05);
+  const dx = (a.cx - b.cx) / scale;
+  const dy = (a.cy - b.cy) / scale;
+  const ds = Math.abs(Math.log(a.scale / Math.max(b.scale, 1e-4)));
+  return Math.hypot(dx, dy) + ds * 0.65;
+}
+
+function selectLocked(poses) {
+  const found = [];
+  for (const lm of poses) {
+    const sig = poseSignature(lm);
+    if (sig) found.push({ lm, sig });
+  }
+  S.trackOthers = found.length > 1;
+  if (!found.length) {
+    S.lockMiss += 1;
+    S.trackLost = !!(S.lock && S.lockMiss > 6);
+    if (S.lockMiss > 18) S.drawLm = null;
+    return null;
+  }
+  if (!S.lock) {
+    found.sort((a, b) => b.sig.scale - a.sig.scale);
+    const main = found[0];
+    const prev = S.lockCand[S.lockCand.length - 1];
+    if (prev && poseDistance(main.sig, prev) > 0.55) S.lockCand = [];
+    S.lockCand.push(main.sig);
+    if (S.lockCand.length > 8) S.lockCand.shift();
+    if (S.lockCand.length >= 6) {
+      const n = S.lockCand.length;
+      S.lock = {
+        cx: S.lockCand.reduce((s, p) => s + p.cx, 0) / n,
+        cy: S.lockCand.reduce((s, p) => s + p.cy, 0) / n,
+        scale: S.lockCand.reduce((s, p) => s + p.scale, 0) / n
+      };
+      S.lockCand = [];
+    }
+    S.lockMiss = 0;
+    S.trackLost = false;
+    return main.lm;
+  }
+  let best = null;
+  let bestD = Infinity;
+  for (const item of found) {
+    const d = poseDistance(item.sig, S.lock);
+    if (d < bestD) {
+      bestD = d;
+      best = item;
+    }
+  }
+  if (!best || bestD > 1.05) {
+    S.lockMiss += 1;
+    S.trackLost = S.lockMiss > 6;
+    if (S.lockMiss > 18) S.drawLm = null;
+    return null;
+  }
+  S.lockMiss = 0;
+  S.trackLost = false;
+  S.lock.cx += (best.sig.cx - S.lock.cx) * 0.2;
+  S.lock.cy += (best.sig.cy - S.lock.cy) * 0.2;
+  S.lock.scale += (best.sig.scale - S.lock.scale) * 0.12;
+  return best.lm;
+}
+
+function smoothLandmarks(lm, dt) {
+  const ids = [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32];
+  if (!S.filters) S.filters = {};
+  const out = lm.map((p) => (p ? { x: p.x, y: p.y, z: p.z, visibility: p.visibility } : p));
+  const dtSafe = Math.max(0.016, Math.min(0.05, dt || 0.033));
+  for (const i of ids) {
+    const p = out[i];
+    if (!p) continue;
+    let f = S.filters[i];
+    if (!f) {
+      f = S.filters[i] = { x: p.x, y: p.y };
+      continue;
+    }
+    const speed = Math.hypot(p.x - f.x, p.y - f.y) / dtSafe;
+    const tau = speed > 0.45 ? 0.06 : 0.22;
+    const a = 1 - Math.exp(-dtSafe / tau);
+    f.x += (p.x - f.x) * a;
+    f.y += (p.y - f.y) * a;
+    out[i] = { ...p, x: f.x, y: f.y };
+  }
+  return out;
+}
+
+function avgVis(lm, ids) {
+  let s = 0;
+  for (const i of ids) s += lm[i]?.visibility ?? 0;
+  return s / ids.length;
+}
+function angleDeg(a, b, c) {
+  if (!a || !b || !c) return 180;
+  const abx = a.x - b.x, aby = a.y - b.y;
+  const cbx = c.x - b.x, cby = c.y - b.y;
+  const mag = Math.hypot(abx, aby) * Math.hypot(cbx, cby);
+  if (mag < 1e-5) return 180;
+  return Math.acos(clamp((abx * cbx + aby * cby) / mag, -1, 1)) * 180 / Math.PI;
+}
+function metricsOf(lm) {
+  const P = (i) => lm[i] || { x: 0.5, y: 0.5, visibility: 0 };
+  const shL = P(11), shR = P(12), hipL = P(23), hipR = P(24);
+  const sh = { x: (shL.x + shR.x) / 2, y: (shL.y + shR.y) / 2 };
+  const hip = { x: (hipL.x + hipR.x) / 2, y: (hipL.y + hipR.y) / 2 };
+  const torso = Math.max(0.08, hip.y - sh.y);
+  const wL = P(15), wR = P(16);
+  const wrist = { x: (wL.x + wR.x) / 2, y: (wL.y + wR.y) / 2 };
+  const nose = P(0);
+  const kL = P(25), kR = P(26), aL = P(27), aR = P(28);
+  const hL = P(29), hR = P(30), tL = P(31), tR = P(32);
+  const mid = hip.x;
+  const toeUp = ((hL.y - tL.y) + (hR.y - tR.y)) / 2 / torso;
+  const heelDrop = ((hL.y - kL.y) + (hR.y - kR.y)) / 2 / torso;
+  const toeSpread = (Math.abs(tL.x - mid) + Math.abs(tR.x - mid)) / 2 / torso;
+  const kneeSpread = (Math.abs(kL.x - mid) + Math.abs(kR.x - mid)) / 2 / torso;
+  return {
+    torso,
+    gap: (sh.y - nose.y) / torso,
+    wristLift: (sh.y - wrist.y) / torso,
+    lean: hip.x - sh.x,
+    kneeL: angleDeg(hipL, kL, aL),
+    kneeR: angleDeg(hipR, kR, aR),
+    hipAL: angleDeg(shL, hipL, kL),
+    hipAR: angleDeg(shR, hipR, kR),
+    kneeLiftL: (hipL.y - kL.y) / torso,
+    kneeLiftR: (hipR.y - kR.y) / torso,
+    heel: heelDrop,
+    toeUp,
+    toeSpread,
+    kneeSpread,
+    ankleYL: aL.y,
+    ankleYR: aR.y,
+    toeXL: tL.x,
+    toeYL: tL.y,
+    toeXR: tR.x,
+    toeYR: tR.y,
+    kneeXL: kL.x,
+    kneeYL: kL.y,
+    kneeXR: kR.x,
+    kneeYR: kR.y,
+    hipLevel: Math.abs(hipL.y - hipR.y) / torso,
+    level: Math.abs(shL.y - shR.y) / torso,
+    center: Math.abs(nose.x - sh.x) / Math.max(0.05, Math.abs(shL.x - shR.x)),
+    sh, hip, wrist, nose,
+    visUpper: avgVis(lm, [0, 11, 12, 13, 14, 15, 16]),
+    visLower: avgVis(lm, [23, 24, 25, 26, 27, 28]),
+    visAnkle: avgVis(lm, [27, 28, 29, 30, 31, 32])
+  };
+}
+function averageSamples(list) {
+  const keys = Object.keys(list[0]).filter((k) => typeof list[0][k] === "number");
+  const out = {};
+  for (const k of keys) out[k] = list.reduce((s, m) => s + m[k], 0) / list.length;
+  return out;
+}
+
+function stdOf(values) {
+  if (!values.length) return 0;
+  const mean = values.reduce((s, n) => s + n, 0) / values.length;
+  const v = values.reduce((s, n) => s + (n - mean) * (n - mean), 0) / values.length;
+  return Math.sqrt(v);
+}
+
+function gateProgress(raw, gain, noise, floor) {
+  const gate = Math.min(gain * 0.42, Math.max(floor, (noise || 0) * 3.5));
+  if (!(raw > gate)) return 0;
+  return clamp((raw - gate) / Math.max(0.04, gain - gate), 0, 1.25);
+}
+
+function postureArea(label, ok, good, bad) {
+  return { label, ok: !!ok, detail: ok ? good : bad };
+}
+
+function noteAreas(areas) {
+  if (!areas || !areas.length) return;
+  if (!S.areaTally) S.areaTally = {};
+  for (const area of areas) {
+    const slot = S.areaTally[area.label] || (S.areaTally[area.label] = { ok: 0, n: 0, good: "", bad: "" });
+    slot.n += 1;
+    if (area.ok) slot.ok += 1;
+    slot.good = area.ok ? area.detail : slot.good;
+    if (!area.ok) slot.bad = area.detail;
+  }
+}
+
+function takeReport() {
+  const tally = S.areaTally || {};
+  S.areaTally = {};
+  return Object.keys(tally).map((label) => {
+    const slot = tally[label];
+    const ok = slot.n > 0 && slot.ok / slot.n >= 0.55;
+    return { label, ok, detail: ok ? (slot.good || "matched") : (slot.bad || "did not match") };
+  });
+}
+
+function mergeReports(list) {
+  const map = {};
+  for (const rep of list) {
+    for (const area of rep) {
+      const slot = map[area.label] || (map[area.label] = { ok: 0, n: 0, good: "", bad: "" });
+      slot.n += 1;
+      if (area.ok) {
+        slot.ok += 1;
+        slot.good = area.detail || slot.good;
+      } else slot.bad = area.detail || slot.bad;
+    }
+  }
+  return Object.keys(map).map((label) => {
+    const slot = map[label];
+    const ok = slot.n > 0 && slot.ok / slot.n >= 0.5;
+    return { label, ok, detail: ok ? (slot.good || "matched") : (slot.bad || "did not match") };
+  });
+}
+
+function kneesQuiet(m, base, limit) {
+  const now = (m.kneeL + m.kneeR) / 2;
+  const start = base ? (base.kneeL + base.kneeR) / 2 : now;
+  return Math.abs(now - start) < (limit || 14);
+}
+
+// Reference shapes for the camera check. Numbers are the joint change a clear,
+// comfortable version of each exercise produces, in the same units the camera
+// measures. A frame counts as movement only when it clears the stillness floor
+// and matches that shape. Standing jitter, and a different exercise, stay at rest.
+const REF = {
+  squat: {
+    gain: 36,
+    floor: 12,
+    read(m, base) {
+      const dL = base.kneeL - m.kneeL;
+      const dR = base.kneeR - m.kneeR;
+      const bend = (dL + dR) / 2;
+      const even = Math.abs(dL - dR) < 18;
+      const heelRise = base.heel - m.heel;
+      const heelsDown = heelRise < 0.035;
+      const bent = bend > 12;
+      return {
+        raw: heelsDown ? (even ? bend : bend * 0.45) : bend * 0.3,
+        tip: !heelsDown ? "Keep both heels on the floor." : (even ? "" : "Share the bend between both knees."),
+        areas: [
+          postureArea("Knees", bent && even, "both knees took a small, even bend", even ? "the knees did not bend enough" : "one knee bent more than the other"),
+          postureArea("Heels", heelsDown, "both heels stayed down", "the heels lifted off the floor")
+        ]
+      };
+    }
+  },
+  heel: {
+    gain: 0.07,
+    floor: 0.025,
+    read(m, base) {
+      const rise = base.heel - m.heel;
+      const kneeDrop = ((base.kneeL + base.kneeR) - (m.kneeL + m.kneeR)) / 2;
+      const kneesTall = kneeDrop < 14;
+      const left = (base.ankleYL - m.ankleYL);
+      const right = (base.ankleYR - m.ankleYR);
+      const even = Math.abs(left - right) < 0.04;
+      const lifted = rise > 0.03;
+      return {
+        raw: kneesTall ? rise : 0,
+        tip: kneesTall ? (even ? "" : "Lift both heels together.") : "Keep the knees tall and rise through the heels.",
+        areas: [
+          postureArea("Heels", lifted && kneesTall, "both heels rose with the knees tall", kneesTall ? "the heels did not rise" : "the knees bent instead of the heels rising"),
+          postureArea("Knees", kneesTall, "the knees stayed tall", "the knees bent during the rise"),
+          postureArea("Evenness", even, "both sides rose together", "one heel rose more than the other")
+        ]
+      };
+    }
+  },
+  pump: {
+    gain: 0.045,
+    floor: 0.016,
+    read(m, base) {
+      const lift = m.toeUp - base.toeUp;
+      const point = S.reps % 2 === 0;
+      const raw = point ? -lift : lift;
+      const quiet = kneesQuiet(m, base, 16);
+      const moved = raw > 0.018;
+      return {
+        raw: quiet ? raw : raw * 0.25,
+        tip: quiet ? "" : "Keep the knee still and move the foot.",
+        areas: [
+          postureArea("Foot", moved, point ? "the toes pointed down" : "the toes pulled up", point ? "the toes did not point down" : "the toes did not pull up"),
+          postureArea("Knee", quiet, "the knee stayed quiet", "the knee moved with the foot")
+        ]
+      };
+    }
+  },
+  toe: {
+    gain: 0.04,
+    floor: 0.014,
+    read(m, base) {
+      const lift = m.toeUp - base.toeUp;
+      const heelRise = base.heel - m.heel;
+      const heelsDown = heelRise < 0.03;
+      const quiet = kneesQuiet(m, base, 16);
+      const lifted = lift > 0.016;
+      return {
+        raw: heelsDown && quiet ? lift : lift * 0.3,
+        tip: !heelsDown ? "Keep the heels down and lift the toes." : (quiet ? "" : "Keep the knees still."),
+        areas: [
+          postureArea("Toes", lifted, "the toes lifted toward the shins", "the toes did not lift"),
+          postureArea("Heels", heelsDown, "the heels stayed down", "the heels rose with the toes"),
+          postureArea("Knees", quiet, "the knees stayed still", "the knees bent")
+        ]
+      };
+    }
+  },
+  ever: {
+    gain: 0.04,
+    floor: 0.012,
+    read(m, base) {
+      const out = m.toeSpread - base.toeSpread;
+      const kneeDrift = Math.abs(m.kneeSpread - base.kneeSpread);
+      const kneesStill = kneeDrift < 0.035;
+      const tilted = out > 0.014;
+      return {
+        raw: kneesStill ? out : out * 0.3,
+        tip: kneesStill ? "" : "Turn the feet, not the knees.",
+        areas: [
+          postureArea("Soles", tilted, "the soles turned outward", "the feet did not turn outward"),
+          postureArea("Knees", kneesStill, "the knees stayed facing forward", "the knees swung with the feet")
+        ]
+      };
+    }
+  },
+  invert: {
+    gain: 0.035,
+    floor: 0.01,
+    read(m, base) {
+      const inn = base.toeSpread - m.toeSpread;
+      const kneeDrift = Math.abs(m.kneeSpread - base.kneeSpread);
+      const kneesStill = kneeDrift < 0.035;
+      const tilted = inn > 0.012;
+      return {
+        raw: kneesStill ? inn : inn * 0.3,
+        tip: kneesStill ? "" : "Turn the feet, not the knees.",
+        areas: [
+          postureArea("Soles", tilted, "the soles turned inward", "the feet did not turn inward"),
+          postureArea("Knees", kneesStill, "the knees stayed facing forward", "the knees swung with the feet")
+        ]
+      };
+    }
+  },
+  balance: {
+    gain: 1,
+    floor: 0,
+    read(m) {
+      const standLeft = S.reps % 2 === 0;
+      const lifted = standLeft ? (m.ankleYL - m.ankleYR) / m.torso : (m.ankleYR - m.ankleYL) / m.torso;
+      const knee = standLeft ? m.kneeL : m.kneeR;
+      const footUp = lifted > 0.12;
+      const kneeTall = knee > 155;
+      const hipsLevel = m.hipLevel < 0.1;
+      const score = (footUp ? 0.5 : clamp(lifted / 0.12, 0, 0.5)) + (kneeTall ? 0.3 : 0) + (hipsLevel ? 0.2 : 0);
+      const side = standLeft ? "left" : "right";
+      return {
+        raw: score,
+        absolute: true,
+        tip: footUp ? "" : "Stand on the " + side + " leg and let the other foot come up.",
+        areas: [
+          postureArea("Standing foot", footUp, "the other foot is off the floor", "both feet are still on the floor"),
+          postureArea("Standing knee", kneeTall, "the standing knee stayed tall", "the standing knee bent"),
+          postureArea("Hips", hipsLevel, "the hips stayed level", "one hip dropped")
+        ]
+      };
+    }
+  },
+  alphabet: {
+    gain: 0.45,
+    floor: 0,
+    read(m, base) {
+      const left = S.reps % 2 === 0;
+      const x = left ? m.toeXL : m.toeXR;
+      const y = left ? m.toeYL : m.toeYR;
+      if (!S.trace || S.trace.rep !== S.reps) S.trace = { rep: S.reps, x, y, path: 0 };
+      const step = Math.hypot(x - S.trace.x, y - S.trace.y);
+      if (step < 0.2) S.trace.path += step / Math.max(0.08, m.torso);
+      S.trace.x = x;
+      S.trace.y = y;
+      const kx = left ? m.kneeXL : m.kneeXR;
+      const ky = left ? m.kneeYL : m.kneeYR;
+      const bkx = base ? (left ? base.kneeXL : base.kneeXR) : kx;
+      const bky = base ? (left ? base.kneeYL : base.kneeYR) : ky;
+      const kneeMove = Math.hypot(kx - bkx, ky - bky) / Math.max(0.08, m.torso);
+      const quiet = kneeMove < 0.12;
+      const traced = S.trace.path > 0.22;
+      const score = clamp(S.trace.path / 0.45, 0, 1) * (quiet ? 1 : 0.35);
+      return {
+        raw: score,
+        absolute: true,
+        tip: quiet ? "" : "Keep the knee still and draw with the big toe.",
+        areas: [
+          postureArea("Big toe", traced, "the toe traced a path", "the toe has not travelled enough yet"),
+          postureArea("Knee", quiet, "the knee stayed quiet", "the knee moved with the toe")
+        ]
+      };
+    }
+  }
+};
+
+function cameraRead(m, base, dt) {
+  const id = spec().id;
+  const ref = REF[id];
+  if (!ref || !base) return { progress: 0, tip: "Hold the start pose" };
+  const sample = ref.read(m, base);
+  if (!S.rawReady) {
+    S.rawSmooth = sample.raw;
+    S.rawReady = true;
+  }
+  const tau = sample.absolute ? 0.35 : 0.16;
+  const alpha = 1 - Math.exp(-(dt || 0.016) / tau);
+  S.rawSmooth += (sample.raw - S.rawSmooth) * alpha;
+  const progress = sample.absolute
+    ? clamp(S.rawSmooth, 0, 1)
+    : gateProgress(S.rawSmooth, ref.gain * (S.struggle > 8 ? 0.85 : 1), S.noise, ref.floor);
+  S.postureLive = sample.areas || [];
+  const attempting = sample.absolute
+    ? (S.mode === "camera" || S.holding)
+    : (S.mode === "camera" ? progress > 0.28 : (S.rising && (S.holding || S.player > 0.45)));
+  if (S.phaseName === "play" && sample.areas && attempting) noteAreas(sample.areas);
+  return { progress, tip: sample.tip };
+}
+
+function bodyReady(m) {
+  if (!m) return false;
+  const sp = spec();
+  if (m.torso < 0.1) return false;
+  if (sp.body === "upper") return m.visUpper > 0.45;
+  if (sp.body === "ankle") return m.visAnkle > 0.35 && m.visLower > 0.35;
+  if (sp.body === "lower") return m.visLower > 0.4 && m.visUpper > 0.35;
+  return m.visUpper > 0.4 && m.visLower > 0.35;
+}
+
+function countRep(quality) {
+  if (!S.running) return;
+  const q = clamp(quality, 0, 1);
+  const pts = Math.round(40 + q * 60);
+  S.repScores.push(q);
+  if (S.pendingAcc != null)   S.accScores.push(S.pendingAcc);
+  S.pendingAcc = null;
+  S.repReports.push(takeReport());
+  S.exPoints += pts;
+  if (q >= 0.8) S.combo += 1;
+  else S.combo = 0;
+  if (S.combo >= 2) S.exPoints += 8 * S.combo;
+  S.reps += 1;
+  S.struggle = 0;
+  S.lastRepAt = S.t;
+  S.floats.push({ x: S.youX, y: S.youY - 30, text: "+" + pts, life: 1 });
+  burst(S.youX, S.youY - 80);
+  sfxRep(q >= 0.62);
+  $("live").textContent = spec().name + ", rep " + S.reps + " of " + neededReps();
+  if (S.reps >= neededReps()) finishExercise(false);
+}
+
+function finishExercise(stopped) {
+  if (S.logged) return;
+  const scores = S.repScores;
+  const avg = scores.length ? scores.reduce((s, n) => s + n, 0) / scores.length * 100 : 0;
+  const accuracy = S.accScores.length
+    ? Math.round(S.accScores.reduce((s, n) => s + n, 0) / S.accScores.length * 100)
+    : null;
+  S.results.push({
+    id: spec().id,
+    name: spec().name,
+    stars: scores.length ? starsFor(avg) : 0,
+    avg: Math.round(avg),
+    accuracy,
+    points: S.exPoints,
+    stopped: !!stopped,
+    reps: S.reps,
+    report: mergeReports(S.repReports || [])
+  });
+  S.logged = true;
+  S.running = false;
+  if (!stopped) {
+    S.celebrate = 1.25;
+    sfxWin();
+  }
+}
+
+function starsFor(avg) {
+  if (avg >= 80) return 3;
+  if (avg >= 55) return 2;
+  return 1;
+}
+
+function advance() {
+  if (S.exIndex >= quest().exercises.length - 1) finishSession();
+  else {
+    S.exIndex += 1;
+    if (S.studio) enterWatch();
+    else openBrief();
+  }
+}
+
+function finishSession() {
+  if (!S.studio && !S.logged && S.questId) {
+    const started = S.reps > 0 || S.phaseName === "play";
+    if (started) finishExercise(true);
+  }
+  stopCamera();
+  if (!S.saved && S.results.length) {
+    const save = load();
+    const today = dayStamp();
+    if (save.lastDay !== today) {
+      save.streak = save.lastDay === prevDay(today) ? save.streak + 1 : 1;
+      save.lastDay = today;
+    }
+    save.sessions += 1;
+    const stars = S.results.reduce((s, r) => s + r.stars, 0);
+    save.best = Math.max(save.best || 0, stars);
+    save.muted = S.muted;
+    persist(save);
+    S.saved = true;
+  }
+  stopFilmStream();
+  renderDone();
+  show("done");
+  refreshMeta();
+  if (S.results.length) openFeedback();
+}
+
+function renderDone() {
+  const q = quest();
+  const stars = S.results.reduce((s, r) => s + r.stars, 0);
+  const max = q.exercises.length * 3;
+  const finishedAll = S.results.length === q.exercises.length && S.results.every((r) => !r.stopped);
+  $("done-kicker").textContent = "";
+  $("done-kicker").hidden = true;
+  $("done-title").textContent = finishedAll ? q.title : q.title;
+  $("done-sub").textContent = "";
+  $("done-sub").hidden = true;
+  const starRow = document.createElement("div");
+  $("done-stars").textContent = stars + " / " + max + " stars";
+  const list = $("done-list");
+  list.replaceChildren();
+  for (const r of S.results) {
+    const li = document.createElement("li");
+    const name = document.createElement("span");
+    name.textContent = r.stopped ? r.name + " · stopped" : r.name;
+    const meta = document.createElement("strong");
+    meta.textContent = r.filmed ? "Filmed" : (r.stopped ? "Stopped" : "Saved");
+    const head = document.createElement("div");
+    head.className = "spread";
+    head.append(name, meta);
+    li.appendChild(head);
+    if (r.report && r.report.length) {
+      const report = document.createElement("p");
+      report.className = "posture-report";
+      report.append("Posture — ");
+      r.report.forEach((area, index) => {
+        if (index) report.append(" · ");
+        const bit = document.createElement("span");
+        bit.className = area.ok ? "ok" : "off";
+        bit.textContent = area.label + ": " + area.detail;
+        report.appendChild(bit);
+      });
+      li.appendChild(report);
+    }
+    list.appendChild(li);
+  }
+  void starRow;
+}
+
+function update(dt) {
+  const sp = spec();
+  const T = sp.period / 1000;
+  if ((S.mode === "camera" || S.camAssess) && S.phaseName !== "brief" && S.phaseName !== "camerror") detectPose(dt);
+
+  if (S.celebrate > 0) {
+    S.celebrate -= dt;
+    if (S.celebrate <= 0) advance();
+    return;
+  }
+
+  if (S.phaseName === "brief" || S.phaseName === "countdown" || S.phaseName === "calibrate") {
+    S.phase += dt / T;
+    if (S.phase >= 1) S.phase -= 1;
+  }
+
+  if (S.phaseName === "calibrate") {
+    const m = S.landmarks && S.lock ? metricsOf(S.landmarks) : null;
+    if (bodyReady(m)) {
+      S.samples.push(m);
+      S.calLeft -= dt;
+    } else S.calWait += dt;
+    if (S.calLeft <= 0 && S.samples.length >= 10) {
+      S.baseline = averageSamples(S.samples);
+      const ref = REF[spec().id];
+      const raws = S.samples.map((sample) => {
+        const read = ref.read(sample, S.baseline);
+        return read.absolute ? 0 : read.raw;
+      });
+      S.noise = stdOf(raws);
+      S.rawReady = false;
+      S.rawSmooth = 0;
+      S.phaseName = "countdown";
+      S.countdown = 3;
+      S.phase = 0;
+    }
+    return;
+  }
+
+  if (S.phaseName === "countdown") {
+    S.countdown -= dt;
+    if (S.countdown <= 0) {
+      S.phaseName = "play";
+      S.running = true;
+      S.phase = 0;
+      S.player = 0;
+      S.rawReady = false;
+      S.rawSmooth = 0;
+      S.camSmooth = 0;
+      resetCycleFlags();
+      S.lastRepAt = S.t;
+    }
+    return;
+  }
+
+  if (S.phaseName !== "play") return;
+
+  S.phase += dt / T;
+  let wrapped = false;
+  if (S.phase >= 1) {
+    S.phase -= 1;
+    wrapped = true;
+  }
+  const coach = coachEffort(S.phase);
+
+  if (S.mode === "button") {
+    sampleAccuracy(dt);
+    if (sp.type === "sustain") {
+      const held = S.holding ? 1 : 0;
+      S.form += (held - S.form) * Math.min(1, dt * 6);
+      S.formSum += held;
+      S.formN += 1;
+      if (wrapped) {
+        const q = S.formSum / Math.max(1, S.formN);
+        S.formSum = 0;
+        S.formN = 0;
+        if (q >= 0.45) {
+          S.pendingAcc = takeAccuracy();
+          countRep(blendCoachAccuracy(q, S.pendingAcc));
+        }
+        clearAccuracyWindow();
+      }
+    } else {
+      const riseSpeed = 1 / (UP * T);
+      const fallSpeed = 1 / ((1 - HOLD_AT) * T);
+      if (S.holding) S.player = Math.min(1, S.player + riseSpeed * dt);
+      else S.player = Math.max(0, S.player - fallSpeed * dt);
+      const instant = 1 - Math.abs(S.player - coach);
+      S.form += (instant - S.form) * Math.min(1, dt * 8);
+      if (!S.rising && S.player > 0.18) {
+        S.rising = true;
+        S.peakSync = 0;
+        S.peakPlayer = 0;
+        S.formSum = 0;
+        S.formN = 0;
+      }
+      if (S.rising) {
+        S.peakPlayer = Math.max(S.peakPlayer, S.player);
+        if (S.player > 0.62) S.peakSync = Math.max(S.peakSync, coach);
+        S.formSum += instant;
+        S.formN += 1;
+        const need = S.struggle > 9 ? 0.68 : 0.84;
+        if (!S.holding && S.player < 0.16) {
+          if (S.peakPlayer >= need) {
+            const avg = S.formSum / Math.max(1, S.formN);
+            const timing = clamp(0.5 * S.peakSync + 0.5 * avg, 0, 1);
+            S.pendingAcc = takeAccuracy();
+            countRep(blendCoachAccuracy(timing, S.pendingAcc));
+          }
+          resetCycleFlags();
+        }
+      }
+      if (!S.rising && !S.holding) S.struggle += dt;
+    }
+    return;
+  }
+
+  const m = S.landmarks ? metricsOf(S.landmarks) : null;
+  if (!bodyReady(m)) {
+    S.form += (0 - S.form) * Math.min(1, dt * 4);
+    return;
+  }
+  const read = cameraRead(m, S.baseline, dt);
+  S.camTip = read.tip;
+  S.camSmooth += (read.progress - S.camSmooth) * Math.min(1, dt * 3.2);
+  if (read.progress === 0 && S.camSmooth < 0.04) S.camSmooth = 0;
+  const p = clamp(S.camSmooth, 0, 1);
+  if (sp.type === "sustain") {
+    S.form += (p - S.form) * Math.min(1, dt * 6);
+    if (p > 0.58) {
+      S.goodTime += dt;
+      S.sliceSum += p;
+      S.sliceN += 1;
+      const nextMark = (S.reps + 1) * 6;
+      if (S.goodTime >= nextMark) {
+        countRep(S.sliceSum / Math.max(1, S.sliceN));
+        S.sliceSum = 0;
+        S.sliceN = 0;
+      }
+    }
+    return;
+  }
+
+  S.player += (p - S.player) * Math.min(1, dt * 4);
+  if (p === 0 && S.player < 0.03) S.player = 0;
+  const ideal = S.camPhase === "return" ? 1 - p : p;
+  S.form += (ideal - S.form) * Math.min(1, dt * 6);
+  const enter = S.struggle > 8 ? 0.62 : 0.74;
+  if (S.camPhase === "seek") {
+    S.camReturn = 0;
+    if (p > enter) {
+      S.camHold += dt;
+      if (S.camHold > 0.32) {
+        S.camPhase = "return";
+        S.camHold = 0;
+        S.formSum = p;
+        S.formN = 1;
+        S.peakSync = p;
+      }
+    } else S.camHold = 0;
+  } else if (p > 0.45) {
+    S.camReturn = 0;
+    S.formSum += p;
+    S.formN += 1;
+    S.peakSync = Math.max(S.peakSync, p);
+  } else if (p < 0.2) {
+    S.camReturn += dt;
+    if (S.camReturn > 0.2) {
+      const avg = S.formSum / Math.max(1, S.formN);
+      countRep(clamp(0.65 * S.peakSync + 0.35 * avg, 0, 1));
+      S.camPhase = "seek";
+      S.camReturn = 0;
+      S.formSum = 0;
+      S.formN = 0;
+      S.peakSync = 0;
+    }
+  } else S.camReturn = 0;
+  if (S.camPhase === "seek") S.struggle += dt * 0.35;
+}
+
+function cueText() {
+  const sp = spec();
+  if (S.phaseName === "boot") return "Starting the camera on this device.";
+  if (S.phaseName === "calibrate") {
+    if (!S.lock) return "Hold still. The camera is locking onto one person.";
+    if (S.trackLost) return "Step back into your spot. Tracking will not switch to someone else.";
+    return S.calWait > 2 ? "Step back so the needed joints are in frame, then hold still." : "Hold still. This locks the camera onto you.";
+  }
+  if (S.phaseName === "countdown") return "Watch the shape. You start in a moment.";
+  if (S.phaseName === "camerror") return "The camera check is waiting.";
+  if (S.celebrate > 0) return "That exercise is done.";
+  if (S.mode === "camera" && S.phaseName === "play" && (S.trackLost || !S.lock)) {
+    return "Step back into your spot. Tracking will not switch to someone else.";
+  }
+  if (S.mode === "camera" && S.phaseName === "play" && !bodyReady(S.landmarks ? metricsOf(S.landmarks) : null)) {
+    return sp.body === "ankle" || sp.body === "lower"
+      ? "Step back until your knees, ankles, and feet are visible."
+      : "Step back until your head and arms are in frame.";
+  }
+  if (S.camTip && S.mode === "camera") return S.camTip;
+  if (S.mode === "camera" && S.phaseName === "play" && S.trackOthers) {
+    return "Locked on you. Other people in frame are ignored.";
+  }
+  if (S.camAssess && S.phaseName === "play" && (S.trackLost || !S.lock)) {
+    return "Step back into your spot. Tracking will not switch to someone else.";
+  }
+  if (S.camAssess && S.camTip && S.phaseName === "play") return S.camTip;
+  if (S.camAssess && S.phaseName === "play" && S.trackOthers) {
+    return "Locked on you. Other people in frame are ignored.";
+  }
+  if (sp.type === "sustain") {
+    if (sp.id === "balance") return S.reps % 2 === 0 ? "Stand tall on the left leg." : "Stand tall on the right leg.";
+    if (sp.id === "alphabet") return "Trace the next letter with the big toe. Keep the knee quiet.";
+    return "Keep the ankle moving through a comfortable range.";
+  }
+  if (S.rising && S.peakPlayer > 0.7 && S.phase >= HOLD_AT && S.holding) return "Release and return with control.";
+  if (S.phase < HOLD_AT) return "Copy the ankle clip. Stay comfortable.";
+  return "Ease back to the start.";
+}
+
+function sideText() {
+  const id = spec().id;
+  if (S.phaseName !== "play" && S.phaseName !== "countdown") return "";
+  const left = S.reps % 2 === 0;
+  if (id === "balance" || id === "alphabet") return left ? "Left side of the screen" : "Right side of the screen";
+  if (id === "pump") return left ? "Point the toes down" : "Pull the toes up";
+  return "";
+}
+
+function syncHud() {
+  if (S.screen !== "play" || !S.questId) return;
+  $("coach-line").textContent = cueText();
+  $("side-line").textContent = sideText();
+  const label = S.mode === "camera" ? "Posture" : (spec().type === "sustain" ? "Steady hold" : "Match");
+  $("meter-label").textContent = label;
+  const shown = Math.round(clamp(S.form, 0, 1) * 100);
+  $("form-num").textContent = String(shown);
+  $("form-fill").style.width = shown + "%";
+  $("form-fill").style.background = shown >= 80 ? "var(--leaf)" : shown >= 55 ? "var(--gold)" : "var(--terra)";
+  const postureOn = S.mode === "button";
+  $("accuracy-row").hidden = !postureOn;
+  $("accuracy-bar").hidden = !postureOn;
+  const accShown = S.camAssess && S.phaseName === "play" ? Math.round(clamp(S.accLive, 0, 1) * 100) : null;
+  $("accuracy-num").textContent = accShown == null ? (S.camAssess ? "…" : "—") : accShown + "%";
+  $("accuracy-fill").style.width = (accShown || 0) + "%";
+  $("accuracy-fill").style.background = accShown >= 80 ? "var(--leaf)" : accShown >= 55 ? "var(--gold)" : "var(--terra)";
+  const areas = S.postureLive || [];
+  const bad = areas.filter((area) => !area.ok);
+  $("posture-line").textContent = S.phaseName === "play" && areas.length
+    ? (bad.length ? "Inaccurate: " + bad.map((area) => area.label).join(", ") : "Accurate: " + areas.map((area) => area.label).join(", "))
+    : "";
+  $("score").textContent = String(sessionScore());
+  $("combo").textContent = S.combo >= 2 ? "Combo " + S.combo : "";
+  const key = S.reps + "/" + neededReps();
+  if (key !== S.pipKey) {
+    S.pipKey = key;
+    const pips = $("pips");
+    pips.replaceChildren();
+    for (let i = 0; i < neededReps(); i++) {
+      const dot = document.createElement("span");
+      dot.className = "pip" + (i < S.reps ? " on" : "");
+      pips.appendChild(dot);
+    }
+  }
+  const hold = $("hold");
+  const risingCue = spec().type === "sustain" || S.phase < HOLD_AT;
+  hold.classList.toggle("release", S.phaseName === "play" && !risingCue);
+  hold.classList.toggle("down", S.holding);
+  $("hold-label").textContent = spec().type === "sustain"
+    ? (S.phase < 0.5 ? "Hold — breathe in" : "Hold — breathe out")
+    : (risingCue ? "Hold and move" : "Release and return");
+  $("hold-fill").style.width = (spec().type === "sustain" ? (S.holding ? 100 : 8) : clamp(S.player, 0, 1) * 100) + "%";
+
+  const banner = $("banner");
+  if (S.phaseName === "countdown") {
+    banner.hidden = false;
+    $("banner-title").textContent = S.countdown > 0.75 ? String(Math.ceil(S.countdown)) : "Go";
+    $("banner-sub").textContent = "Get into the start position";
+  } else if (S.phaseName === "calibrate") {
+    banner.hidden = false;
+    $("banner-title").textContent = "Set";
+    $("banner-sub").textContent = S.lock ? "Hold still. Tracking stays on you." : "Hold still to lock onto one person";
+  } else if (S.phaseName === "boot") {
+    banner.hidden = false;
+    $("banner-title").textContent = "…";
+    $("banner-sub").textContent = "Starting camera";
+  } else if (S.celebrate > 0) {
+    const last = S.results[S.results.length - 1];
+    banner.hidden = false;
+    $("banner-title").textContent = last ? "★".repeat(Math.max(1, last.stars)) : "Done";
+    $("banner-sub").textContent = spec().name + " complete" + (last && last.accuracy != null ? " · " + last.accuracy + "% accurate" : "");
+  } else banner.hidden = true;
+}
+
+function burst(x, y) {
+  for (let i = 0; i < 14; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const v = 50 + Math.random() * 110;
+    S.parts.push({
+      x, y,
+      vx: Math.cos(a) * v,
+      vy: Math.sin(a) * v - 40,
+      life: 0.6 + Math.random() * 0.35,
+      color: i % 2 ? "#d4652f" : "#2f6f4e"
+    });
+  }
+}
+
+function poseFor(id, effort, repIndex) {
+  const e = clamp(effort, 0, 1);
+  const side = repIndex % 2 === 0 ? -1 : 1;
+  const point = id === "pump" && side < 0 ? e : 0;
+  const flex = id === "toe" || (id === "pump" && side > 0) ? e : 0;
+  return {
+    squat: id === "squat" ? e : id === "hinge" ? e * 0.22 : 0,
+    arm: id === "reach" ? e : id === "squat" ? 0.42 * e : 0.06,
+    wing: id === "balance" ? 0.85 : 0,
+    lean: id === "sidebend" ? side * e : 0,
+    hinge: id === "hinge" ? e : 0,
+    shrug: id === "shrug" ? e : 0,
+    rise: id === "heel" ? e : 0,
+    point,
+    flex,
+    tilt: id === "ever" ? e : id === "invert" ? -e : 0,
+    trace: id === "alphabet" ? 1 : 0,
+    liftL: (id === "march" && side < 0) || (id === "balance" && side > 0) || (id === "alphabet" && side < 0) ? (id === "alphabet" ? 0.5 : e) : 0,
+    liftR: (id === "march" && side > 0) || (id === "balance" && side < 0) || (id === "alphabet" && side > 0) ? (id === "alphabet" ? 0.5 : e) : 0,
+    breathe: id === "tall" ? e : 0
+  };
+}
+
+function buildBody(pose) {
+  const hipY = -102 + pose.squat * 34 + pose.hinge * 6;
+  const shoulderBase = hipY - 72 + pose.hinge * 44;
+  const shoulderY = shoulderBase - pose.shrug * 34;
+  const leanX = pose.lean * 40;
+  const shL = { x: -26 + leanX - pose.breathe * 6, y: shoulderY };
+  const shR = { x: 26 + leanX + pose.breathe * 6, y: shoulderY };
+  const head = {
+    x: leanX * 1.08,
+    y: shoulderBase - 46 - pose.shrug * 3
+  };
+  const arm = (side, sh) => {
+    const raise = clamp(pose.arm, 0, 1);
+    const wing = clamp(pose.wing || 0, 0, 1);
+    const bendSide = pose.lean * side > 0 ? Math.abs(pose.lean) : 0;
+    if (wing > 0.05) {
+      return {
+        elbow: { x: sh.x + side * (18 + wing * 10), y: sh.y + 4 },
+        hand: { x: sh.x + side * (36 + wing * 28), y: sh.y + 6 }
+      };
+    }
+    const hand = {
+      x: sh.x + side * (18 + raise * 46),
+      y: sh.y + (64 + pose.shrug * 32) * (1 - raise) + raise * 2 + bendSide * 34
+    };
+    const elbow = {
+      x: (sh.x + hand.x) / 2 + side * (14 * (1 - raise) + pose.shrug * 6),
+      y: (sh.y + hand.y) / 2 + 10 * (1 - raise) - pose.shrug * 4
+    };
+    return { elbow, hand };
+  };
+  const footOf = (ankle, side) => {
+    const spin = pose.trace ? S.t * 3.2 : 0;
+    return {
+      x: ankle.x + side * (8 + (pose.tilt || 0) * 14) + (pose.trace ? Math.cos(spin) * 11 : 0),
+      y: ankle.y + 8 + (pose.point || 0) * 12 - (pose.flex || 0) * 16 - (pose.rise || 0) * 4 + (pose.trace ? Math.sin(spin) * 9 : 0)
+    };
+  };
+  const leg = (side, lift) => {
+    const hip = { x: side * 14, y: hipY };
+    if (lift > 0.02) {
+      const knee = { x: side * (16 + lift * 6), y: hipY + 42 - lift * 40 };
+      const ankle = { x: side * 8, y: hipY + 62 - lift * 22 };
+      return { hip, knee, ankle, toe: footOf(ankle, side) };
+    }
+    const knee = { x: side * (15 + pose.squat * 18), y: hipY + 48 - pose.squat * 8 };
+    const ankle = { x: side * 16, y: -16 - pose.rise * 16 };
+    return { hip, knee, ankle, toe: footOf(ankle, side) };
+  };
+  return {
+    hipY, shL, shR, head,
+    armL: arm(-1, shL), armR: arm(1, shR),
+    legL: leg(-1, pose.liftL), legR: leg(1, pose.liftR)
+  };
+}
+
+let paint = null;
+function stroke(a, b, w, color) {
+  const g = paint || ctx;
+  g.beginPath();
+  g.moveTo(a.x, a.y);
+  g.lineTo(b.x, b.y);
+  g.lineWidth = w;
+  g.strokeStyle = color;
+  g.lineCap = "round";
+  g.stroke();
+}
+
+function drawPictogram(g, b) {
+  const ink = "#1a1a1a";
+  const top = b.shL.y + 6;
+  const cx = (b.shL.x + b.shR.x) / 2;
+  g.fillStyle = ink;
+  g.beginPath();
+  g.arc(b.head.x, b.head.y - 6, 16, 0, Math.PI * 2);
+  g.fill();
+  g.beginPath();
+  g.moveTo(b.shL.x + 6, top);
+  g.lineTo(b.shR.x - 6, top);
+  g.lineTo(cx + 15, b.hipY + 6);
+  g.lineTo(cx - 15, b.hipY + 6);
+  g.closePath();
+  g.fill();
+  stroke({ x: b.shL.x + 2, y: top + 2 }, b.armL.hand, 11, ink);
+  stroke({ x: b.shR.x - 2, y: top + 2 }, b.armR.hand, 11, ink);
+  for (const leg of [b.legL, b.legR]) {
+    stroke(leg.hip, leg.knee, 13, ink);
+    stroke(leg.knee, leg.toe, 12, ink);
+  }
+}
+
+function drawBitmoji(g, b, look) {
+  const skin = look.skin;
+  const hair = look.hair;
+  const style = look.hairStyle || "short";
+  for (const leg of [b.legL, b.legR]) {
+    stroke(leg.hip, leg.knee, 13, look.shorts);
+    stroke(leg.knee, leg.ankle, 9, skin);
+    stroke(leg.ankle, leg.toe, 7, skin);
+    g.fillStyle = "#2c2622";
+    g.beginPath();
+    g.ellipse(leg.toe.x, leg.toe.y + 3, 12, 5.5, 0, 0, Math.PI * 2);
+    g.fill();
+  }
+  const cx = (b.shL.x + b.shR.x) / 2;
+  g.fillStyle = look.shorts;
+  g.beginPath();
+  g.moveTo(cx - 16, b.hipY - 2);
+  g.lineTo(cx + 16, b.hipY - 2);
+  g.lineTo(b.legR.knee.x + 4, b.hipY + 28);
+  g.lineTo(b.legL.knee.x - 4, b.hipY + 28);
+  g.closePath();
+  g.fill();
+  g.fillStyle = look.shirt;
+  g.beginPath();
+  g.moveTo(b.shL.x + 2, b.shL.y + 2);
+  g.quadraticCurveTo(cx, b.shL.y - 6, b.shR.x - 2, b.shR.y + 2);
+  g.lineTo(cx + 16, b.hipY + 4);
+  g.quadraticCurveTo(cx, b.hipY + 12, cx - 16, b.hipY + 4);
+  g.closePath();
+  g.fill();
+  stroke(b.shL, b.armL.elbow, 8, skin);
+  stroke(b.armL.elbow, b.armL.hand, 7, skin);
+  stroke(b.shR, b.armR.elbow, 8, skin);
+  stroke(b.armR.elbow, b.armR.hand, 7, skin);
+  g.fillStyle = skin;
+  for (const hand of [b.armL.hand, b.armR.hand]) {
+    g.beginPath();
+    g.arc(hand.x, hand.y, 5, 0, Math.PI * 2);
+    g.fill();
+  }
+  const hx = b.head.x;
+  const hy = b.head.y - 8;
+  const hr = 22;
+  g.fillStyle = hair;
+  g.beginPath();
+  g.arc(hx, hy - 1, hr + 1.5, Math.PI * 1.02, Math.PI * 1.98);
+  g.quadraticCurveTo(hx + 8, hy - 16, hx + hr, hy - 2);
+  g.fill();
+  if (style === "bob" || style === "long") {
+    const drop = style === "long" ? 28 : 16;
+    g.beginPath();
+    g.ellipse(hx - hr + 2, hy + 6, 6, drop * 0.45, 0.2, 0, Math.PI * 2);
+    g.ellipse(hx + hr - 2, hy + 6, 6, drop * 0.45, -0.2, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.fillStyle = skin;
+  g.beginPath();
+  g.arc(hx, hy, hr, 0, Math.PI * 2);
+  g.fill();
+  g.fillStyle = hair;
+  g.beginPath();
+  g.arc(hx, hy - 2, hr, Math.PI * 1.08, Math.PI * 1.92);
+  g.quadraticCurveTo(hx, hy - 8, hx + hr * 0.72, hy - 4);
+  g.fill();
+  g.fillStyle = "#fff";
+  g.beginPath();
+  g.ellipse(hx - 7.5, hy + 1, 5.2, 6.2, 0, 0, Math.PI * 2);
+  g.ellipse(hx + 7.5, hy + 1, 5.2, 6.2, 0, 0, Math.PI * 2);
+  g.fill();
+  g.fillStyle = "#2a241c";
+  g.beginPath();
+  g.arc(hx - 6.2, hy + 2, 2.3, 0, Math.PI * 2);
+  g.arc(hx + 6.2, hy + 2, 2.3, 0, Math.PI * 2);
+  g.fill();
+  g.strokeStyle = hair;
+  g.lineWidth = 1.6;
+  g.beginPath();
+  g.moveTo(hx - 12, hy - 6);
+  g.quadraticCurveTo(hx - 7, hy - 9, hx - 3, hy - 6);
+  g.moveTo(hx + 3, hy - 6);
+  g.quadraticCurveTo(hx + 7, hy - 9, hx + 12, hy - 6);
+  g.stroke();
+  g.strokeStyle = "#2a241c";
+  g.lineWidth = 1.5;
+  g.beginPath();
+  g.arc(hx, hy + 8, 6.5, 0.15 * Math.PI, 0.85 * Math.PI);
+  g.stroke();
+}
+
+function drawPerson(x, groundY, sc, pose, opt) {
+  const prev = paint;
+  paint = opt.g || ctx;
+  const g = paint;
+  g.save();
+  g.translate(x, groundY - pose.rise * 34);
+  g.scale(sc, sc);
+  const b = buildBody(pose);
+  if (opt.coach) drawPictogram(g, b);
+  else drawBitmoji(g, b, playerAvatar());
+  g.restore();
+  paint = prev;
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function waveDots() {
+  if (waveDots.canvas) return waveDots.canvas;
+  const tile = document.createElement("canvas");
+  tile.width = 12;
+  tile.height = 12;
+  const g = tile.getContext("2d");
+  g.fillStyle = "rgba(111,88,64,0.35)";
+  g.beginPath();
+  g.arc(6, 6, 1.15, 0, Math.PI * 2);
+  g.fill();
+  waveDots.canvas = tile;
+  return tile;
+}
+
+function drawRoom(w, h) {
+  ctx.fillStyle = "#f3ead7";
+  ctx.fillRect(0, 0, w, h);
+  const dots = ctx.createPattern(waveDots(), "repeat");
+  if (dots) {
+    ctx.fillStyle = dots;
+    ctx.fillRect(0, 0, w, h);
+  }
+  const winW = Math.min(150, w * 0.24);
+  roundRect(w * 0.07, h * 0.08, winW, h * 0.24, 12);
+  ctx.fillStyle = "rgba(138,115,85,0.16)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(111,88,64,0.45)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  for (let i = 1; i <= 4; i++) {
+    const y = h * 0.08 + h * 0.24 * i / 5;
+    ctx.moveTo(w * 0.07 + 8, y);
+    ctx.lineTo(w * 0.07 + winW - 8, y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = "#efe2c8";
+  ctx.beginPath();
+  ctx.arc(w * 0.84, h * 0.16, 26, 0, 7);
+  ctx.fill();
+  const sway = Math.sin(S.t * 1.4) * 3;
+  ctx.strokeStyle = "#5f7d62";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.9, h * 0.78);
+  ctx.quadraticCurveTo(w * 0.9 + sway, h * 0.62, w * 0.88 + sway, h * 0.5);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(95,125,98,0.8)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.86 + sway, h * 0.48, 16, 22, -0.4, 0, 7);
+  ctx.ellipse(w * 0.93 + sway, h * 0.5, 14, 18, 0.4, 0, 7);
+  ctx.fill();
+  ctx.fillStyle = "rgba(111,88,64,0.28)";
+  ctx.fillRect(w * 0.86, h * 0.76, 22, 18);
+}
+
+function drawFigures(w, h) {
+  const sp = spec();
+  const preview = S.phaseName === "brief" || S.phaseName === "countdown" || S.phaseName === "boot";
+  const coachE = sp.type === "sustain" ? breathLevel(S.phase) : coachEffort(S.phase);
+  const youE = sp.type === "sustain" ? coachE : (preview ? coachE : S.player);
+  const ground = h * 0.82;
+  const sc = Math.min(1.85, h / 360);
+  ctx.fillStyle = "rgba(111,88,64,0.1)";
+  ctx.beginPath();
+  ctx.ellipse(preview ? w * 0.5 : w * 0.33, ground + 8, 54 * sc, 12, 0, 0, 7);
+  ctx.fill();
+  if (!preview) {
+    ctx.fillStyle = "rgba(111,88,64,0.14)";
+    ctx.beginPath();
+    ctx.ellipse(w * 0.68, ground + 8, 54 * sc, 12, 0, 0, 7);
+    ctx.fill();
+  }
+  const rep = S.reps;
+  drawPerson(preview ? w * 0.5 : w * 0.33, ground, sc, poseFor(sp.id, coachE, rep), { coach: true });
+  if (!preview) {
+    const glow = S.form > 0.82;
+    if (glow) {
+      ctx.save();
+      ctx.shadowColor = "rgba(47,111,78,0.35)";
+      ctx.shadowBlur = 24;
+    }
+    drawPerson(w * 0.68, ground, sc, poseFor(sp.id, youE, rep), { ghost: false });
+    if (glow) ctx.restore();
+    S.youX = w * 0.68;
+    S.youY = ground - 120;
+  } else {
+    S.youX = w * 0.5;
+    S.youY = ground - 120;
+  }
+  ctx.fillStyle = "#6e6458";
+  ctx.font = "600 15px Outfit, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(preview ? "Coach" : "Coach", preview ? w * 0.5 : w * 0.33, ground + 36);
+  if (!preview) {
+    ctx.fillStyle = S.form > 0.8 ? "#5f7d62" : "#6e6458";
+    ctx.fillText("You", w * 0.68, ground + 36);
+  }
+}
+
+function coverSource(vw, vh, cw, ch) {
+  const va = vw / vh;
+  const ca = cw / ch;
+  if (va > ca) {
+    const sw = vh * ca;
+    return { sx: (vw - sw) / 2, sy: 0, sw, sh: vh };
+  }
+  const sh = vw / ca;
+  return { sx: 0, sy: (vh - sh) / 2, sw: vw, sh };
+}
+
+function mapPoint(lm, crop, w, h) {
+  const vw = video.videoWidth || 1;
+  const vh = video.videoHeight || 1;
+  const nx = (lm.x * vw - crop.sx) / crop.sw;
+  const ny = (lm.y * vh - crop.sy) / crop.sh;
+  return { x: (1 - nx) * w, y: ny * h, v: lm.visibility ?? 1 };
+}
+
+function drawCamera(w, h) {
+  if (video.readyState >= 2 && video.videoWidth) {
+    const crop = coverSource(video.videoWidth, video.videoHeight, w, h);
+    ctx.save();
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h);
+    ctx.restore();
+    const poseLm = S.landmarks || S.drawLm;
+    if (poseLm) {
+      const pts = poseLm.map((lm) => (lm ? mapPoint(lm, crop, w, h) : { x: 0, y: 0, v: 0 }));
+      const color = S.form > 0.75 ? "#d7efe3" : "#ffe1c4";
+      ctx.save();
+      ctx.globalAlpha = S.landmarks ? 1 : 0.4;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 5;
+      const bones = [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28]];
+      for (const [a, b] of bones) {
+        if (pts[a].v < 0.4 || pts[b].v < 0.4) continue;
+        ctx.beginPath();
+        ctx.moveTo(pts[a].x, pts[a].y);
+        ctx.lineTo(pts[b].x, pts[b].y);
+        ctx.stroke();
+      }
+      const neckA = pts[11], neckB = pts[12], nose = pts[0];
+      if (nose.v > 0.4) {
+        ctx.beginPath();
+        ctx.moveTo(nose.x, nose.y);
+        ctx.lineTo((neckA.x + neckB.x) / 2, (neckA.y + neckB.y) / 2);
+        ctx.stroke();
+      }
+      drawGuides(pts);
+      ctx.restore();
+    }
+  } else drawRoom(w, h);
+
+  const sc = Math.min(0.72, h / 700);
+  roundRect(16, h - 168 * sc - 24, 120, 168 * sc + 8, 16);
+  ctx.fillStyle = "rgba(255,250,242,0.88)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(247,244,238,0.2)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  const coachE = spec().type === "sustain" ? breathLevel(S.phase) : coachEffort(S.phase);
+  drawPerson(76, h - 28, sc, poseFor(spec().id, coachE, S.reps), { coach: true });
+  S.youX = w * 0.5;
+  S.youY = h * 0.45;
+}
+
+function drawGuides(pts) {
+  const id = spec().id;
+  ctx.save();
+  ctx.strokeStyle = "rgba(111,88,64,0.95)";
+  ctx.fillStyle = "rgba(111,88,64,0.9)";
+  ctx.lineWidth = 3;
+  if (id === "reach") {
+    for (const s of [11, 12]) {
+      ctx.beginPath();
+      ctx.arc(pts[s].x, pts[s].y, 16, 0, 7);
+      ctx.stroke();
+    }
+  } else if (id === "shrug") {
+    for (const s of [11, 12]) {
+      ctx.beginPath();
+      ctx.moveTo(pts[s].x, pts[s].y - 28);
+      ctx.lineTo(pts[s].x, pts[s].y - 10);
+      ctx.moveTo(pts[s].x - 6, pts[s].y - 22);
+      ctx.lineTo(pts[s].x, pts[s].y - 30);
+      ctx.lineTo(pts[s].x + 6, pts[s].y - 22);
+      ctx.stroke();
+    }
+  } else if (id === "squat") {
+    const y = (pts[23].y + pts[24].y) / 2 + 28;
+    ctx.beginPath();
+    ctx.moveTo(pts[23].x - 10, y);
+    ctx.lineTo(pts[24].x + 10, y);
+    ctx.stroke();
+  } else if (id === "march") {
+    const idx = S.reps % 2 === 0 ? 25 : 26;
+    ctx.beginPath();
+    ctx.arc(pts[idx].x, pts[idx].y - 36, 14, 0, 7);
+    ctx.stroke();
+  } else if (id === "sidebend") {
+    const left = S.reps % 2 === 0;
+    const x = left ? Math.min(pts[11].x, pts[23].x) - 28 : Math.max(pts[12].x, pts[24].x) + 28;
+    const y = (pts[11].y + pts[23].y) / 2;
+    ctx.beginPath();
+    ctx.moveTo(left ? x + 16 : x - 16, y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  } else if (id === "heel" || id === "toe" || id === "pump" || id === "ever" || id === "invert") {
+    for (const s of [27, 28, 31, 32]) {
+      if (!pts[s] || pts[s].v < 0.35) continue;
+      ctx.beginPath();
+      ctx.arc(pts[s].x, pts[s].y, 10, 0, 7);
+      ctx.stroke();
+    }
+  } else if (id === "balance" || id === "alphabet") {
+    const idx = S.reps % 2 === 0 ? 31 : 32;
+    if (pts[idx] && pts[idx].v > 0.3) {
+      ctx.beginPath();
+      ctx.arc(pts[idx].x, pts[idx].y, 16, 0, 7);
+      ctx.stroke();
+    }
+  } else if (id === "tall") {
+    const x = (pts[0].x + pts[23].x + pts[24].x) / 3;
+    ctx.setLineDash([5, 6]);
+    ctx.beginPath();
+    ctx.moveTo(x, pts[0].y - 16);
+    ctx.lineTo(x, (pts[27].y + pts[28].y) / 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawFx(dt) {
+  for (const p of S.parts) {
+    p.life -= dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 220 * dt;
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, 7);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  S.parts = S.parts.filter((p) => p.life > 0);
+  for (const f of S.floats) {
+    f.life -= dt;
+    f.y -= 24 * dt;
+    ctx.globalAlpha = Math.max(0, f.life);
+    ctx.fillStyle = "#2a241c";
+    ctx.font = "700 18px Outfit, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(f.text, f.x, f.y);
+  }
+  ctx.globalAlpha = 1;
+  S.floats = S.floats.filter((f) => f.life > 0);
+}
+
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.max(1, Math.round(rect.width * dpr));
+  canvas.height = Math.max(1, Math.round(rect.height * dpr));
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  S.w = rect.width;
+  S.h = rect.height;
+}
+
+function drawCameraInset(w, h) {
+  if (!S.camAssess || S.phaseName === "brief" || video.readyState < 2 || !video.videoWidth) return;
+  const iw = Math.min(240, Math.max(140, w * 0.32));
+  const ih = Math.round(iw * 0.72);
+  const x = w - iw - 18;
+  const y = 18;
+  ctx.save();
+  roundRect(x, y, iw, ih, 18);
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fill();
+  ctx.save();
+  ctx.clip();
+  const crop = coverSource(video.videoWidth, video.videoHeight, iw, ih);
+  ctx.translate(x + iw, y);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, iw, ih);
+  ctx.restore();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(255,255,255,0.75)";
+  roundRect(x, y, iw, ih, 18);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function draw() {
+  const w = S.w, h = S.h;
+  if (S.mode === "camera" && S.phaseName !== "brief") drawCamera(w, h);
+  else {
+    drawRoom(w, h);
+    if (S.questId && !teachShowing()) drawFigures(w, h);
+    drawCameraInset(w, h);
+  }
+  drawFx(S.dt || 0);
+  syncHud();
+  syncTeach();
+}
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - S.last) / 1000);
+  S.last = now;
+  S.t += dt;
+  if (S.studio && S.screen === "play") {
+    syncTeach();
+    requestAnimationFrame(frame);
+    return;
+  }
+  const live = S.screen === "play" && !S.paused && S.questId;
+  S.dt = live ? dt : 0;
+  if (live) update(dt);
+  if (S.screen === "play") draw();
+  requestAnimationFrame(frame);
+}
+
+function pauseGame() {
+  if (S.screen !== "play") return;
+  if (S.studio) {
+    $("overlay-leave").hidden = false;
+    return;
+  }
+  if (S.phaseName === "brief" || S.phaseName === "camerror") return;
+  S.paused = true;
+  S.holding = false;
+  $("overlay-pause").hidden = false;
+  teachCommand("pauseVideo");
+}
+function resumeGame() {
+  S.paused = false;
+  S.holding = false;
+  S.last = performance.now();
+  $("overlay-pause").hidden = true;
+  teachCommand("playVideo");
+}
+
+function endEarly(reason) {
+  if (S.studio) {
+    finishSession();
+    return;
+  }
+  S.holding = false;
+  S.running = false;
+  S.stopReason = reason;
+  if (!S.logged) finishExercise(true);
+  S.celebrate = 0;
+  $("stop-title").textContent = reason === "pain" ? "You stopped." : "Exercise skipped.";
+  $("stop-msg").textContent = reason === "pain"
+    ? "If something hurt, stopping is the right call. Rest, then choose what happens next."
+    : "This one is marked skipped. The rest of the set can continue.";
+  const last = S.exIndex >= quest().exercises.length - 1;
+  $("stop-next").textContent = last ? "See results" : "Next exercise";
+  $("overlay-stop").hidden = false;
+}
+
+function renderAvatarPickers() {}
+function drawAvatarPreview() {}
+function openProfile() {}
+
+function wire() {
+  $("patient-user").required = true;
+  $("patient-pass").required = true;
+  if (patientRemembered()) {
+    const last = localStorage.getItem("full-range-patient-last-user") || "";
+    if (last && !$("patient-user").value) $("patient-user").value = last;
+    $("patient-remember").checked = true;
+  }
+  $("patient-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    $("patient-error").textContent = "";
+    try {
+      const result = await signInPatient($("patient-user").value, $("patient-pass").value, $("patient-remember").checked);
+      if (!result || !result.ok) {
+        $("patient-error").textContent = result && result.reason === "unknown"
+          ? "That username is not on your physiotherapist's list."
+          : result && result.reason === "no-pass"
+            ? "This account is not ready. Ask your physiotherapist to set a password."
+            : "That username and password don't match an account from your physiotherapist.";
+        return;
+      }
+      $("patient-pass").value = "";
+      show("title");
+      refreshMeta();
+    } catch (err) {
+      $("patient-error").textContent = "Sign-in needs a secure page, opened through localhost.";
+    }
+  });
+  $("patient-out").addEventListener("click", () => {
+    stopCamera();
+    stopFilmStream();
+    signOutPatient();
+    show("signin");
+    refreshMeta();
+  });
+  $("stories-open").addEventListener("click", () => { openReward(); });
+  if ($("story-play")) $("story-play").addEventListener("click", startStory);
+  if ($("story-pause")) $("story-pause").addEventListener("click", pauseStory);
+  if ($("story-next")) $("story-next").addEventListener("click", skipStoryLine);
+  if ($("reel-fwd")) $("reel-fwd").addEventListener("click", skipStoryLine);
+  if ($("reel-back")) $("reel-back").addEventListener("click", prevStoryLine);
+  $("story-home").addEventListener("click", () => {
+    stopStoryVoice();
+    const frame = $("reward-frame");
+    if (frame) frame.src = "about:blank";
+    show("title");
+    refreshMeta();
+  });
+  $("films-open").addEventListener("click", () => { openFilms(); });
+  $("films-back").addEventListener("click", () => { refreshMeta(); show("title"); });
+  $("book-open").addEventListener("click", openBook);
+  $("book-save").addEventListener("click", saveBook);
+  wireCalendarSync($("book-cal-sync"), $("book-cal-status"), (plan) => {
+    renderBusy();
+    renderBookSlots();
+    if (S.screen === "title") renderHomeSchedule(plan);
+  });
+  $("start-btn").addEventListener("click", homeFromStart);
+  $("nudge-start").addEventListener("click", startDueBout);
+  if ($("appoint-close")) {
+    $("appoint-close").addEventListener("click", () => {
+      $("overlay-appoint").hidden = true;
+      markAppointmentSeen(activePlan(), "patient");
+    });
+  }
+  $("nudge-later").addEventListener("click", () => {
+    $("overlay-nudge").hidden = true;
+    S.nudgeSnooze = Date.now() + 5 * 60000;
+    S.nudgeSlot = S.slotId;
+  });
+  $("miss-freeze").addEventListener("click", () => handleMiss("freeze"));
+  $("miss-move").addEventListener("click", () => handleMiss("move-nudge"));
+  $("miss-replay").addEventListener("click", () => handleMiss("replay"));
+  $("miss-rebook").addEventListener("click", () => handleMiss("rebook"));
+  $("verify-ok").addEventListener("click", openFeedback);
+  $("verify-skip").addEventListener("click", () => { S.videoOk = false; openFeedback(); });
+  $("fb-save").addEventListener("click", saveFeedback);
+  $("film-bout").addEventListener("click", startFilm);
+  $("film-stop").addEventListener("click", stopFilm);
+  $("film-again").addEventListener("click", refilmPractice);
+  $("watch-ready").addEventListener("click", enterFilm);
+  $("play-submit").addEventListener("click", submitPractice);
+  $("how-open").addEventListener("click", () => { $("overlay-how").hidden = false; });
+  $("how-close").addEventListener("click", () => { $("overlay-how").hidden = true; });
+  $("mode-button").addEventListener("click", () => setMode("button"));
+  $("mode-camera").addEventListener("click", () => setMode("camera"));
+  $("brief-ready").addEventListener("click", () => { onReady(); });
+  $("brief-back").addEventListener("click", () => {
+    if (S.results.length) $("overlay-leave").hidden = false;
+    else { stopCamera(); show("quests"); $("overlay-brief").hidden = true; renderPlan(); }
+  });
+  function goHome() {
+    if (!patientUiOn() || !activePlan()) { stopCamera(); stopFilmStream(); show("signin"); return; }
+    if (S.screen === "play" && (S.results.length || S.studioPhase === "film" || S.phaseName !== "brief")) $("overlay-leave").hidden = false;
+    else { stopStoryVoice(); stopCamera(); show("title"); refreshMeta(); maybePromptCycle(); }
+  }
+  $("home").addEventListener("click", goHome);
+  if ($("home-open")) $("home-open").addEventListener("click", goHome);
+  $("leave-no").addEventListener("click", () => { $("overlay-leave").hidden = true; });
+  $("leave-yes").addEventListener("click", () => {
+    $("overlay-leave").hidden = true;
+    $("overlay-brief").hidden = true;
+    $("overlay-pause").hidden = true;
+    S.leaveTo = null;
+    finishSession();
+  });
+  $("pause").addEventListener("click", pauseGame);
+  $("pause-resume").addEventListener("click", resumeGame);
+  $("pause-quit").addEventListener("click", () => { $("overlay-pause").hidden = true; finishSession(); });
+  $("pain").addEventListener("click", () => endEarly("pain"));
+  $("skip").addEventListener("click", () => endEarly("skip"));
+  $("stop-next").addEventListener("click", () => { $("overlay-stop").hidden = true; advance(); });
+  $("stop-end").addEventListener("click", () => { $("overlay-stop").hidden = true; finishSession(); });
+  $("done-again").addEventListener("click", () => startPlan());
+  $("done-more").addEventListener("click", () => { refreshMeta(); show("title"); maybePromptCycle(); });
+  $("plan-start").addEventListener("click", startPlan);
+  $("cam-switch").addEventListener("click", () => {
+    $("overlay-cam").hidden = true;
+    S.camAssess = false;
+    stopCamera();
+    setMode("button");
+    beginCountdown();
+  });
+  $("cam-retry").addEventListener("click", () => { $("overlay-cam").hidden = true; onReady(); });
+  $("mute").addEventListener("click", () => {
+    S.muted = !S.muted;
+    persist({ muted: S.muted });
+    if (S.muted && S.screen === "story") {
+      if (S.storyPlaying) {
+        cancelStorySpeech();
+        playCurrentLine();
+      } else stopStoryVoice();
+    }
+    if ($("story-voice-note")) {
+      $("story-voice-note").textContent = S.muted
+        ? "Sound is off. Turn Sound on to hear Ethan, Miles, and Sophie."
+        : "Ethan uses the Domineering CEO voice. Miles uses Joe. Sophie uses 清醒小白花.";
+    }
+    refreshMeta();
+  });
+
+  const hold = $("hold");
+  const down = (e) => {
+    if (S.mode !== "button") return;
+    if (S.screen !== "play" || S.paused || anyOverlay()) return;
+    e.preventDefault();
+    S.holding = true;
+    try { hold.setPointerCapture(e.pointerId); } catch (err) { /* synthetic clicks */ }
+  };
+  const up = () => { S.holding = false; };
+  hold.addEventListener("pointerdown", down);
+  hold.addEventListener("pointerup", up);
+  hold.addEventListener("pointercancel", up);
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Escape") {
+      if (!$("overlay-pause").hidden) resumeGame();
+      else pauseGame();
+    }
+    if (e.code === "Space") {
+      const playing = S.screen === "play" && S.mode === "button" && !S.paused && !anyOverlay() && (S.phaseName === "play" || S.phaseName === "countdown");
+      if (!playing) return;
+      e.preventDefault();
+      if (!e.repeat) S.holding = true;
+    }
+  });
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space") S.holding = false;
+  });
+  window.addEventListener("blur", () => { S.holding = false; });
+  window.addEventListener("resize", resize);
+  document.addEventListener("pointerdown", () => { if (!S.muted) ac(); }, { once: true });
+}
+
+preloadStory().then(() => refreshMeta());
+if (window.speechSynthesis) {
+  S.storyVoiceList = speechSynthesis.getVoices();
+  speechSynthesis.addEventListener("voiceschanged", () => {
+    S.storyVoiceList = speechSynthesis.getVoices();
+  });
+}
+$("overlay-miss").hidden = true;
+clearStalePatientSession();
+refreshMeta();
+if (activePlan()) {
+  show("title");
+  refreshMeta();
+} else {
+  show("signin");
+  refreshMeta();
+}
+setMode("button");
+wire();
+resize();
+requestAnimationFrame(frame);
+setInterval(() => {
+  if (S.screen === "play" || S.screen === "book" || S.screen === "story") return;
+  if (anyOverlay() && $("overlay-nudge").hidden) return;
+  refreshMeta();
+  maybePromptCycle();
+}, 10000);
+</script>
+<script>
+  addEventListener("load", function () {
+    var f = document.getElementById("page-fade");
+    if (!f) return;
+    requestAnimationFrame(function () { f.style.opacity = "0"; });
+    setTimeout(function () { f.remove(); }, 700);
+  });
+</script>
+</body>
+</html>
