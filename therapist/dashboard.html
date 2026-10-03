@@ -7,20 +7,27 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./css/style.css?v=20" />
+  <link rel="stylesheet" href="./css/style.css?v=23" />
   <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 </head>
 <body>
   <div id="page-fade" style="position:fixed;inset:0;background:#2a241c;z-index:99999;pointer-events:none;opacity:1;transition:opacity .55s ease"></div>
   <div class="content">
-    <a class="backlink" href="./patients.html">← 返回患者列表</a>
+    <header class="site-head">
+      <span class="brand"><img class="mark" src="../physio-quest/elak-logo.png" alt="" /> ELAK</span>
+      <a class="backlink backlink--x" href="./patients.html" aria-label="返回患者列表" title="返回患者列表">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </a>
+    </header>
     <main id="detail">
       <div class="placeholder">加载中…</div>
     </main>
   </div>
 
-  <script type="module" src="./js/main.js?v=20"></script>
+  <script type="module" src="./js/main.js?v=23"></script>
   <script>
     addEventListener("load", function () {
       var f = document.getElementById("page-fade");
