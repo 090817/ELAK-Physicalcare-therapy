@@ -54,6 +54,7 @@
     outline-offset: 2px;
   }
   button { cursor: pointer; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
   a.ghost { text-decoration: none; display: inline-flex; align-items: center; }
   #app {
     position: relative;
@@ -105,6 +106,19 @@
   }
   .tab + .tab { border-left: 1px solid var(--line); }
   .tab.sel { background: #6f5840; color: #f7f1e6; }
+  #tab-notes { position: relative; }
+  .notes-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e23b2e;
+    box-shadow: 0 0 0 2px #fff7ec;
+    pointer-events: none;
+  }
+  #tab-notes.sel .notes-dot { box-shadow: 0 0 0 2px #6f5840; }
   #clinic-home.on, #clinic-home:not([hidden]) {
     display: grid;
     grid-template-columns: minmax(22rem, 34rem) minmax(220px, 320px);
@@ -279,6 +293,47 @@
     padding: 22px;
     box-shadow: var(--shadow);
   }
+  .overlay .card.mail-card { width: min(560px, 100%); }
+  #mail-kale { margin: 14px 0 8px; }
+  #mail-kale .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  #clinic-notes { max-width: 720px; margin: 0 auto; }
+  .mail-row {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 0 8px;
+  }
+  .mail-row-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+  .mail-row .notes-dot {
+    position: static;
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    box-shadow: none;
+    margin-top: 6px;
+  }
+  .mail-row.read .notes-dot { visibility: hidden; }
+  .mail-copy { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .mail-copy strong, .mail-copy span { display: block; overflow-wrap: anywhere; }
+  .mail-copy strong { font-weight: 700; }
+  .mail-copy span { color: var(--muted); }
+  .mail-row small {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding-left: 16px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .mail-letter { white-space: pre-wrap; line-height: 1.5; }
   @media (max-width: 900px) {
     .shape-grid { inset: 0; }
     #app { padding: 8px 40px 104px; }
@@ -304,6 +359,7 @@
       <div class="tabs" id="clinic-tabs" hidden>
         <button class="tab" id="tab-current" type="button">Current patients</button>
         <button class="tab" id="tab-archive" type="button">Patient archive</button>
+        <button class="tab" id="tab-notes" type="button">Notifications<span class="notes-dot" id="clinic-notes-dot" hidden></span></button>
       </div>
       <button class="ghost" id="sign-out" type="button">Sign out</button>
     </div>
@@ -346,6 +402,11 @@
         <button class="primary" id="home-current" type="button">Current patients</button>
         <button class="secondary" id="home-archive" type="button">Patient archive</button>
       </div>
+      <div class="saved-box" id="clinic-home-cal" tabindex="0">
+        <strong>Your calendar</strong>
+        <p class="note" id="clinic-home-cal-status"></p>
+        <div id="clinic-home-cal-table"></div>
+      </div>
     </div>
     <div class="home-hero">
       <img src="hero.png?v=22" alt="A physiotherapist with a clipboard stands beside a patient practising at parallel bars.">
@@ -358,8 +419,6 @@
     <div class="clinic-layout">
       <aside class="clinic-side">
         <button class="secondary" id="clinic-new" type="button">New patient</button>
-        <button class="secondary" id="clinic-sync-file" type="button" style="margin-top:8px">写入文件</button>
-        <p class="note" id="clinic-sync-status" style="margin:6px 0 0"></p>
         <div id="clinic-patients"></div>
       </aside>
       <form class="clinic-main" id="clinic-form" novalidate>
@@ -383,6 +442,10 @@
             <label for="clinic-patient">Patient name</label>
             <input id="clinic-patient" maxlength="60" autocomplete="name" required>
           </div>
+          <div class="field">
+            <label for="clinic-injury">Type of injury</label>
+            <input id="clinic-injury" maxlength="80" placeholder="e.g. Right ankle sprain">
+          </div>
           <div class="ex-grid">
             <div class="field">
               <label for="clinic-username">Username</label>
@@ -403,18 +466,6 @@
           </div>
           <p class="note" id="clinic-login-error"></p>
           <p class="note" id="account-box-foot" hidden></p>
-        </div>
-        <div class="saved-box" id="clinic-calendar" hidden tabindex="0">
-          <div class="spread">
-            <strong>Your calendar</strong>
-            <button class="ghost" id="clinic-cal-sync" type="button">Sync this device</button>
-          </div>
-          <p class="note" id="clinic-cal-status"></p>
-          <div id="clinic-cal-table"></div>
-          <p style="font-weight:650;margin:16px 0 8px">Patient calendar</p>
-          <p class="note" id="patient-cal-status"></p>
-          <div id="patient-cal-table"></div>
-          <p class="note" id="clinic-appoint-line"></p>
         </div>
         <div id="visit-toolbar" hidden>
           <div class="row">
@@ -444,13 +495,8 @@
                 <option value="3">3</option>
                 <option value="4">4</option>
                 <option value="5">5</option>
-                <option value="other">Other</option>
               </select>
             </div>
-          </div>
-          <div class="field" id="clinic-min-other" hidden>
-            <label for="clinic-min">Other amount</label>
-            <input id="clinic-min" type="number" min="1" max="20" value="1">
           </div>
         </div>
         <div class="spread"><strong>Ankle exercises</strong><button class="ghost" id="clinic-add" type="button">Add exercise</button></div>
@@ -467,26 +513,50 @@
           <button class="secondary" id="clinic-cancel-visit" type="button">Cancel</button>
         </div>
         </div>
-        <div id="clinic-report" class="saved-box" hidden tabindex="0"></div>
         <div id="clinic-history"></div>
       </form>
     </div>
   </section>
+
+  <section id="clinic-notes" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:12px">Notifications</h2>
+    <div id="clinic-inbox"></div>
+  </section>
 </div>
-<div class="overlay" id="overlay-appoint" hidden>
-  <div class="card">
-    <h2>Next visit</h2>
-    <p id="appoint-when"></p>
-    <p id="appoint-msg"></p>
+<div class="overlay" id="overlay-mail" hidden>
+  <div class="card mail-card">
+    <p class="kicker">From</p>
+    <p id="mail-from"></p>
+    <p class="kicker">Subject</p>
+    <h2 id="mail-subject"></h2>
+    <p class="note" id="mail-when"></p>
+    <p id="mail-body" class="mail-letter"></p>
+    <div id="mail-negotiate" hidden>
+      <div class="field">
+        <label for="mail-new-time">Negotiate a new time</label>
+        <input id="mail-new-time" type="datetime-local">
+      </div>
+      <p class="note" id="mail-negotiate-msg"></p>
+      <div class="row">
+        <button class="secondary" id="mail-negotiate-btn" type="button">Negotiate</button>
+      </div>
+    </div>
+    <div id="mail-kale" hidden>
+      <p class="note" id="mail-kale-msg"></p>
+      <div class="row" id="mail-kale-actions">
+        <button class="primary" id="mail-kale-agree" type="button">Agree</button>
+        <button class="secondary" id="mail-kale-disagree" type="button">Disagree</button>
+      </div>
+    </div>
     <div class="row">
-      <button class="primary" id="appoint-close" type="button">OK</button>
+      <button class="primary" id="mail-close" type="button">Close</button>
     </div>
   </div>
 </div>
-<script src="/api/plans.js"></script>
-<script src="shared.js?v=75"></script>
-<script src="calendar-plugin.js?v=74"></script>
-<script src="agent.js?v=74"></script>
-<script src="clinic.js?v=74"></script>
+<script src="shared.js?v=85"></script>
+<script src="calendar-plugin.js?v=89"></script>
+<script src="agent.js?v=87"></script>
+<script src="clinic.js?v=86"></script>
+<script src="buddy.js?v=94"></script>
 </body>
 </html>

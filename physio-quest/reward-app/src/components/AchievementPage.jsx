@@ -4,6 +4,10 @@ import { milestones } from '../data/milestones'
 import { timeMilestones } from '../data/timeMilestones'
 import { trainingById } from '../data/trainings'
 import { formatDuration, formatTimer } from '../lib/records'
+import { startRewardTab } from '../data/episodes'
+import { avatarGrowthFromQuery } from '../data/avatar'
+import AvatarPage from './AvatarPage'
+import EpisodePage from './EpisodePage'
 import MedalBadge from './MedalBadge'
 import TrainingPicker from './TrainingPicker'
 
@@ -39,8 +43,18 @@ function awardDetail(award) {
   return `${award.threshold} ${unit} · ${remain} ${unitLabel(award.unit, remain)} to go`
 }
 
-export default function AchievementPage({ count, durationSec, awards, selectedTrainingId, onSelectTraining, onSelect }) {
-  const [tab, setTab] = useState('training')
+export default function AchievementPage({
+  count,
+  durationSec,
+  awards,
+  selectedTrainingId,
+  onSelectTraining,
+  onSelect,
+  storyUnlocked = 0,
+  autoplayEpisode = false,
+  avatarGrowth = avatarGrowthFromQuery(),
+}) {
+  const [tab, setTab] = useState(startRewardTab)
   const training = trainingById(selectedTrainingId)
   const trainingAwards = awards.filter((item) => item.group === 'training' && item.trainingId === selectedTrainingId)
   const visible =
@@ -55,7 +69,11 @@ export default function AchievementPage({ count, durationSec, awards, selectedTr
   return (
     <section>
       <h1 className="text-[1.7rem] font-semibold text-ink">Rewards</h1>
-      <p className="mt-2 text-[15px] leading-7 text-[#5e6d66]">Switch the tabs to see badges. Lit badges stay, even if a few days are missed.</p>
+      {tab === 'episodes' || tab === 'avatar' ? null : (
+        <p className="mt-2 text-[15px] leading-7 text-[#5e6d66]">
+          Switch the tabs to see badges. Lit badges stay, even if a few days are missed.
+        </p>
+      )}
 
       <div className="sticky top-0 z-20 -mx-4 mt-4 bg-[#f6f3ec]/95 px-4 py-3 backdrop-blur-md" role="tablist" aria-label="Badge groups">
         <div className="flex gap-2 overflow-x-auto">
@@ -79,6 +97,9 @@ export default function AchievementPage({ count, durationSec, awards, selectedTr
         </div>
       </div>
 
+      {tab === 'episodes' ? <EpisodePage unlocked={storyUnlocked} autoplay={autoplayEpisode} /> : null}
+      {tab === 'avatar' ? <AvatarPage growth={avatarGrowth} /> : null}
+
       {tab === 'training' ? (
         <div className="mt-2">
           <TrainingPicker selectedId={selectedTrainingId} onSelect={onSelectTraining} label="Exercise badges" />
@@ -88,7 +109,8 @@ export default function AchievementPage({ count, durationSec, awards, selectedTr
         </div>
       ) : null}
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      {tab !== 'episodes' && tab !== 'avatar' ? (
+      <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {visible.map((milestone) => {
           if (milestone.kind === 'award') {
             return (
@@ -127,6 +149,7 @@ export default function AchievementPage({ count, durationSec, awards, selectedTr
           )
         })}
       </div>
+      ) : null}
     </section>
   )
 }

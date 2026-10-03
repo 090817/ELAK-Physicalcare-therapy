@@ -38,6 +38,8 @@ function tierAward({ group, emoji, level, threshold, unit, stat, trainingId, tit
 }
 
 export const awardTabs = [
+  { id: 'episodes', label: 'Episodes' },
+  { id: 'avatar', label: 'Avatar' },
   { id: 'training', label: 'Training' },
   { id: 'days', label: 'Check-ins' },
   { id: 'streak', label: 'Streak' },

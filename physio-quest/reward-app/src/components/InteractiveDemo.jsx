@@ -12,6 +12,8 @@ import MilestoneCardModal from './MilestoneCardModal'
 import ProgressReserveBar from './ProgressReserveBar'
 import RehabCalendar from './RehabCalendar'
 import TrainingPicker from './TrainingPicker'
+import { shouldAutoplayEpisode, storyUnlockedFromQuery } from '../data/episodes'
+import { avatarGrowthFromQuery } from '../data/avatar'
 import { SproutIcon } from './icons'
 
 function embedMode() {
@@ -130,7 +132,7 @@ export default function InteractiveDemo() {
       <div className="pointer-events-none absolute -top-28 -left-24 h-72 w-72 rounded-full bg-[#d7efdf] blur-3xl" />
       <div className="pointer-events-none absolute top-16 -right-24 h-72 w-72 rounded-full bg-[#ffe3c4]/80 blur-3xl" />
 
-      <main className="relative mx-auto w-full max-w-xl px-4 pt-8 pb-36 sm:px-5">
+      <main className="relative mx-auto w-full max-w-none px-6 pt-5 pb-28 sm:px-10 lg:px-14">
         {page === 'today' ? (
           <>
             <header className="flex items-start gap-4">
@@ -213,6 +215,9 @@ export default function InteractiveDemo() {
             selectedTrainingId={records.selectedTrainingId}
             onSelectTraining={records.selectTraining}
             onSelect={onSelect}
+            storyUnlocked={storyUnlockedFromQuery()}
+            autoplayEpisode={shouldAutoplayEpisode()}
+            avatarGrowth={avatarGrowthFromQuery()}
           />
         ) : null}
 

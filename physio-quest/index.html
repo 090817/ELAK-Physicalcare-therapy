@@ -110,6 +110,18 @@
     backdrop-filter: blur(4px);
   }
   .ghost:hover { border-color: rgba(247, 244, 238, 0.4); color: white; }
+  #notes-open { position: relative; }
+  .notes-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e23b2e;
+    box-shadow: 0 0 0 2px #fff7ec;
+    pointer-events: none;
+  }
   .screen { display: none; flex: 1; min-height: 0; }
   .screen.on { display: flex; flex-direction: column; }
   .screen[hidden] { display: none !important; }
@@ -117,8 +129,8 @@
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: 20px;
-    padding: 16px;
-    margin: 0 0 12px;
+    padding: 22px 24px 24px;
+    margin: 0 0 20px;
   }
   .slot-card .row { margin-top: 10px; }
   .slot-card.ok { border-color: var(--leaf); }
@@ -189,13 +201,24 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    max-width: 720px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    flex: 1;
+    min-height: 0;
   }
-  .reward-shell { width: 100%; }
+  .reward-shell {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
   #reward-frame {
     width: 100%;
-    height: min(78vh, 840px);
+    flex: 1 1 auto;
+    min-height: calc(100vh - 132px);
+    height: calc(100vh - 132px);
     border: 0;
     border-radius: 24px;
     background: #f6f3ec;
@@ -539,17 +562,64 @@
   .story-transport { flex-wrap: wrap; justify-content: center; margin-top: 12px; }
   .story-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
   .cal-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-  .cal-table th, .cal-table td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; color: var(--ink); }
+  .cal-table th, .cal-table td { border-bottom: 1px solid var(--line); padding: 12px 12px; text-align: left; vertical-align: top; color: var(--ink); }
   .cal-table th { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
   .cal-table .day { font-weight: 700; white-space: nowrap; }
-  .cal-wrap { max-height: 280px; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,250,242,0.55); }
+  .mail-row {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 0 8px;
+  }
+  .mail-row-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+  .mail-row .notes-dot {
+    position: static;
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    box-shadow: none;
+    transform: none;
+    margin-top: 6px;
+  }
+  .mail-row.read .notes-dot { visibility: hidden; }
+  .mail-copy { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .mail-copy strong, .mail-copy span { display: block; overflow-wrap: anywhere; }
+  .mail-copy strong { font-weight: 700; }
+  .mail-copy span { color: var(--muted); }
+  .mail-row small {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding-left: 16px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .mail-letter { white-space: pre-wrap; line-height: 1.5; }
+  .overlay .card.mail-card { width: min(560px, 100%); }
+  #mail-kale { margin: 14px 0 8px; }
+  #mail-kale .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cal-wrap { max-height: 320px; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,250,242,0.55); margin-top: 14px; }
   #screen-title.on {
     display: grid;
     grid-template-columns: minmax(36rem, 1.55fr) minmax(240px, 0.55fr);
     column-gap: clamp(20px, 4vw, 48px);
     align-items: start;
   }
-  #screen-title .home-copy { min-width: 0; margin-left: 40px; }
+  #screen-title .home-copy {
+    min-width: 0;
+    margin-left: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
   #screen-title .home-hero {
     justify-self: end;
     align-self: start;
@@ -560,6 +630,8 @@
   #home-title {
     white-space: nowrap;
     font-size: clamp(2.6rem, 5.4vw, 4.6rem);
+    margin: 0 0 0.55em;
+    line-height: 1.05;
   }
   #screen-title .lede { max-width: 46rem; }
   #screen-signin.on {
@@ -573,7 +645,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 4px 0 8px;
+    margin: 0 0 22px;
   }
   .remember {
     display: flex;
@@ -593,17 +665,19 @@
     flex: none;
   }
   .kicker {
-    margin: 0 0 8px;
+    margin: 0 0 16px;
     color: #8a6a45;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     font-size: 0.78rem;
+    line-height: 1.4;
   }
   h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 680; letter-spacing: -0.03em; margin: 0; }
   h1 { font-size: clamp(3rem, 7vw, 5.4rem); line-height: 0.92; }
-  .lede { font-size: 1.18rem; line-height: 1.45; max-width: 38rem; color: var(--ink); }
-  .note { color: var(--muted); font-size: 0.92rem; line-height: 1.45; max-width: 40rem; }
+  .lede { font-size: 1.18rem; line-height: 1.5; max-width: 38rem; color: var(--ink); margin: 0 0 12px; }
+  .note { color: var(--muted); font-size: 0.92rem; line-height: 1.5; max-width: 40rem; margin: 0 0 12px; }
+  .note:empty, .lede:empty { display: none; margin: 0; }
   .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .primary, .secondary {
     border-radius: 999px;
@@ -654,18 +728,33 @@
   .quest .time { color: var(--leaf); font-weight: 700; font-size: 0.86rem; letter-spacing: 0.04em; text-transform: uppercase; }
   .quest p { margin: 0; color: var(--muted); line-height: 1.4; flex: 1; }
   .quest .go { color: var(--terra-deep); font-weight: 700; }
-  .plan-list { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 10px; }
-  .plan-list li {
-    background: var(--paper);
+  .plan-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+  .plan-list li, .plan-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255, 250, 242, 0.72);
     border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 14px 16px;
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(6px);
+    border-radius: 16px;
+    padding: 16px 18px;
   }
-  .plan-list strong { display: block; font-size: 1.05rem; }
-  .plan-list span { color: var(--leaf); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; }
-  .plan-list p { margin: 6px 0 0; color: var(--muted); }
+  .plan-item-name, .plan-list strong {
+    display: block;
+    margin: 0;
+    font-size: 1.12rem;
+    line-height: 1.35;
+    font-weight: 700;
+  }
+  .plan-item-meta, .plan-list span {
+    display: block;
+    color: var(--leaf);
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.35;
+  }
+  .plan-list p { margin: 0; color: var(--muted); line-height: 1.45; }
   .clinic-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
   .clinic-side, .clinic-main {
     background: var(--paper);
@@ -817,7 +906,7 @@
   .coach-line { font-size: 1.05rem; line-height: 1.35; min-height: 2.7em; }
   .side-line { color: var(--sky); font-weight: 700; min-height: 1.2em; }
   .block { display: flex; flex-direction: column; gap: 6px; }
-  .spread { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.92rem; color: var(--muted); }
+  .spread { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 14px; font-size: 0.92rem; color: var(--muted); }
   .pips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
   .pip { width: 12px; height: 12px; border-radius: 99px; background: rgba(111, 88, 64, 0.18); display: block; }
   .pip.on { background: var(--terra); }
@@ -950,7 +1039,8 @@
     <div class="header-actions">
       <span class="chip" id="streak" hidden></span>
       <button class="ghost" id="home-open" type="button" hidden>Home</button>
-      <button class="ghost" id="book-open" type="button" hidden>Book plan</button>
+      <button class="ghost" id="book-open" type="button" hidden>Edit schedule</button>
+      <button class="ghost" id="notes-open" type="button" hidden>Notifications<span class="notes-dot" id="patient-notes-dot" hidden></span></button>
       <button class="ghost" id="films-open" type="button" hidden>Films</button>
       <button class="ghost" id="stories-open" type="button" hidden>Rewards</button>
       <button class="ghost" id="patient-out" type="button">Sign out</button>
@@ -985,16 +1075,17 @@
   <section class="screen on" id="screen-title">
     <div class="home-copy">
       <h1 id="home-title">Today's practice</h1>
-      <p class="lede" id="home-lede" hidden></p>
       <div class="home-start row">
-        <button class="primary" id="start-btn" type="button" hidden>Book exercise plan</button>
+        <button class="primary" id="start-btn" type="button" hidden>Start today's exercise</button>
         <button class="secondary" id="how-open" type="button" hidden>How to play</button>
       </div>
+      <p class="lede" id="home-lede" hidden></p>
       <p class="note" id="nudge-line"></p>
       <p class="note" id="plan-status"></p>
       <p class="note" id="best-line" hidden></p>
       <div id="home-plan" class="busy-box" hidden></div>
       <div id="home-schedule" class="busy-box" hidden></div>
+      <div id="home-calendar" class="busy-box" hidden></div>
       <div id="home-story" class="busy-box" hidden></div>
     </div>
     <div class="hero-card home-hero">
@@ -1003,25 +1094,21 @@
   </section>
 
   <section class="screen" id="screen-book" hidden>
-    <h2 style="font-size:2.4rem;margin-bottom:6px">Book plan</h2>
-    <p class="note" id="book-lede" hidden></p>
-    <div class="busy-box" id="book-plan"></div>
+    <h2 style="font-size:2.4rem;margin-bottom:6px">This week's exercise plan</h2>
+    <p class="note" id="book-lede">Times were chosen around your calendar. Change any day you need.</p>
+    <div class="busy-box" id="book-plan" hidden></div>
+    <div id="book-slots"></div>
+    <p class="note" id="book-error"></p>
+    <div class="row">
+      <button class="primary" id="book-save" type="button">Save changes</button>
+    </div>
     <div class="busy-box">
-      <div class="spread">
-        <strong>Device calendar</strong>
-        <button class="ghost" id="book-cal-sync" type="button">Sync this device</button>
-      </div>
       <p class="note" id="book-cal-status"></p>
       <div id="busy-list"></div>
     </div>
     <div class="field" hidden>
       <label for="book-sentence">Nudge</label>
       <input id="book-sentence" maxlength="120">
-    </div>
-    <div id="book-slots"></div>
-    <p class="note" id="book-error"></p>
-    <div class="row">
-      <button class="primary" id="book-save" type="button">Submit times</button>
     </div>
   </section>
 
@@ -1087,6 +1174,11 @@
       <button id="mode-button" type="button">Follow</button>
       <button id="mode-camera" type="button">Camera</button>
     </div>
+  </section>
+
+  <section class="screen" id="screen-notes" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:12px">Notifications</h2>
+    <div id="patient-inbox"></div>
   </section>
 
   <section class="screen" id="screen-films" hidden>
@@ -1199,13 +1291,33 @@
   </div>
 </div>
 
-<div class="overlay" id="overlay-appoint" hidden>
-  <div class="card">
-    <h2>Next visit</h2>
-    <p id="appoint-when"></p>
-    <p id="appoint-msg"></p>
+<div class="overlay" id="overlay-mail" hidden>
+  <div class="card mail-card">
+    <p class="kicker">From</p>
+    <p id="mail-from"></p>
+    <p class="kicker">Subject</p>
+    <h2 id="mail-subject"></h2>
+    <p class="note" id="mail-when"></p>
+    <p id="mail-body" class="mail-letter"></p>
+    <div id="mail-negotiate" hidden>
+      <div class="field">
+        <label for="mail-new-time">Negotiate a new time</label>
+        <input id="mail-new-time" type="datetime-local">
+      </div>
+      <p class="note" id="mail-negotiate-msg"></p>
+      <div class="row">
+        <button class="secondary" id="mail-negotiate-btn" type="button">Negotiate</button>
+      </div>
+    </div>
+    <div id="mail-kale" hidden>
+      <p class="note" id="mail-kale-msg"></p>
+      <div class="row" id="mail-kale-actions">
+        <button class="primary" id="mail-kale-agree" type="button">Agree</button>
+        <button class="secondary" id="mail-kale-disagree" type="button">Disagree</button>
+      </div>
+    </div>
     <div class="row">
-      <button class="primary" id="appoint-close" type="button">OK</button>
+      <button class="primary" id="mail-close" type="button">Close</button>
     </div>
   </div>
 </div>
@@ -1297,10 +1409,10 @@
 <p id="live" class="sr" aria-live="polite"></p>
 <video id="cam" playsinline muted hidden></video>
 
-<script src="/api/plans.js"></script>
-<script src="shared.js?v=75"></script>
-<script src="calendar-plugin.js?v=74"></script>
-<script src="agent.js?v=74"></script>
+<script src="shared.js?v=85"></script>
+<script src="calendar-plugin.js?v=89"></script>
+<script src="agent.js?v=87"></script>
+<script src="buddy.js?v=94"></script>
 <script>
 const SAVE_KEY = "full-range-v1";
 const UP = 0.40;
@@ -1557,7 +1669,7 @@ function breathLevel(phase) { return phase < 0.5 ? ease(phase / 0.5) : ease(1 - 
 
 function show(screen) {
   S.screen = screen;
-  for (const id of ["signin", "title", "book", "films", "quests", "play", "done", "story"]) {
+  for (const id of ["signin", "title", "book", "notes", "films", "quests", "play", "done", "story"]) {
     const el = $("screen-" + id);
     const on = id === screen;
     el.classList.toggle("on", on);
@@ -1567,17 +1679,21 @@ function show(screen) {
   if (screen === "play") requestAnimationFrame(resize);
   if (screen !== "story") stopStoryVoice();
   syncTeach();
+  if (window.ELAKBuddy) window.ELAKBuddy.refresh();
 }
 
 function updateChrome() {
   const plan = activePlan();
   const inApp = patientUiOn() && S.screen !== "signin";
   $("stories-open").hidden = !plan || !inApp;
+  if ($("notes-open")) $("notes-open").hidden = !plan || !inApp;
   $("films-open").hidden = !plan || !inApp;
   $("patient-out").hidden = !inApp;
   if ($("home-open")) $("home-open").hidden = !inApp;
-  $("book-open").hidden = !inApp || !cycleNeedsBooking(cycleOf(plan));
+  $("book-open").hidden = !inApp || !cycleOf(plan);
   $("mute").hidden = !plan || !inApp;
+  paintNotesDot();
+  if (window.ELAKBuddy) window.ELAKBuddy.refresh();
 }
 function refreshMeta() {
   updateChrome();
@@ -1599,30 +1715,55 @@ function refreshMeta() {
   const ankle = visit ? ankleExercises(visit.exercises) : [];
   const cycle = cycleOf(plan);
   markPhoneDay(plan);
-  $("book-open").hidden = !patientUiOn() || S.screen === "signin" || !cycleNeedsBooking(cycle);
+  if (cycleNeedsBooking(cycle)) {
+    if (autoBookCycle(plan)) notifyPracticePlan(loadPlans().plans[plan.code] || plan);
+  }
+  ensurePlanVisit(plan);
+  const live = loadPlans().plans[plan.code] || plan;
+  if (keepVisitOnCalendar(live) && live.code) {
+    const store = loadPlans();
+    store.plans[live.code] = live;
+    savePlans(store);
+  }
+  const fresh = loadPlans().plans[plan.code] || plan;
+  const booked = cycleOf(fresh);
+  $("book-open").hidden = !patientUiOn() || S.screen === "signin" || !booked;
   $("start-btn").hidden = !ankle.length;
-  if (cycleNeedsBooking(cycle)) $("start-btn").textContent = "Book exercise plan";
-  else $("start-btn").textContent = "Start today's exercise";
+  $("start-btn").textContent = "Start today's exercise";
   $("plan-status").textContent = ankle.length
     ? plan.patient + " · " + formatWhen(visit.date)
     : (plan.patient || "");
   if ($("best-line")) $("best-line").hidden = true;
-  paintNudgeLine(plan, cycle);
-  renderHomePlan(plan);
-  renderHomeSchedule(plan);
-  renderHomeStories(plan);
-  if (plan) {
-    ensureCalendarOnPlan(plan).then(() => {
-      if (S.screen === "title") renderHomeSchedule(activePlan() || plan);
+  paintNudgeLine(fresh, booked);
+  renderHomePlan(fresh);
+  renderHomeSchedule(fresh);
+  renderHomeCalendar(fresh);
+  renderHomeStories(fresh);
+  paintNotesDot();
+  if (S.screen === "notes") renderPatientInbox();
+  if (fresh) {
+    startCalendarWatch();
+    ensureCalendarOnPlan(fresh).then(() => {
+      if (S.screen === "title") renderHomeCalendar(activePlan() || fresh);
     });
   }
   if (S.screen === "title") maybePromptCycle();
-  if (S.screen === "title") maybeShowAppointment(plan);
+  if (S.screen === "title") maybeShowAppointment(fresh);
 }
 function maybeShowAppointment(plan) {
   const appt = plan && plan.appointment;
   if (!appt || !appt.start || appt.patientSeen) return;
-  showAppointmentNotice(appt, "patient");
+  notifyAppointment(plan, appt);
+}
+function renderPatientInbox() {
+  const plan = activePlan();
+  renderInboxList($("patient-inbox"), inboxFor("patient", plan && plan.username), (item) => {
+    markInboxRead("patient", plan && plan.username, item.id);
+    fillMailView(item);
+    renderPatientInbox();
+    paintNotesDot();
+    if (item.type === "appointment") markAppointmentSeen(plan, "patient");
+  });
 }
 
 function paintNudgeLine(plan, cycle) {
@@ -1637,8 +1778,7 @@ function paintNudgeLine(plan, cycle) {
     return;
   }
   if (cycleNeedsBooking(cycle)) {
-    const left = cycle.slots.filter(slotNeedsPick).length;
-    line.textContent = left ? left + (left === 1 ? " day" : " days") + " to book" : "";
+    line.textContent = "Choosing practice times around your calendar…";
     return;
   }
   const due = dueSlot(cycle);
@@ -1664,22 +1804,24 @@ async function openBook() {
     show("title");
     return;
   }
+  if (cycleNeedsBooking(cycle)) {
+    autoBookCycle(plan);
+    notifyPracticePlan(loadPlans().plans[plan.code] || plan);
+  }
   $("book-sentence").value = cycle.sentence || "";
   $("book-error").textContent = "";
   $("busy-list").textContent = "Reading your calendar…";
   S.bookPicks = {};
   show("book");
   refreshMeta();
-  await ensureCalendarOnPlan(plan);
-  renderBookPlan(plan);
+  await ensureCalendarOnPlan(activePlan() || plan);
   renderBusy();
   renderBookSlots();
 }
 
 function renderBusy() {
   const plan = activePlan();
-  if ($("book-cal-status")) $("book-cal-status").textContent = deviceCalStatus(plan);
-  renderCalendarTable($("busy-list"), plan, "patient");
+  paintRoleCalendar($("busy-list"), $("book-cal-status"), "patient", plan);
 }
 
 function bookPickOf(slot) {
@@ -1709,11 +1851,14 @@ function appendExerciseItems(root, plan) {
     const base = EX[item.pattern];
     if (!base) return;
     const li = document.createElement("li");
+    li.className = "plan-item";
     const kicker = document.createElement("span");
+    kicker.className = "plan-item-meta";
     const count = base.type === "sustain" ? item.reps + " breaths" : item.reps + " reps";
     const days = clamp(Number(item.daysPerWeek) || (cycleOf(plan) && cycleOf(plan).daysPerWeek) || 7, 1, 7);
     kicker.textContent = (index + 1) + " · " + count + " · " + days + (days === 1 ? " day" : " days");
     const name = document.createElement("strong");
+    name.className = "plan-item-name";
     name.textContent = base.name;
     li.append(kicker, name);
     ol.appendChild(li);
@@ -1742,24 +1887,9 @@ function renderHomePlan(plan) {
   root.replaceChildren();
   const kicker = document.createElement("p");
   kicker.className = "kicker";
-  kicker.style.margin = "0";
   kicker.textContent = "Exercise plan";
   root.appendChild(kicker);
   appendExerciseItems(root, plan);
-}
-async function syncHomeCalendar() {
-  const plan = activePlan();
-  if (!plan) return;
-  try {
-    const next = await syncDeviceCalendarToPlan(plan);
-    renderHomeSchedule(next);
-    if (S.screen === "book") {
-      renderBusy();
-      renderBookSlots();
-    }
-  } catch (err) {
-    renderHomeSchedule(activePlan() || plan);
-  }
 }
 function renderHomeSchedule(plan) {
   const root = $("home-schedule");
@@ -1772,67 +1902,114 @@ function renderHomeSchedule(plan) {
   const cycle = cycleOf(plan);
   root.hidden = false;
   root.replaceChildren();
-  const top = document.createElement("div");
-  top.className = "spread";
   const kicker = document.createElement("p");
   kicker.className = "kicker";
-  kicker.style.margin = "0";
-  kicker.textContent = "Schedule";
-  const sync = document.createElement("button");
-  sync.type = "button";
-  sync.className = "ghost";
-  sync.textContent = "Sync this device";
-  sync.addEventListener("click", syncHomeCalendar);
-  top.append(kicker, sync);
-  root.appendChild(top);
-  const status = document.createElement("p");
-  status.className = "note";
-  status.textContent = deviceCalStatus(plan);
-  root.appendChild(status);
-  if (cycle && cycle.slots && cycle.slots.length) {
-    const table = document.createElement("table");
-    table.className = "cal-table";
-    const head = document.createElement("thead");
-    const hr = document.createElement("tr");
-    ["Day", "Practice time", "Status"].forEach((label) => {
-      const th = document.createElement("th");
-      th.textContent = label;
-      hr.appendChild(th);
-    });
-    head.appendChild(hr);
-    const body = document.createElement("tbody");
-    cycle.slots.forEach((slot) => {
-      const tr = document.createElement("tr");
-      const day = document.createElement("td");
-      day.className = "day";
-      day.textContent = slot.date;
-      const time = document.createElement("td");
-      time.textContent = slot.start
-        ? new Date(slot.start).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
-        : "Not chosen";
-      const status = document.createElement("td");
-      status.textContent = slotNeedsPick(slot)
-        ? "Needs a time"
-        : (slot.status === "accepted" ? "Booked" : (slot.status || "Saved"));
-      tr.append(day, time, status);
-      body.appendChild(tr);
-    });
-    table.append(head, body);
-    const wrap = document.createElement("div");
-    wrap.className = "cal-wrap";
-    wrap.appendChild(table);
-    root.appendChild(wrap);
+  kicker.textContent = "This week's exercise plan";
+  root.appendChild(kicker);
+  if (!cycle || !cycle.slots || !cycle.slots.length) {
+    const empty = document.createElement("p");
+    empty.className = "note";
+    empty.textContent = "No practice days booked yet.";
+    root.appendChild(empty);
+    return;
   }
-  const cal = document.createElement("div");
-  if (cycle && cycle.slots && cycle.slots.length) cal.style.marginTop = "12px";
-  if (plan.appointment && plan.appointment.start) {
-    const appt = document.createElement("p");
-    appt.style.fontWeight = "650";
-    appt.textContent = "Next visit · " + formatAppointmentWhen(plan.appointment);
-    root.appendChild(appt);
+  if (!window.ELAK_WEEK) window.ELAK_WEEK = mondayOf(cycle.periodStart || new Date());
+  const days = weekDays(window.ELAK_WEEK);
+  const nav = document.createElement("div");
+  nav.className = "spread";
+  const prev = document.createElement("button");
+  prev.type = "button";
+  prev.className = "ghost";
+  prev.textContent = "Previous week";
+  const label = document.createElement("strong");
+  const first = new Date(days[0] + "T12:00:00");
+  const last = new Date(days[6] + "T12:00:00");
+  label.textContent = first.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " – " + last.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "ghost";
+  next.textContent = "Next week";
+  prev.addEventListener("click", () => {
+    window.ELAK_WEEK = shiftDay(window.ELAK_WEEK, -7);
+    renderHomeSchedule(activePlan() || plan);
+  });
+  next.addEventListener("click", () => {
+    window.ELAK_WEEK = shiftDay(window.ELAK_WEEK, 7);
+    renderHomeSchedule(activePlan() || plan);
+  });
+  nav.append(prev, label, next);
+  root.appendChild(nav);
+  const table = document.createElement("table");
+  table.className = "cal-table";
+  const head = document.createElement("thead");
+  const hr = document.createElement("tr");
+  ["Day", "Time", "Plan"].forEach((text) => {
+    const th = document.createElement("th");
+    th.textContent = text;
+    hr.appendChild(th);
+  });
+  head.appendChild(hr);
+  const body = document.createElement("tbody");
+  days.forEach((key) => {
+    const slot = cycle.slots.find((item) => item.date === key);
+    const visit = plan.appointment && dayKey(plan.appointment.start) === key ? plan.appointment : null;
+    const tr = document.createElement("tr");
+    const day = document.createElement("td");
+    day.className = "day";
+    day.textContent = weekdayName(key);
+    const time = document.createElement("td");
+    const what = document.createElement("td");
+    if (slot && slot.start) {
+      time.textContent = new Date(slot.start).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+      what.textContent = slot.status && String(slot.status).startsWith("done") ? "Done" : "Ankle practice";
+    } else if (visit) {
+      time.textContent = new Date(visit.start).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+      what.textContent = "Next visit";
+    } else {
+      time.textContent = "—";
+      what.textContent = slot ? "Choosing a time" : "Rest";
+    }
+    if (visit && slot && slot.start) what.textContent = "Ankle practice · next visit";
+    tr.append(day, time, what);
+    body.appendChild(tr);
+  });
+  table.append(head, body);
+  const wrap = document.createElement("div");
+  wrap.className = "cal-wrap";
+  wrap.appendChild(table);
+  root.appendChild(wrap);
+  const edit = document.createElement("button");
+  edit.type = "button";
+  edit.className = "secondary";
+  edit.style.marginTop = "10px";
+  edit.textContent = "Edit schedule";
+  edit.addEventListener("click", () => openBook());
+  root.appendChild(edit);
+}
+function renderHomeCalendar(plan) {
+  const root = $("home-calendar");
+  if (!root) return;
+  if (!plan) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
   }
-  renderCalendarTable(cal, plan, "patient");
-  root.appendChild(cal);
+  root.hidden = false;
+  let status = $("home-cal-status");
+  let table = $("home-cal-table");
+  if (!status || !table || status.parentElement !== root) {
+    root.replaceChildren();
+    const kicker = document.createElement("p");
+    kicker.className = "kicker";
+    kicker.textContent = "Calendar";
+    status = document.createElement("p");
+    status.className = "note";
+    status.id = "home-cal-status";
+    table = document.createElement("div");
+    table.id = "home-cal-table";
+    root.append(kicker, status, table);
+  }
+  paintRoleCalendar(table, status, "patient", plan);
 }
 function renderHomeStories(plan) {
   const root = $("home-story");
@@ -1908,7 +2085,10 @@ function openReward(credits) {
     $("story-kicker").textContent = "";
     $("story-kicker").hidden = true;
   }
-  if ($("story-title")) $("story-title").textContent = "Rewards";
+  if ($("story-title")) {
+    $("story-title").textContent = "Rewards";
+    $("story-title").hidden = true;
+  }
   if ($("story-scene")) {
     $("story-scene").textContent = "";
     $("story-scene").hidden = true;
@@ -1917,7 +2097,13 @@ function openReward(credits) {
     sendRewardCommands(S.pendingReward || [], frame);
     S.pendingReward = [];
   };
-  frame.src = "reward/index.html?embed=1&user=" + encodeURIComponent(rewardUser()) + "&t=" + Date.now();
+  const plan = activePlan();
+  const n = typeof storyUnlockedCount === "function" ? storyUnlockedCount(plan) : 0;
+  const growth = typeof avatarGrowthOf === "function" ? avatarGrowthOf(plan) : 0;
+  const justFinished = Array.isArray(credits) && credits.length;
+  const tab = (S.lastReward && S.lastReward.evolved) ? "avatar" : "episodes";
+  frame.src = "reward/index.html?embed=1&user=" + encodeURIComponent(rewardUser()) + "&story=" + n + "&growth=" + growth + "&tab=" + tab + (justFinished && tab === "episodes" ? "&watch=1" : "") + "&t=" + Date.now();
+  if (S.lastReward) S.lastReward.evolved = false;
   show("story");
 }
 const STORY_CAST = {
@@ -2393,101 +2579,48 @@ function renderBookSlots() {
   const root = $("book-slots");
   root.replaceChildren();
   if (!cycle) return;
-  for (const slot of cycle.slots.filter(slotNeedsPick)) {
-    const pick = bookPickOf(slot);
+  S.bookPicks = S.bookPicks || {};
+  cycle.slots.forEach((slot) => {
+    if (!S.bookPicks[slot.id]) {
+      S.bookPicks[slot.id] = { custom: slot.start ? toLocalInput(slot.start) : slot.date + "T09:00" };
+    }
+    const pick = S.bookPicks[slot.id];
     const card = document.createElement("div");
-    card.className = "slot-card" + (pick.choice ? " ok" : "");
+    card.className = "slot-card ok";
     const head = document.createElement("p");
     const strong = document.createElement("strong");
-    strong.textContent = slot.date;
+    strong.textContent = weekdayName(slot.date) + " · " + slot.date;
     head.append(strong);
-    const list = document.createElement("div");
-    list.className = "choice-list";
-    const group = "slot-" + slot.id;
-    slot.offers.forEach((iso, index) => {
-      const value = "offer-" + index;
-      const label = document.createElement("label");
-      label.className = "choice" + (pick.choice === value ? " sel" : "");
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = group;
-      radio.value = value;
-      radio.checked = pick.choice === value;
-      radio.addEventListener("change", () => {
-        pick.choice = value;
-        renderBookSlots();
-      });
-      const text = document.createElement("span");
-      const title = document.createElement("strong");
-      title.textContent = "Option " + (index + 1);
-      const when = document.createElement("small");
-      when.textContent = new Date(iso).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-      text.append(title, when);
-      label.append(radio, text);
-      list.appendChild(label);
-    });
-    const customLabel = document.createElement("label");
-    customLabel.className = "choice" + (pick.choice === "custom" ? " sel" : "");
-    const customRadio = document.createElement("input");
-    customRadio.type = "radio";
-    customRadio.name = group;
-    customRadio.value = "custom";
-    customRadio.checked = pick.choice === "custom";
-    customRadio.addEventListener("change", () => {
-      pick.choice = "custom";
-      renderBookSlots();
-    });
-    const customText = document.createElement("span");
-    const customTitle = document.createElement("strong");
-    customTitle.textContent = "Use my own time";
-    const customInput = document.createElement("input");
-    customInput.type = "datetime-local";
-    customInput.value = pick.custom || slot.date + "T09:00";
-    customInput.addEventListener("input", () => {
-      pick.custom = customInput.value;
-      pick.choice = "custom";
-    });
-    customText.append(customTitle, customInput);
-    customLabel.append(customRadio, customText);
-    list.appendChild(customLabel);
-    card.append(head, list);
+    const field = document.createElement("div");
+    field.className = "field";
+    const label = document.createElement("label");
+    label.textContent = "Practice time";
+    const input = document.createElement("input");
+    input.type = "datetime-local";
+    input.value = pick.custom || slot.date + "T09:00";
+    input.addEventListener("input", () => { pick.custom = input.value; });
+    field.append(label, input);
+    card.append(head, field);
     root.appendChild(card);
-  }
+  });
 }
 
 function saveBook() {
   const plan = activePlan();
   const cycle = cycleOf(plan);
   if (!cycle) return;
-  const pending = cycle.slots.filter(slotNeedsPick);
-  for (const slot of pending) {
+  for (const slot of cycle.slots) {
     const pick = (S.bookPicks || {})[slot.id];
-    if (!pick || !pick.choice) {
-      $("book-error").textContent = "Choose an option for every date, then submit.";
+    const stamp = pick && pick.custom ? new Date(pick.custom) : (slot.start ? new Date(slot.start) : null);
+    if (!stamp || Number.isNaN(stamp.getTime())) {
+      $("book-error").textContent = "Add a time for " + slot.date + ".";
       return;
     }
-    if (pick.choice === "custom") {
-      if (!pick.custom) {
-        $("book-error").textContent = "Add your own time for " + slot.date + ", or pick one of the offered times.";
-        return;
-      }
-      customSlot(cycle, slot.id, new Date(pick.custom).toISOString());
-    } else {
-      const index = Number(String(pick.choice).replace("offer-", ""));
-      const iso = slot.offers[index];
-      if (!iso) {
-        $("book-error").textContent = "Choose an option for " + slot.date + ".";
-        return;
-      }
-      acceptSlot(cycle, slot.id, iso);
-    }
-  }
-  if (cycle.slots.some(slotNeedsPick)) {
-    $("book-error").textContent = "Choose an option for every date, then submit.";
-    return;
+    acceptSlot(cycle, slot.id, stamp.toISOString());
   }
   cycle.sentence = ($("book-sentence").value || "").trim() || cycle.sentence;
   writeAcceptedEvents(plan, cycle);
+  notifyPracticePlan(loadPlans().plans[plan.code] || plan);
   S.bookPicks = {};
   $("book-error").textContent = "";
   refreshMeta();
@@ -2521,8 +2654,9 @@ function persistPlanCalendar(plan) {
 }
 async function ensureCalendarOnPlan(plan) {
   if (!plan) return;
-  const window = displayWindowForPlan(plan);
-  applyRoleCalendarsToPlan(plan, window.start, window.end);
+  window.ELAK_CAL_READING = true;
+  const span = displayWindowForPlan(plan);
+  applyRoleCalendarsToPlan(plan, span.start, span.end);
   refreshPlanOffers(plan);
   persistPlanCalendar(plan);
   try {
@@ -2534,6 +2668,7 @@ async function ensureCalendarOnPlan(plan) {
       plan.cycle = next.cycle || plan.cycle;
     }
   } catch (err) { /* keep this device's last patient calendar */ }
+  window.ELAK_CAL_READING = false;
 }
 
 function formatSlotWhen(iso, minutes) {
@@ -2824,6 +2959,7 @@ function saveFeedback() {
       painStop
     });
     savePlans(data);
+    if (typeof notifyPatientReport === "function") notifyPatientReport(cur);
   }
   keepCurrentFilm().catch(() => {});
   S.slotId = null;
@@ -2836,8 +2972,8 @@ function homeFromStart() {
   const plan = activePlan();
   const cycle = cycleOf(plan);
   if (cycleNeedsBooking(cycle)) {
-    openBook();
-    return;
+    autoBookCycle(plan);
+    notifyPracticePlan(loadPlans().plans[plan.code] || plan);
   }
   sfxClick();
   startDailyExercise();
@@ -2865,11 +3001,14 @@ function renderPlan() {
     const base = EX[item.pattern];
     if (!base) return;
     const li = document.createElement("li");
+    li.className = "plan-item";
     const kicker = document.createElement("span");
+    kicker.className = "plan-item-meta";
     const count = base.type === "sustain" ? item.reps + " breaths" : item.reps + " reps";
     const days = clamp(Number(item.daysPerWeek) || (cycleOf(activePlan()) && cycleOf(activePlan()).daysPerWeek) || 7, 1, 7);
     kicker.textContent = (index + 1) + " · " + count + " · " + days + (days === 1 ? " day" : " days");
     const name = document.createElement("strong");
+    name.className = "plan-item-name";
     name.textContent = base.name;
     li.append(kicker, name);
     list.appendChild(li);
@@ -3006,6 +3145,7 @@ async function submitPractice() {
       filmed: true
     });
     S.logged = true;
+    if (window.ELAKReward && typeof window.ELAKReward.grow === "function") window.ELAKReward.grow(1);
   }
   if (S.exIndex >= quest().exercises.length - 1) {
     stopFilmStream();
@@ -3766,6 +3906,7 @@ function finishExercise(stopped) {
   if (!stopped) {
     S.celebrate = 1.25;
     sfxWin();
+    if (window.ELAKReward && typeof window.ELAKReward.grow === "function") window.ELAKReward.grow(1);
   }
 }
 
@@ -4806,21 +4947,13 @@ function wire() {
   });
   $("films-open").addEventListener("click", () => { openFilms(); });
   $("films-back").addEventListener("click", () => { refreshMeta(); show("title"); });
+  if ($("notes-open")) $("notes-open").addEventListener("click", () => { show("notes"); renderPatientInbox(); updateChrome(); });
+  if ($("mail-negotiate-btn")) $("mail-negotiate-btn").addEventListener("click", submitVisitNegotiate);
+  if ($("mail-close")) $("mail-close").addEventListener("click", () => { $("overlay-mail").hidden = true; });
   $("book-open").addEventListener("click", openBook);
   $("book-save").addEventListener("click", saveBook);
-  wireCalendarSync($("book-cal-sync"), $("book-cal-status"), (plan) => {
-    renderBusy();
-    renderBookSlots();
-    if (S.screen === "title") renderHomeSchedule(plan);
-  });
   $("start-btn").addEventListener("click", homeFromStart);
   $("nudge-start").addEventListener("click", startDueBout);
-  if ($("appoint-close")) {
-    $("appoint-close").addEventListener("click", () => {
-      $("overlay-appoint").hidden = true;
-      markAppointmentSeen(activePlan(), "patient");
-    });
-  }
   $("nudge-later").addEventListener("click", () => {
     $("overlay-nudge").hidden = true;
     S.nudgeSnooze = Date.now() + 5 * 60000;

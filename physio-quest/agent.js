@@ -11,19 +11,67 @@ window.ELAKReward = window.ELAKReward || {
     const data = loadPlans();
     const cur = data.plans[plan.code];
     if (!cur.rewards) cur.rewards = [];
+    const today = dayKey(new Date());
+    const alreadyToday = cur.rewards.some((row) => row && row.at && dayKey(row.at) === today && row.unlockStory !== false);
+    const unlockStory = !(payload && payload.unlockStory === false) && !alreadyToday;
     cur.rewards.push({
       at: new Date().toISOString(),
       type: payload && payload.type ? payload.type : "story",
       level: payload && payload.level,
-      slotId: payload && payload.slotId
+      slotId: payload && payload.slotId,
+      unlockStory
     });
-    if (payload && payload.unlockStory !== false) {
-      cur.storyUnlocked = Math.min(31, (cur.storyUnlocked || 0) + 1);
-    }
+    if (unlockStory) cur.storyUnlocked = Math.min(31, (cur.storyUnlocked || 0) + 1);
     savePlans(data);
-    return { reward: cur.rewards[cur.rewards.length - 1], episode: cur.storyUnlocked || 0 };
+    const result = {
+      reward: cur.rewards[cur.rewards.length - 1],
+      episode: cur.storyUnlocked || 0,
+      growth: Number(cur.avatarGrowth) || 0,
+      evolved: !!(typeof S !== "undefined" && S.lastReward && S.lastReward.evolved),
+      stage: avatarStageOf(cur.avatarGrowth)
+    };
+    if (typeof S !== "undefined") S.lastReward = Object.assign({}, S.lastReward || {}, result);
+    return result;
+  },
+  grow(n) {
+    return growAvatar(n);
   }
 };
+
+function growAvatar(n) {
+  const add = Math.max(0, Math.floor(Number(n) || 0));
+  if (!add) return null;
+  const plan = activePlan();
+  if (!plan) return null;
+  const data = loadPlans();
+  const cur = data.plans[plan.code];
+  if (!cur) return null;
+  const before = Number(cur.avatarGrowth) || 0;
+  cur.avatarGrowth = before + add;
+  savePlans(data);
+  const result = {
+    growth: cur.avatarGrowth,
+    evolved: avatarStageOf(before) !== avatarStageOf(cur.avatarGrowth),
+    stage: avatarStageOf(cur.avatarGrowth)
+  };
+  if (typeof S !== "undefined") {
+    S.lastReward = Object.assign({}, S.lastReward || {}, result, {
+      evolved: !!(S.lastReward && S.lastReward.evolved) || result.evolved
+    });
+  }
+  if (window.ELAKBuddy && typeof window.ELAKBuddy.face === "function") window.ELAKBuddy.face();
+  return result;
+}
+
+function avatarGrowthOf(plan) {
+  return Math.max(0, Number(plan && plan.avatarGrowth) || 0);
+}
+function avatarStageOf(points) {
+  const n = Math.max(0, Number(points) || 0);
+  if (n >= 12) return "adult";
+  if (n >= 5) return "youth";
+  return "child";
+}
 
 function dayKey(value) {
   const d = value instanceof Date ? value : new Date(value);
@@ -272,7 +320,7 @@ function applyYouthCalendar(plan, startISO, endISO) {
 }
 function calendarSummary(plan, who) {
   return (plan.calendar || []).filter((event) => {
-    if (who) return event.who === who || (who === "patient" && (event.source === "calendar" || event.source === "busy") && event.who !== "clinician");
+    if (who) return event.who === who || event.who === "both" || event.source === "elak" || (who === "patient" && (event.source === "calendar" || event.source === "busy") && event.who !== "clinician");
     return event.source === "calendar" || event.source === "busy" || event.source === "clinic" || event.source === "elak";
   });
 }
@@ -385,6 +433,7 @@ function buildCycle(plan, visit, settings) {
     painRule: (settings.painRule || "").trim(),
     minBout: clamp(Number(settings.minBout) || 1, 1, 20),
     daysPerWeek: freq,
+    daysUntilNext: clamp(Number(settings.daysUntilNext) || freq || 14, 1, 90),
     sentence: (settings.sentence || "Time for your ankle practice.").trim(),
     minutes,
     slots,
@@ -408,17 +457,42 @@ function acceptSlot(cycle, slotId, iso) {
 function customSlot(cycle, slotId, iso) {
   return acceptSlot(cycle, slotId, iso);
 }
+function isVisitEvent(event) {
+  return !!(event && (event.who === "both" || event.title === "Next visit" || String(event.title || "").indexOf("Next visit") === 0));
+}
+function bestFreeSlot(dateKey, part, calendar, minutes) {
+  const offers = twoOffers(dateKey, part, calendar, minutes);
+  for (const iso of offers) {
+    if (!overlaps(iso, minutes, calendar)) return iso;
+  }
+  return offers[0] || atStamp(dateKey, clockFromPart(part));
+}
+function keepVisitOnCalendar(plan) {
+  if (!plan || !plan.appointment || !plan.appointment.start) return false;
+  const has = (plan.calendar || []).some((event) => event.source === "elak" && isVisitEvent(event) && event.start === plan.appointment.start);
+  if (has) return false;
+  plan.calendar = (plan.calendar || []).filter((event) => !(event.source === "elak" && isVisitEvent(event)));
+  plan.calendar.push({
+    source: "elak",
+    who: "both",
+    title: "Next visit",
+    start: plan.appointment.start,
+    end: plan.appointment.end
+  });
+  return true;
+}
 function writeAcceptedEvents(plan, cycle) {
   const data = loadPlans();
   const cur = data.plans[plan.code];
-  const kept = (cur.calendar || []).filter((event) => event.source !== "elak");
+  const kept = (cur.calendar || []).filter((event) => event.source !== "elak" || isVisitEvent(event));
   for (const slot of cycle.slots) {
-    if (!slot.start || (slot.status !== "accepted" && slot.status !== "rebook" && !slot.status.startsWith("done"))) continue;
+    if (!slot.start || (slot.status !== "accepted" && slot.status !== "rebook" && !String(slot.status || "").startsWith("done"))) continue;
     if (slot.status === "offer") continue;
     const start = new Date(slot.start);
     const end = new Date(start.getTime() + cycle.minutes * 60000);
     kept.push({
       source: "elak",
+      who: "patient",
       title: "ELAK ankle practice",
       start: start.toISOString(),
       end: end.toISOString(),
@@ -427,7 +501,114 @@ function writeAcceptedEvents(plan, cycle) {
   }
   cur.calendar = kept;
   cur.cycle = cycle;
+  keepVisitOnCalendar(cur);
   savePlans(data);
+  return cur;
+}
+function autoBookCycle(plan) {
+  if (!plan || !plan.code) return false;
+  const data = loadPlans();
+  const cur = data.plans[plan.code] || plan;
+  const cycle = cycleOf(cur);
+  if (!cycle || !cycle.slots || !cycle.slots.some(slotNeedsPick)) return false;
+  applyRoleCalendarsToPlan(cur);
+  const busy = practiceCalendar(cur).filter((event) => !isVisitEvent(event));
+  cycle.slots.forEach((slot) => {
+    if (!slotNeedsPick(slot)) return;
+    const taken = busy.concat(cycle.slots.filter((other) => other.id !== slot.id && other.start).map((other) => ({
+      start: other.start,
+      end: new Date(new Date(other.start).getTime() + cycle.minutes * 60000).toISOString()
+    })));
+    acceptSlot(cycle, slot.id, bestFreeSlot(slot.date, cycle.timeOfDay, taken, cycle.minutes));
+  });
+  writeAcceptedEvents(cur, cycle);
+  return true;
+}
+function mondayOf(value) {
+  const raw = value instanceof Date ? value : new Date(String(value || "").length === 10 ? value + "T12:00:00" : value);
+  const d = Number.isNaN(raw.getTime()) ? new Date() : raw;
+  const dow = d.getDay();
+  d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow));
+  return dayKey(d);
+}
+function weekDays(mondayKey) {
+  const days = [];
+  const [y, m, d] = String(mondayKey).split("-").map(Number);
+  const cur = new Date(y, (m || 1) - 1, d || 1);
+  for (let i = 0; i < 7; i++) {
+    days.push(dayKey(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return days;
+}
+function leadFromPlan(plan) {
+  const visit = latestVisit(plan);
+  const cycle = cycleOf(plan);
+  const stated = Number((visit && visit.dose && visit.dose.daysUntilNext) || (cycle && cycle.daysUntilNext) || 0);
+  if (stated) return clamp(stated, 1, 90);
+  const end = (visit && visit.dose && visit.dose.periodEnd) || (cycle && cycle.periodEnd);
+  if (!end) return 0;
+  const days = Math.round((new Date(end) - new Date()) / 86400000);
+  return days > 0 ? clamp(days, 1, 90) : 0;
+}
+function appointmentNeedsReseat(plan, days) {
+  if (!plan.appointment || !plan.appointment.start || !days) return !plan.appointment;
+  const start = new Date(plan.appointment.start);
+  const due = new Date();
+  due.setHours(0, 0, 0, 0);
+  due.setDate(due.getDate() + Math.max(1, days));
+  return start < due;
+}
+function ensurePlanVisit(plan) {
+  if (!plan || !plan.code || !plan.username || plan.archived) return false;
+  const days = leadFromPlan(plan);
+  let changed = false;
+  if (days && appointmentNeedsReseat(plan, days)) {
+    bookJointAppointment(plan, days, 30);
+    const data = loadPlans();
+    const cur = data.plans[plan.code] || plan;
+    if (plan.appointment) {
+      cur.appointment = plan.appointment;
+      keepVisitOnCalendar(cur);
+      data.plans[cur.code] = cur;
+      savePlans(data);
+      notifyAppointment(cur, cur.appointment);
+      changed = true;
+    }
+  } else if (plan.appointment) {
+    const data = loadPlans();
+    const cur = data.plans[plan.code] || plan;
+    if (keepVisitOnCalendar(cur)) {
+      data.plans[cur.code] = cur;
+      savePlans(data);
+      changed = true;
+    }
+    notifyAppointment(cur, cur.appointment);
+  }
+  if (cycleNeedsBooking(cycleOf(plan))) {
+    if (autoBookCycle(plan)) {
+      notifyPracticePlan(loadPlans().plans[plan.code] || plan);
+      changed = true;
+    }
+  }
+  return changed;
+}
+function backfillOpenVisits() {
+  Object.values((loadPlans().plans) || {}).forEach(ensurePlanVisit);
+}
+function clinicVisitEvents() {
+  const out = [];
+  Object.values((loadPlans().plans) || {}).forEach((plan) => {
+    if (!plan || plan.archived || !plan.appointment || !plan.appointment.start) return;
+    out.push({
+      source: "elak",
+      who: "both",
+      title: "Next visit · " + (plan.patient || "Patient"),
+      start: plan.appointment.start,
+      end: plan.appointment.end
+    });
+  });
+  return out;
 }
 function dueSlot(cycle, now) {
   if (!cycle) return null;
@@ -474,6 +655,7 @@ function completeBout(plan, slot, extra) {
     painStop: !!extra.painStop
   });
   window.ELAKReward.grant({ type: "credit-or-story", level, slotId: slot.id, planCode: plan.code });
+  if (typeof notifyPatientReport === "function") notifyPatientReport(loadPlans().plans[plan.code] || plan);
 }
 function missBout(plan, slot, reason, action) {
   const cycle = cycleOf(plan);
@@ -503,6 +685,7 @@ function missBout(plan, slot, reason, action) {
     offers: found.offers
   });
   if (action === "rebook" || action === "move-nudge") writeAcceptedEvents(plan, cycle);
+  if (typeof notifyPatientReport === "function") notifyPatientReport(loadPlans().plans[plan.code] || plan);
 }
 function draftReport(plan) {
   const cycle = cycleOf(plan);
@@ -733,5 +916,11 @@ function storyEpisodes() {
   return STORY_EPS;
 }
 function storyUnlockedCount(plan) {
-  return plan && plan.storyUnlocked ? plan.storyUnlocked : 0;
+  if (!plan) return 0;
+  const days = new Set();
+  const cycle = typeof cycleOf === "function" ? cycleOf(plan) : plan.cycle;
+  (cycle && cycle.slots || []).forEach((slot) => {
+    if (slot && slot.date && slot.status && String(slot.status).startsWith("done")) days.add(slot.date);
+  });
+  return Math.max(Number(plan.storyUnlocked) || 0, days.size);
 }

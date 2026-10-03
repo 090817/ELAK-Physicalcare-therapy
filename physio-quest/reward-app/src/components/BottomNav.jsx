@@ -6,8 +6,8 @@ const ITEMS = [
 
 export default function BottomNav({ page, onChange, active }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-4" aria-label="Pages">
-      <div className="mx-auto grid max-w-xl grid-cols-3 rounded-full border border-white/80 bg-white/90 p-1 shadow-[0_12px_30px_rgba(90,110,90,0.12)] backdrop-blur-md">
+    <nav className="fixed inset-x-0 bottom-0 z-30 px-6 pb-4 sm:px-10 lg:px-14" aria-label="Pages">
+      <div className="mx-auto grid w-full max-w-none grid-cols-3 rounded-full border border-white/80 bg-white/90 p-1 shadow-[0_12px_30px_rgba(90,110,90,0.12)] backdrop-blur-md">
         {ITEMS.map((item) => {
           const current = page === item.id
           return (

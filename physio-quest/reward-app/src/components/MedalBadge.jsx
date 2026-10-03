@@ -24,8 +24,17 @@ export default function MedalBadge({ name, emoji, tone = 'mint', locked = false,
         <circle cx="40" cy="40" r="24" fill="none" stroke={palette.ring} strokeWidth="2.4" />
         <circle cx="40" cy="40" r="28" fill="none" stroke="white" strokeOpacity="0.7" strokeWidth="1.2" />
       </svg>
-      <span className="absolute top-[18%] left-1/2 grid h-8 w-8 -translate-x-1/2 place-items-center text-[1.65rem] leading-none" style={{ color: palette.ink }}>
-        {emoji ? <span aria-hidden="true">{emoji}</span> : <MilestoneIcon name={name} className="h-8 w-8" />}
+      <span
+        className="absolute flex items-center justify-center text-[1.65rem] leading-none"
+        style={{
+          left: '12.5%',
+          top: '9.615%',
+          width: '75%',
+          height: '57.692%',
+          color: palette.ink,
+        }}
+      >
+        {emoji ? <span className="flex h-8 w-8 items-center justify-center leading-none" aria-hidden="true">{emoji}</span> : <MilestoneIcon name={name} className="h-8 w-8" />}
       </span>
     </div>
   )

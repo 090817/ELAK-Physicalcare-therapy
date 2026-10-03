@@ -21,21 +21,11 @@ function syncInjuryLine(plan) {
   if (line) line.textContent = injury;
 }
 function fillMin(value) {
-  const n = clamp(Number(value) || 1, 1, 20);
-  const choice = $c("clinic-min-choice");
-  const other = $c("clinic-min");
-  const wrap = $c("clinic-min-other");
-  if (choice) {
-    const listed = ["1", "2", "3", "4", "5"].indexOf(String(n)) >= 0;
-    choice.value = listed ? String(n) : "other";
-    if (wrap) wrap.hidden = listed;
-  }
-  if (other) other.value = String(n);
+  const n = clamp(Number(value) || 1, 1, 5);
+  if ($c("clinic-min-choice")) $c("clinic-min-choice").value = String(n);
 }
 function doseMin() {
-  const choice = $c("clinic-min-choice") ? $c("clinic-min-choice").value : "";
-  if (choice && choice !== "other") return clamp(Number(choice) || 1, 1, 20);
-  return clamp(Number($c("clinic-min") && $c("clinic-min").value) || 1, 1, 20);
+  return clamp(Number($c("clinic-min-choice") && $c("clinic-min-choice").value) || 1, 1, 5);
 }
 function leadDays() {
   return clamp(Number($c("clinic-lead-days") && $c("clinic-lead-days").value) || 14, 1, 90);
@@ -77,6 +67,7 @@ function setPatientArchived(code, archived) {
 function syncTabs() {
   if ($c("tab-current")) $c("tab-current").classList.toggle("sel", clinic.page === "list" && clinic.listMode === "current");
   if ($c("tab-archive")) $c("tab-archive").classList.toggle("sel", clinic.page === "list" && clinic.listMode === "archive");
+  if ($c("tab-notes")) $c("tab-notes").classList.toggle("sel", clinic.page === "notes");
 }
 function syncWho() {
   const who = $c("who");
@@ -124,7 +115,7 @@ function syncClinicPanels() {
   }
   if ($c("visit-draft")) $c("visit-draft").hidden = !writing;
   if ($c("visit-toolbar")) $c("visit-toolbar").hidden = !plan || writing;
-  if ($c("clinic-calendar")) $c("clinic-calendar").hidden = !plan || creating;
+  if ($c("clinic-calendar")) $c("clinic-calendar").hidden = true;
   if ($c("clinic-new-visit")) $c("clinic-new-visit").hidden = !plan || archived || writing;
   if ($c("clinic-archive-patient")) $c("clinic-archive-patient").hidden = !plan || archived || writing;
   if ($c("clinic-reopen-patient")) $c("clinic-reopen-patient").hidden = !plan || !archived;
@@ -662,16 +653,9 @@ function renderPatients() {
     return;
   }
   for (const plan of plans) {
-    const row = document.createElement("div");
-    row.style.display = "flex";
-    row.style.gap = "8px";
-    row.style.alignItems = "stretch";
-    row.style.marginBottom = "6px";
-
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "patient" + (plan.code === clinic.code ? " sel" : "");
-    btn.style.flex = "1";
     const name = document.createElement("strong");
     name.textContent = plan.patient;
     const meta = document.createElement("small");
@@ -689,32 +673,8 @@ function renderPatients() {
       loadClinicDraft(plan);
       renderPatients();
     });
-    row.appendChild(btn);
-
-    const del = document.createElement("button");
-    del.type = "button";
-    del.className = "ghost";
-    del.textContent = "删除";
-    del.title = "删除该患者";
-    del.addEventListener("click", (event) => {
-      event.stopPropagation();
-      deletePatient(plan.code);
-    });
-    row.appendChild(del);
-
-    root.appendChild(row);
+    root.appendChild(btn);
   }
-}
-function deletePatient(code) {
-  const data = loadPlans();
-  const plan = data.plans[code];
-  if (!plan) return;
-  if (!window.confirm("删除患者「" + (plan.patient || "") + "」？此操作不可撤销。")) return;
-  delete data.plans[code];
-  if (data.active === code) data.active = "";
-  savePlans(data); // 同时会同步写回 registered_patients.json
-  if (clinic.code === code) newClinicDraft();
-  renderPatients();
 }
 function makeCode(plans) {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -825,16 +785,7 @@ async function saveVisit(event) {
     existing.calendar = existing.calendar || [];
     existing.phoneDays = existing.phoneDays || {};
     applyRoleCalendarsToPlan(existing, existing.updated, until + "T23:59:00");
-    if (existing.appointment) {
-      existing.calendar = existing.calendar.filter((event) => event.source !== "elak");
-      existing.calendar.push({
-        source: "elak",
-        who: "both",
-        title: "Next visit",
-        start: existing.appointment.start,
-        end: existing.appointment.end
-      });
-    }
+    keepVisitOnCalendar(existing);
     existing.cycle = buildCycle(existing, existing.visits[existing.visits.length - 1], {
       periodStart: existing.updated,
       periodEnd: until + "T23:59:00",
@@ -848,18 +799,23 @@ async function saveVisit(event) {
     existing.rewards = existing.rewards || [];
     data.plans[code] = existing;
     savePlans(data);
+    autoBookCycle(existing);
+    const saved = loadPlans().plans[code] || existing;
     clinic.code = code;
     clinic.patient = patient;
     clinic.writingVisit = false;
     clinic.switchingLogin = false;
     clearDoseAndExercises();
     renderPatients();
-    renderHistory(existing);
-    renderReport(existing);
-    renderClinicCalendar(existing);
+    renderHistory(saved);
+    renderReport(saved);
     syncClinicPanels();
-    if (existing.appointment) showAppointmentNotice(existing.appointment, "clinician");
+    renderClinicOwnCalendar();
+    if (saved.appointment) notifyAppointment(saved, saved.appointment);
     else $c("clinic-error").textContent = "Visit saved. No shared free time in those days.";
+    notifyPracticePlan(saved);
+    notifyPatientReport(saved);
+    paintNotesDot();
   } finally {
     setVisitSaving(false);
   }
@@ -949,70 +905,68 @@ async function savePatientLogin() {
   loadClinicDraft(existing);
   renderPatients();
 }
-function renderClinicCalendar(plan) {
-  const box = $c("clinic-calendar");
-  const root = $c("clinic-cal-table");
-  const status = $c("clinic-cal-status");
-  if (!box || !root) return;
-  if (!plan) {
-    box.hidden = true;
-    root.replaceChildren();
-    if (status) status.textContent = "";
-    if ($c("patient-cal-table")) $c("patient-cal-table").replaceChildren();
-    if ($c("patient-cal-status")) $c("patient-cal-status").textContent = "";
-    if ($c("clinic-appoint-line")) $c("clinic-appoint-line").textContent = "";
-    return;
-  }
-  box.hidden = false;
-  const window = displayWindowForPlan(plan);
-  applyRoleCalendarsToPlan(plan, window.start, window.end);
-  if (status) status.textContent = calendarPackStatus(clinicianCalendarOf(plan));
-  renderCalendarTable(root, plan, "clinician");
-  if ($c("patient-cal-table")) renderCalendarTable($c("patient-cal-table"), plan, "patient");
-  if ($c("patient-cal-status")) $c("patient-cal-status").textContent = calendarPackStatus(patientCalendarOf(plan));
-  if ($c("clinic-appoint-line")) {
-    $c("clinic-appoint-line").textContent = plan.appointment && plan.appointment.start
-      ? "Next visit · " + formatAppointmentWhen(plan.appointment)
-      : "";
-  }
+function renderClinicCalendar() {
+  if ($c("clinic-calendar")) $c("clinic-calendar").hidden = true;
 }
-async function loadClinicCalendar(plan) {
-  if (!plan || !plan.code) return;
-  const code = plan.code;
-  const fresh = loadPlans().plans[code] || plan;
-  renderClinicCalendar(fresh);
-  try {
-    const next = await syncDeviceCalendarToPlan(fresh, false, "clinician");
-    if (clinic.code === code && next) renderClinicCalendar(next);
-  } catch (err) {
-    if (clinic.code === code) renderClinicCalendar(loadPlans().plans[code] || fresh);
-  }
+function renderClinicOwnCalendar() {
+  paintRoleCalendar($c("clinic-home-cal-table"), $c("clinic-home-cal-status"), "clinician");
+}
+async function loadClinicCalendar() {
+  startCalendarWatch();
 }
 function renderReport(plan) {
   const root = $c("clinic-report");
-  if (!root) return;
-  if (!plan || !cycleOf(plan)) {
+  if (root) {
     root.hidden = true;
     root.replaceChildren();
+  }
+}
+function hideClinicNotes() {
+  if ($c("clinic-notes")) $c("clinic-notes").hidden = true;
+}
+function renderClinicInbox() {
+  const items = inboxFor("clinic").slice().sort((a, b) => {
+    const ap = a.type === "kale-request" && (a.status || "pending") === "pending" ? 0 : 1;
+    const bp = b.type === "kale-request" && (b.status || "pending") === "pending" ? 0 : 1;
+    if (ap !== bp) return ap - bp;
+    return String(b.at || "").localeCompare(String(a.at || ""));
+  });
+  renderInboxList($c("clinic-inbox"), items, (item) => {
+    markInboxRead("clinic", item.username, item.id);
+    fillMailView(item);
+    renderClinicInbox();
+    paintNotesDot();
+    if (item.type === "appointment" && item.username) {
+      const plan = planByUsername(item.username);
+      if (plan) markAppointmentSeen(plan, "clinician");
+    }
+  }, true);
+}
+function seedClinicInbox() {
+  Object.values(loadPlans().plans || {}).forEach((plan) => {
+    if (plan.appointment && plan.appointment.start) notifyAppointment(plan, plan.appointment);
+    if (cycleOf(plan) && !inboxFor("clinic").some((item) => item.type === "report" && item.username === plan.username)) {
+      notifyPatientReport(plan);
+    }
+  });
+  if (typeof syncPendingKaleInbox === "function") syncPendingKaleInbox();
+}
+function showClinicNotes() {
+  if (!clinicUiOn()) {
+    showGate();
     return;
   }
-  const report = draftReport(plan);
-  root.hidden = false;
-  root.replaceChildren();
-  const done = document.createElement("p");
-  done.textContent = "Days done: " + (report.daysDone.length ? report.daysDone.join("; ") : "none yet");
-  const miss = document.createElement("p");
-  miss.textContent = "Days not done: " + (report.daysNotDone.length ? report.daysNotDone.join("; ") : "none yet");
-  const phone = document.createElement("p");
-  phone.textContent = "Days with no phone: " + (report.noPhoneDays.length ? report.noPhoneDays.join(", ") : "none yet");
-  const pain = document.createElement("p");
-  pain.textContent = "Pain stops: " + (report.painStops.length ? report.painStops.join(", ") : "none");
-  root.append(done, miss, phone, pain);
-  if (plan.appointment && plan.appointment.start) {
-    const appt = document.createElement("p");
-    appt.textContent = "Next visit: " + formatAppointmentWhen(plan.appointment);
-    root.appendChild(appt);
+  clinic.page = "notes";
+  showClinicChrome();
+  seedClinicInbox();
+  if ($c("clinic-home")) {
+    $c("clinic-home").hidden = true;
+    $c("clinic-home").classList.remove("on");
   }
+  $c("editor").hidden = true;
+  if ($c("clinic-notes")) $c("clinic-notes").hidden = false;
+  renderClinicInbox();
+  paintNotesDot();
 }
 
 let gateMode = "login";
@@ -1022,6 +976,7 @@ function showGate(mode) {
   const creating = gateMode === "signup";
   clinic.page = "gate";
   $c("editor").hidden = true;
+  hideClinicNotes();
   if ($c("clinic-home")) {
     $c("clinic-home").hidden = true;
     $c("clinic-home").classList.remove("on");
@@ -1068,8 +1023,10 @@ function showClinicChrome() {
   }
   syncWho();
   syncTabs();
+  paintNotesDot();
 }
 function showClinicHome() {
+  if (window.ELAKBuddy) window.ELAKBuddy.refresh();
   if (!clinicUiOn()) {
     showGate();
     return;
@@ -1081,6 +1038,12 @@ function showClinicHome() {
     $c("clinic-home").classList.add("on");
   }
   $c("editor").hidden = true;
+  hideClinicNotes();
+  backfillOpenVisits();
+  startCalendarWatch();
+  renderClinicOwnCalendar();
+  paintNotesDot();
+  if (window.ELAKBuddy) window.ELAKBuddy.refresh();
 }
 function openClinicList(mode) {
   if (!clinicUiOn()) {
@@ -1098,6 +1061,7 @@ function openClinicList(mode) {
     $c("clinic-home").classList.remove("on");
   }
   $c("editor").hidden = false;
+  hideClinicNotes();
   const open = clinic.code ? loadPlans().plans[clinic.code] : null;
   const belongs = open && !!open.archived === (clinic.listMode === "archive");
   if (!belongs) {
@@ -1160,13 +1124,6 @@ $c("sign-out").addEventListener("click", () => {
   clinic.rows = [];
   showGate();
 });
-if ($c("clinic-min-choice")) {
-  $c("clinic-min-choice").addEventListener("change", () => {
-    const other = $c("clinic-min-choice").value === "other";
-    if ($c("clinic-min-other")) $c("clinic-min-other").hidden = !other;
-    if (other && $c("clinic-min")) $c("clinic-min").focus();
-  });
-}
 $c("clinic-new").addEventListener("click", () => {
   clinic.listMode = "current";
   newClinicDraft();
@@ -1180,6 +1137,11 @@ if ($c("clinic-home-btn")) $c("clinic-home-btn").addEventListener("click", goCli
 if ($c("clinic-home-open")) $c("clinic-home-open").addEventListener("click", goClinicHome);
 if ($c("tab-current")) $c("tab-current").addEventListener("click", () => openClinicList("current"));
 if ($c("tab-archive")) $c("tab-archive").addEventListener("click", () => openClinicList("archive"));
+if ($c("tab-notes")) $c("tab-notes").addEventListener("click", showClinicNotes);
+if ($c("mail-negotiate-btn")) $c("mail-negotiate-btn").addEventListener("click", submitVisitNegotiate);
+if ($c("mail-close")) $c("mail-close").addEventListener("click", () => {
+  if ($c("overlay-mail")) $c("overlay-mail").hidden = true;
+});
 if ($c("home-current")) $c("home-current").addEventListener("click", () => openClinicList("current"));
 if ($c("home-archive")) $c("home-archive").addEventListener("click", () => openClinicList("archive"));
 if ($c("clinic-archive-patient")) {
@@ -1204,12 +1166,6 @@ if ($c("appoint-close")) {
   $c("appoint-close").addEventListener("click", () => {
     if ($c("overlay-appoint")) $c("overlay-appoint").hidden = true;
     if (clinic.code) markAppointmentSeen(loadPlans().plans[clinic.code], "clinician");
-  });
-}
-if ($c("clinic-cal-sync")) {
-  wireCalendarSync($c("clinic-cal-sync"), $c("clinic-cal-status"), (plan) => {
-    renderClinicCalendar(plan);
-    if (plan && plan.cycle) renderReport(plan);
   });
 }
 if ($c("clinic-new-visit")) {
@@ -1247,38 +1203,6 @@ $c("clinic-form").addEventListener("click", (event) => {
 $c("clinic-form").addEventListener("focusin", (event) => {
   const box = event.target.closest(".saved-box, .ex-row");
   if (box) markClinicBox(box);
-});
-// 「写入文件」按钮：把当前患者数据写入 registered_patients.json 并显示结果
-async function writeRegistryToFile() {
-  const status = $c("clinic-sync-status");
-  const data = loadPlans();
-  const count = Object.keys(data.plans || {}).length;
-  const names = Object.values(data.plans || {}).map((p) => p.patient).filter(Boolean).join("、");
-  try {
-    const res = await fetch("/api/plans", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: safeStringify(data)
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    if (status) status.textContent = `已写入 ${count} 位患者${names ? "：" + names : ""}`;
-  } catch (err) {
-    if (status) status.textContent = "写入失败（请确认用 python3 server.py 启动）：" + err.message;
-  }
-}
-if ($c("clinic-sync-file")) $c("clinic-sync-file").addEventListener("click", writeRegistryToFile);
-// 每次保存后，在页面上即时显示是否成功写入 JSON
-window.addEventListener("plans-saved", (e) => {
-  const s = $c("clinic-sync-status") || $c("clinic-error");
-  if (!s) return;
-  const d = e.detail || {};
-  if (d.ok) {
-    s.textContent = "已保存到 JSON ✓（registered_patients.json）";
-    s.style.color = "var(--leaf)";
-  } else {
-    s.textContent = "保存失败——请确认是用 `python3 server.py` 启动的（HTTP " + (d.status || d.error || "?") + "）";
-    s.style.color = "#8f3b2a";
-  }
 });
 $c("clinic-form").addEventListener("submit", (event) => {
   saveVisit(event).catch((err) => {
