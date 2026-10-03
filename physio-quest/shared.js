@@ -78,15 +78,46 @@ function ankleExercises(list) {
 
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
-function loadPlans() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(PLAN_KEY) || "{}");
-    return { active: raw.active || "", plans: raw.plans && typeof raw.plans === "object" ? raw.plans : {} };
-  } catch {
-    return { active: "", plans: {} };
-  }
+// ── 数据以服务器 JSON 文件为准（window.__PLANS__ 由 /api/plans.js 注入）──
+function safeStringify(obj) {
+  const seen = new WeakSet();
+  return JSON.stringify(obj, (key, value) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) return undefined; // 去除循环引用
+      seen.add(value);
+    }
+    return value;
+  });
 }
-function savePlans(data) { localStorage.setItem(PLAN_KEY, JSON.stringify(data)); }
+function loadPlans() {
+  const data = window.__PLANS__;
+  if (data && typeof data === "object" && data.plans && typeof data.plans === "object") {
+    return { active: data.active || "", plans: data.plans };
+  }
+  return { active: "", plans: {} };
+}
+function savePlans(data) {
+  window.__PLANS__ = data;
+  let p;
+  try {
+    p = fetch("/api/plans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: safeStringify(data)
+    })
+      .then((r) => ({ ok: r.ok, status: r.status }))
+      .catch((e) => ({ ok: false, error: String(e && e.message || e) }));
+  } catch (e) {
+    console.error("[savePlans] serialize error", e);
+    p = Promise.resolve({ ok: false, error: String(e && e.message || e) });
+  }
+  p.then((res) => {
+    try {
+      window.dispatchEvent(new CustomEvent("plans-saved", { detail: res }));
+    } catch (e) { /* ignore */ }
+  });
+  return p;
+}
 const CLINICIANS_KEY = "full-range-clinicians-v1";
 const PATIENT_SESSION_KEY = "full-range-patient-session";
 const PATIENT_REMEMBER_KEY = "full-range-patient-remember";

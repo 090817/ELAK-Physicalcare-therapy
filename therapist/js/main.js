@@ -1,21 +1,12 @@
-import { getConfig } from "./config.js?v=6";
-import { loadPatients } from "./data.js?v=6";
-import { lineChart, scatterChart, sparkline, disposeCharts, hexToRgba } from "./charts.js?v=6";
-import { chat, hasApiKey } from "./api.js?v=6";
+import { getConfig } from "./config.js?v=20";
+import { loadPatients } from "./data.js?v=20";
+import { lineChart, scatterChart, sparkline, disposeCharts, hexToRgba } from "./charts.js?v=20";
+import { chatStream } from "./api.js?v=20";
 
-try {
-  await import("./config.local.js");
-} catch {
-  /* 未创建 config.local.js */
-}
-
-const $ = (sel) => document.querySelector(sel);
-const listEl = $("#patient-list");
-const detailEl = $("#detail");
-const searchEl = $("#search");
-
+const detailEl = document.getElementById("detail");
 let patients = [];
-let activeId = null;
+
+const genderZh = (g) => ({ Male: "男", Female: "女", Other: "其他" }[g] || g || "—");
 
 /* ── 指标定义 ─────────────────────────────── */
 const M = (label, color, unit, dec, get, betterDown = false) => ({
@@ -23,21 +14,21 @@ const M = (label, color, unit, dec, get, betterDown = false) => ({
 });
 
 const METRICS = {
-  accuracy: M("动作准确率", "#34c759", "%", 1, (d) => d.rehab.exercise_accuracy_pct),
-  pain: M("疼痛 (VAS)", "#ff3b30", "", 1, (d) => d.rehab.pain_vas, true),
-  rating: M("主观评分", "#ff9500", "/5", 1, (d) => d.rehab.patient_self_rating),
-  asymmetry: M("步态不对称", "#007aff", "%", 2, (d) => d.gait.walking_asymmetry_pct, true),
-  speed: M("步行速度", "#34c759", "m/s", 2, (d) => d.gait.walking_speed_mps),
-  cadence: M("步频", "#ff9500", "步/分", 1, (d) => d.gait.cadence_steps_per_min),
-  double_support: M("双支撑相", "#af52de", "%", 1, (d) => d.gait.double_support_pct, true),
-  resting_hr: M("静息心率", "#ff3b30", "bpm", 0, (d) => d.cardiac.resting_hr_bpm, true),
-  walking_hr: M("步行心率", "#ff2d55", "bpm", 0, (d) => d.cardiac.walking_hr_bpm, true),
-  hrv: M("HRV", "#af52de", "ms", 1, (d) => d.cardiac.hrv_ms),
-  sleep: M("睡眠时长", "#5856d6", "h", 1, (d) => d.sleep.total_sleep_hours),
-  spo2: M("血氧饱和度", "#5ac8fa", "%", 0, (d) => d.respiratory_metabolic.oxygen_saturation_pct),
-  body_mass: M("体重", "#ff9500", "kg", 1, (d) => d.body_measurements.body_mass_kg),
-  steps: M("步数", "#34c759", "", 0, (d) => d.activity_rings.step_count),
-  move_kcal: M("活动能量", "#ff3b30", "kcal", 0, (d) => d.activity_rings.move_kcal),
+  accuracy: M("动作准确率", "#34c759", "%", 1, (d) => d.rehab?.exercise_accuracy_pct),
+  pain: M("疼痛 (VAS)", "#ff3b30", "", 1, (d) => d.rehab?.pain_vas, true),
+  rating: M("主观评分", "#ff9500", "/5", 1, (d) => d.rehab?.patient_self_rating),
+  asymmetry: M("步态不对称", "#007aff", "%", 2, (d) => d.gait?.walking_asymmetry_pct, true),
+  speed: M("步行速度", "#34c759", "m/s", 2, (d) => d.gait?.walking_speed_mps),
+  cadence: M("步频", "#ff9500", "步/分", 1, (d) => d.gait?.cadence_steps_per_min),
+  double_support: M("双支撑相", "#af52de", "%", 1, (d) => d.gait?.double_support_pct, true),
+  resting_hr: M("静息心率", "#ff3b30", "bpm", 0, (d) => d.cardiac?.resting_hr_bpm, true),
+  walking_hr: M("步行心率", "#ff2d55", "bpm", 0, (d) => d.cardiac?.walking_hr_bpm, true),
+  hrv: M("HRV", "#af52de", "ms", 1, (d) => d.cardiac?.hrv_ms),
+  sleep: M("睡眠时长", "#5856d6", "h", 1, (d) => d.sleep?.total_sleep_hours),
+  spo2: M("血氧饱和度", "#5ac8fa", "%", 0, (d) => d.respiratory_metabolic?.oxygen_saturation_pct),
+  body_mass: M("体重", "#ff9500", "kg", 1, (d) => d.body_measurements?.body_mass_kg),
+  steps: M("步数", "#34c759", "", 0, (d) => d.activity_rings?.step_count),
+  move_kcal: M("活动能量", "#ff3b30", "kcal", 0, (d) => d.activity_rings?.move_kcal),
 };
 
 const HIGHLIGHT_KEYS = ["pain", "accuracy", "asymmetry", "speed", "resting_hr", "sleep"];
@@ -212,46 +203,6 @@ function ringSVG(rings) {
   return `<svg class="rings" viewBox="0 0 140 140">${arcs}</svg>`;
 }
 
-/* ── 患者列表 ─────────────────────────────── */
-function renderList(filter = "") {
-  const q = filter.trim().toLowerCase();
-  const rows = patients.filter((p) =>
-    !q ||
-    [p.patient_id, p.name, p.medical_record_number, p.condition].some((v) =>
-      String(v).toLowerCase().includes(q)
-    )
-  );
-
-  listEl.innerHTML =
-    rows.length === 0
-      ? `<li style="cursor:default;color:var(--text2)">无匹配患者</li>`
-      : rows
-          .map(
-            (p) => `
-        <li data-id="${p.patient_id}" class="${p.patient_id === activeId ? "is-active" : ""}">
-          <div>
-            <div class="p-name">${p.name}</div>
-            <div class="p-sub p-id">${p.patient_id} · ${p.condition}</div>
-          </div>
-          <span class="p-chevron">›</span>
-        </li>`
-          )
-          .join("");
-
-  listEl.querySelectorAll("li[data-id]").forEach((li) =>
-    li.addEventListener("click", () => selectPatient(li.dataset.id))
-  );
-}
-
-function selectPatient(id) {
-  activeId = id;
-  listEl.querySelectorAll("li").forEach((li) =>
-    li.classList.toggle("is-active", li.dataset.id === id)
-  );
-  const p = patients.find((x) => x.patient_id === id);
-  if (p) renderDetail(p);
-}
-
 /* ── 详情渲染 ─────────────────────────────── */
 function highlightCard(p, key) {
   const m = METRICS[key];
@@ -320,7 +271,6 @@ const AI_METRIC_KEYS = [
   "resting_hr", "walking_hr", "hrv", "sleep", "spo2", "body_mass", "steps", "move_kcal",
 ];
 
-const aiCache = new Map();
 
 function seriesPoints(p, get) {
   const pts = [];
@@ -403,7 +353,7 @@ function exerciseAdherence(p) {
 
 function buildAIContext(p) {
   const L = [];
-  L.push(`患者 ${p.name}（${p.patient_id} / ${p.medical_record_number}），${p.age}岁，${p.gender === "Male" ? "男" : "女"}，BMI ${p.bmi}，足姿 ${p.foot_posture}，病种 ${p.condition}，康复轨迹 ${p.rehab_trajectory}，Apple Watch：${p.has_apple_watch ? "有" : "无"}。`);
+  L.push(`患者 ${p.name}（${p.patient_id} / ${p.medical_record_number}），${p.age}岁，${genderZh(p.gender)}，BMI ${p.bmi}，足姿 ${p.foot_posture}，病种 ${p.condition}，康复轨迹 ${p.rehab_trajectory}，Apple Watch：${p.has_apple_watch ? "有" : "无"}。`);
   const rec = p.latest_medical_record;
   if (rec) {
     L.push(`\n【最近病历 ${rec.visit_date}】`);
@@ -438,7 +388,7 @@ function buildAIContext(p) {
   return L.join("\n");
 }
 
-async function aiSummary(p) {
+function buildAIMessages(p) {
   const sys =
     "你是一名康复医学主治医师，为治疗师撰写简洁、循证的临床数据报告。要求：\n" +
     "1. 首先依据病历(SOAP)与处方动作，判断患者是否达到预期康复标准、依从性是否达标——这是最重要的判断依据。\n" +
@@ -446,14 +396,12 @@ async function aiSummary(p) {
     "3. 重点分析趋势：上升/下降/恶化分别代表什么。\n" +
     "4. 指出异常值，或某段时间明显偏高/偏低的指标，并给出可能原因。\n" +
     "5. 检查理论上应同向变动的指标对（如 疼痛↓ 应伴随 准确率↑、步速↑、步态不对称↓；睡眠↑ 应伴随 静息心率↓、HRV↑；活动量↑ 伴随 活动能量↑），若数据中出现背离，指出并解释可能原因。\n" +
-    "6. 用中文，分小节：结论 / 趋势 / 异常与特殊时段 / 指标关联异常 / 建议。总 300–500 字，专业、精炼、可执行。";
-  return chat(
-    [
-      { role: "system", content: sys },
-      { role: "user", content: buildAIContext(p) },
-    ],
-    { temperature: 0.3 }
-  );
+    "6. 结合患者的年龄与性别进行解读（年龄相关的恢复预期/风险、性别相关差异）。\n" +
+    "7. 用中文，分小节：结论 / 趋势 / 异常与特殊时段 / 指标关联异常 / 建议。总 300–500 字，专业、精炼、可执行。直接输出正文，不要任何开场白。";
+  return [
+    { role: "system", content: sys },
+    { role: "user", content: buildAIContext(p) },
+  ];
 }
 
 function localAnalysis(p) {
@@ -529,37 +477,112 @@ function aiBoxHtml() {
     <div class="ai-box__head">
       <span class="ai-box__badge">AI</span>
       <span class="ai-box__title">AI 临床数据总结</span>
+      <span class="ai-box__status" id="ai-status"></span>
       <button class="ai-box__btn" id="ai-run" type="button">重新生成</button>
     </div>
-    <div class="ai-box__body" id="ai-output">正在分析…</div>
+    <div class="ai-box__body" id="ai-output"></div>
   </div>`;
 }
 
-async function runAI(p) {
+function renderMD(text) {
+  if (window.marked && typeof window.marked.parse === "function") {
+    window.marked.setOptions({ breaks: true, gfm: true });
+    try {
+      return window.marked.parse(text);
+    } catch {
+      /* fall through */
+    }
+  }
+  return String(text)
+    .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))
+    .replace(/\n/g, "<br>");
+}
+
+async function fetchSummary(id) {
+  try {
+    const res = await fetch(`/api/summary?id=${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.text || null;
+  } catch {
+    return null;
+  }
+}
+async function saveSummary(id, text) {
+  try {
+    await fetch("/api/summary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, text }),
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 进入详情页：有已保存的总结就直接用；没有才生成一次并写入 JSON。「重新生成」强制重跑。 */
+function runAI(p) {
   const out = document.getElementById("ai-output");
   const btn = document.getElementById("ai-run");
+  const statusEl = document.getElementById("ai-status");
   if (!out) return;
-  if (aiCache.has(p.patient_id)) {
-    out.textContent = aiCache.get(p.patient_id);
-    return;
-  }
-  const generate = async () => {
+
+  let controller = null;
+  let busy = false;
+
+  const generate = async (force) => {
+    if (busy) return;
+    busy = true;
+    if (controller) controller.abort();
+    controller = new AbortController();
     if (btn) btn.disabled = true;
-    out.innerHTML = `<span class="ai-loading">正在分析数据…</span>`;
+
+    // 非强制：先用已保存的总结（只生成一次）
+    if (!force) {
+      if (statusEl) statusEl.textContent = "读取…";
+      const saved = await fetchSummary(p.patient_id);
+      if (saved) {
+        out.innerHTML = renderMD(saved);
+        if (statusEl) statusEl.textContent = "已保存";
+        busy = false;
+        if (btn) btn.disabled = false;
+        return;
+      }
+    }
+
+    if (statusEl) statusEl.textContent = "生成中…";
+    out.innerHTML = `<span class="ai-loading">正在连接 AI…</span>`;
+    let first = true;
+    const onToken = (_delta, full) => {
+      if (first) {
+        out.innerHTML = "";
+        first = false;
+        if (statusEl) statusEl.textContent = "流式生成中…";
+      }
+      out.innerHTML = renderMD(full);
+      out.scrollTop = out.scrollHeight;
+    };
+
     try {
-      const text = hasApiKey()
-        ? await aiSummary(p)
-        : localAnalysis(p) + "\n\n（当前未配置 AI key，以上为本地规则分析；配置 config.local.js 后为模型生成）";
-      aiCache.set(p.patient_id, text);
-      out.textContent = text;
+      const text = await chatStream(buildAIMessages(p), { onToken, signal: controller.signal });
+      if (!text) throw new Error("空响应");
+      await saveSummary(p.patient_id, text);
+      if (statusEl) statusEl.textContent = "已生成并保存";
     } catch (err) {
-      out.textContent = "AI 分析失败：" + err.message;
+      if (err && err.name === "AbortError") { busy = false; if (btn) btn.disabled = false; return; }
+      const local =
+        localAnalysis(p) +
+        "\n\n（未能连接 AI 代理，以上为本地规则分析。请用 `python3 server.py` 启动以使 AI 现场流式生成。）";
+      out.innerHTML = renderMD(local);
+      if (statusEl) statusEl.textContent = "本地规则";
     } finally {
+      busy = false;
       if (btn) btn.disabled = false;
     }
   };
-  if (btn) btn.onclick = () => { aiCache.delete(p.patient_id); generate(); };
-  await generate();
+
+  if (btn) btn.onclick = () => generate(true); // 重新生成
+  generate(false); // 首次进入：有则读取，无则生成一次并保存
 }
 
 function renderDetail(p) {
@@ -569,9 +592,10 @@ function renderDetail(p) {
 
   const days = p.daily_records;
   const latest = days.at(-1);
-  const completed = days.filter((d) => d.rehab.exercise_completed).length;
-  const adherence = Math.round((completed / days.length) * 100);
-  const rr = latest.activity_rings;
+  const hasRehab = days.some((d) => d.rehab);
+  const completed = days.filter((d) => d.rehab?.exercise_completed).length;
+  const adherence = days.length ? Math.round((completed / days.length) * 100) : 0;
+  const rr = latest.activity_rings || {};
 
   const rings = [
     { label: "活动能量", value: rr.move_kcal, goal: rr.move_goal_kcal, color: "#ff3b30", unit: "kcal" },
@@ -582,52 +606,43 @@ function renderDetail(p) {
   const infoRows = [
     metricRow("病历号 (MRN)", p.medical_record_number),
     metricRow("病种", p.condition),
-    metricRow("年龄 / 性别", `${p.age} 岁 / ${p.gender === "Male" ? "男" : "女"}`),
+    metricRow("年龄 / 性别", `${p.age} 岁 / ${genderZh(p.gender)}`),
     metricRow("BMI", p.bmi),
     metricRow("足姿", p.foot_posture),
     metricRow("设备", p.has_apple_watch ? "Apple Watch" : "无（无心脏/睡眠数据）"),
     metricRow("康复轨迹", p.rehab_trajectory),
-    metricRow("基线疼痛", `${p.baseline.pain_vas}`),
-    metricRow("基线步速", `${p.baseline.walking_speed_mps}`),
+    p.baseline ? metricRow("基线疼痛", `${p.baseline.pain_vas}`) : "",
+    p.baseline ? metricRow("基线步速", `${p.baseline.walking_speed_mps}`) : "",
   ];
 
   const statusRows = [
-    metricRow(
-      "今日训练",
-      latest.rehab.exercise_completed
-        ? `<span class="pill pill--ok">已完成</span>`
-        : `<span class="pill pill--no">未完成</span>`
-    ),
-    metricRow("今日疼痛", `${fmt(latest.rehab.pain_vas, 1)} VAS`),
-    metricRow("疲劳程度", `${fmt(latest.symptoms.fatigue_level, 1)} / 10`),
-    metricRow("头晕", latest.symptoms.dizziness_reported ? "有" : "无"),
-    metricRow("静息心率", `${fmt(latest.cardiac.resting_hr_bpm, 0)} bpm`),
-    metricRow("血氧", `${fmt(latest.respiratory_metabolic.oxygen_saturation_pct, 0)} %`),
-    metricRow("睡眠", `${fmt(latest.sleep.total_sleep_hours, 1)} h`),
-    metricRow("步数", `${fmt(latest.activity_rings.step_count, 0)}`),
+    hasRehab
+      ? metricRow(
+          "今日训练",
+          latest.rehab.exercise_completed
+            ? `<span class="pill pill--ok">已完成</span>`
+            : `<span class="pill pill--no">未完成</span>`
+        )
+      : "",
+    hasRehab ? metricRow("今日疼痛", `${fmt(latest.rehab.pain_vas, 1)} VAS`) : "",
+    metricRow("疲劳程度", `${fmt(latest.symptoms?.fatigue_level, 1)} / 10`),
+    metricRow("头晕", latest.symptoms?.dizziness_reported ? "有" : "无"),
+    metricRow("静息心率", `${fmt(latest.cardiac?.resting_hr_bpm, 0)} bpm`),
+    metricRow("血氧", `${fmt(latest.respiratory_metabolic?.oxygen_saturation_pct, 0)} %`),
+    metricRow("睡眠", `${fmt(latest.sleep?.total_sleep_hours, 1)} h`),
+    metricRow("步数", `${fmt(latest.activity_rings?.step_count, 0)}`),
   ];
 
   const rec = p.latest_medical_record;
-  const medicalBlock = rec
-    ? `
-    <div class="section-title">病历记录 · 最近就诊（${rec.visit_date}）</div>
-    <div class="grid">
-      <div class="card">
-        <h3>SOAP 记录</h3>
-        <div class="soap">
-          <div class="soap__row"><span class="soap__k">S 主观</span><p>${rec.subjective}</p></div>
-          <div class="soap__row"><span class="soap__k">O 客观</span><p>${rec.objective}</p></div>
-          <div class="soap__row"><span class="soap__k">A 评估</span><p>${rec.assessment}</p></div>
-          <div class="soap__row"><span class="soap__k">P 计划</span><p>${rec.plan}</p></div>
-        </div>
-      </div>
-      <div class="card">
+  const prescribed = (rec && rec.prescribed_exercises) || [];
+  const prescribedCard = prescribed.length
+    ? `<div class="card">
         <h3>本次处方动作</h3>
         <div class="table-wrap">
           <table class="dtable">
             <thead><tr><th>动作</th><th>部位</th><th>类别</th><th>难度</th><th>处方</th></tr></thead>
             <tbody>
-              ${(rec.prescribed_exercises || [])
+              ${prescribed
                 .map(
                   (pe) => `<tr>
                 <td class="td-name">${pe.name}</td>
@@ -641,7 +656,22 @@ function renderDetail(p) {
             </tbody>
           </table>
         </div>
+      </div>`
+    : "";
+  const medicalBlock = rec
+    ? `
+    <div class="section-title">病历记录 · 最近就诊（${rec.visit_date}）</div>
+    <div class="grid">
+      <div class="card">
+        <h3>SOAP 记录</h3>
+        <div class="soap">
+          <div class="soap__row"><span class="soap__k">S 主观</span><p>${rec.subjective}</p></div>
+          <div class="soap__row"><span class="soap__k">O 客观</span><p>${rec.objective}</p></div>
+          <div class="soap__row"><span class="soap__k">A 评估</span><p>${rec.assessment}</p></div>
+          <div class="soap__row"><span class="soap__k">P 计划</span><p>${rec.plan}</p></div>
+        </div>
       </div>
+      ${prescribedCard}
     </div>`
     : "";
 
@@ -704,7 +734,7 @@ function renderDetail(p) {
     <div class="patient-head">
       <h2>${p.name}</h2>
       <div class="meta">
-        ${p.condition} · ${p.age} 岁 · ${p.gender === "Male" ? "男" : "女"} · BMI ${p.bmi}
+        ${p.condition} · ${p.age} 岁 · ${genderZh(p.gender)} · BMI ${p.bmi}
         <span class="mrn">${p.medical_record_number}</span>
       </div>
     </div>
@@ -732,13 +762,24 @@ function renderDetail(p) {
             .join("")}
         </div>
       </div>
-      <div class="card">
+      ${
+        hasRehab
+          ? `<div class="card">
         <h3>康复依从性</h3>
         <div class="rings__v" style="font-size:32px;margin:4px 0 8px">${adherence}%</div>
         ${metricRow("完成次数", `${completed} / ${days.length} 天`)}
-        ${metricRow("近 7 天完成", `${days.slice(-7).filter((d) => d.rehab.exercise_completed).length} / 7`)}
-        ${metricRow("平均准确率", `${fmt(days.reduce((a, d) => a + d.rehab.exercise_accuracy_pct, 0) / days.length, 1)} %`)}
-      </div>
+        ${metricRow("近 7 天完成", `${days.slice(-7).filter((d) => d.rehab?.exercise_completed).length} / 7`)}
+        ${metricRow(
+          "平均准确率",
+          `${fmt(
+            days.filter((d) => isNum(d.rehab?.exercise_accuracy_pct)).reduce((a, d) => a + d.rehab.exercise_accuracy_pct, 0) /
+              Math.max(1, days.filter((d) => isNum(d.rehab?.exercise_accuracy_pct)).length),
+            1
+          )} %`
+        )}
+      </div>`
+          : ""
+      }
       <div class="card">
         <h3>今日状态</h3>
         <div class="metric-list">${statusRows.join("")}</div>
@@ -765,20 +806,22 @@ function renderDetail(p) {
   runAI(p);
 }
 
-/* ── 初始化 ───────────────────────────────── */
+/* ── 初始化（详情页：按 ?id= 渲染，AI 现场生成）── */
 async function init() {
   patients = await loadPatients();
-  renderList();
-  searchEl.addEventListener("input", () => renderList(searchEl.value));
-  if (patients.length) selectPatient(patients[0].patient_id);
+  const id = new URLSearchParams(location.search).get("id");
+  const patient =
+    patients.find((p) => p.patient_id === id) || patients[0];
+  if (patient) renderDetail(patient);
+  else detailEl.innerHTML = `<div class="placeholder">未找到患者</div>`;
 }
 
 init().catch((err) => {
   const isFile = location.protocol === "file:";
   detailEl.innerHTML = `<div class="placeholder">${
     isFile
-      ? "无法通过 file:// 直接打开数据（浏览器安全限制）。<br/>请在项目根目录运行 <code>python3 -m http.server 8000</code>，再访问 http://localhost:8000/therapist/dashboard.html"
+      ? "无法通过 file:// 直接打开数据（浏览器安全限制）。<br/>请用 <code>python3 server.py</code> 启动后访问 http://localhost:8000/therapist/patients.html"
       : "加载失败：" + err.message
   }</div>`;
-  console.error(`[StepHeal] ${getConfig().appName}`, err);
+  console.error(`[ELAK] ${getConfig().appName}`, err);
 });

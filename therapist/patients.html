@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELAK · 患者列表</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css?v=20" />
+</head>
+<body>
+  <div class="page">
+    <div class="page__head">
+      <div>
+        <h1 class="page__title">ELAK · 康复师端</h1>
+        <div class="page__sub">患者列表</div>
+      </div>
+      <label class="search">
+        <input id="search" type="text" placeholder="搜索 姓名 / 编号 / 病种" autocomplete="off" />
+      </label>
+    </div>
+
+    <div class="ptable-wrap">
+      <table class="ptable">
+        <thead>
+          <tr>
+            <th class="c-num">#</th>
+            <th>姓名</th>
+            <th>编号</th>
+            <th>病种</th>
+            <th>年龄</th>
+            <th>性别</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module" src="./js/patients.js?v=20"></script>
+</body>
+</html>

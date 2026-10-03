@@ -38,3 +38,7 @@ venv/
 # ── Generated data (keep raw dataset only) ─────
 output/
 data/*.generated.json
+
+# 运行时生成的注册患者文件
+data/registered_patients.json
+data/ai_summaries.json

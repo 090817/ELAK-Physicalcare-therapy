@@ -662,9 +662,16 @@ function renderPatients() {
     return;
   }
   for (const plan of plans) {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.alignItems = "stretch";
+    row.style.marginBottom = "6px";
+
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "patient" + (plan.code === clinic.code ? " sel" : "");
+    btn.style.flex = "1";
     const name = document.createElement("strong");
     name.textContent = plan.patient;
     const meta = document.createElement("small");
@@ -682,8 +689,32 @@ function renderPatients() {
       loadClinicDraft(plan);
       renderPatients();
     });
-    root.appendChild(btn);
+    row.appendChild(btn);
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "ghost";
+    del.textContent = "删除";
+    del.title = "删除该患者";
+    del.addEventListener("click", (event) => {
+      event.stopPropagation();
+      deletePatient(plan.code);
+    });
+    row.appendChild(del);
+
+    root.appendChild(row);
   }
+}
+function deletePatient(code) {
+  const data = loadPlans();
+  const plan = data.plans[code];
+  if (!plan) return;
+  if (!window.confirm("删除患者「" + (plan.patient || "") + "」？此操作不可撤销。")) return;
+  delete data.plans[code];
+  if (data.active === code) data.active = "";
+  savePlans(data); // 同时会同步写回 registered_patients.json
+  if (clinic.code === code) newClinicDraft();
+  renderPatients();
 }
 function makeCode(plans) {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -1216,6 +1247,38 @@ $c("clinic-form").addEventListener("click", (event) => {
 $c("clinic-form").addEventListener("focusin", (event) => {
   const box = event.target.closest(".saved-box, .ex-row");
   if (box) markClinicBox(box);
+});
+// 「写入文件」按钮：把当前患者数据写入 registered_patients.json 并显示结果
+async function writeRegistryToFile() {
+  const status = $c("clinic-sync-status");
+  const data = loadPlans();
+  const count = Object.keys(data.plans || {}).length;
+  const names = Object.values(data.plans || {}).map((p) => p.patient).filter(Boolean).join("、");
+  try {
+    const res = await fetch("/api/plans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: safeStringify(data)
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (status) status.textContent = `已写入 ${count} 位患者${names ? "：" + names : ""}`;
+  } catch (err) {
+    if (status) status.textContent = "写入失败（请确认用 python3 server.py 启动）：" + err.message;
+  }
+}
+if ($c("clinic-sync-file")) $c("clinic-sync-file").addEventListener("click", writeRegistryToFile);
+// 每次保存后，在页面上即时显示是否成功写入 JSON
+window.addEventListener("plans-saved", (e) => {
+  const s = $c("clinic-sync-status") || $c("clinic-error");
+  if (!s) return;
+  const d = e.detail || {};
+  if (d.ok) {
+    s.textContent = "已保存到 JSON ✓（registered_patients.json）";
+    s.style.color = "var(--leaf)";
+  } else {
+    s.textContent = "保存失败——请确认是用 `python3 server.py` 启动的（HTTP " + (d.status || d.error || "?") + "）";
+    s.style.color = "#8f3b2a";
+  }
 });
 $c("clinic-form").addEventListener("submit", (event) => {
   saveVisit(event).catch((err) => {

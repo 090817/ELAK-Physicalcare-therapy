@@ -358,6 +358,8 @@
     <div class="clinic-layout">
       <aside class="clinic-side">
         <button class="secondary" id="clinic-new" type="button">New patient</button>
+        <button class="secondary" id="clinic-sync-file" type="button" style="margin-top:8px">写入文件</button>
+        <p class="note" id="clinic-sync-status" style="margin:6px 0 0"></p>
         <div id="clinic-patients"></div>
       </aside>
       <form class="clinic-main" id="clinic-form" novalidate>
@@ -380,10 +382,6 @@
           <div class="field">
             <label for="clinic-patient">Patient name</label>
             <input id="clinic-patient" maxlength="60" autocomplete="name" required>
-          </div>
-          <div class="field">
-            <label for="clinic-injury">Type of injury</label>
-            <input id="clinic-injury" maxlength="80" placeholder="e.g. Right ankle sprain">
           </div>
           <div class="ex-grid">
             <div class="field">
@@ -485,7 +483,8 @@
     </div>
   </div>
 </div>
-<script src="shared.js?v=74"></script>
+<script src="/api/plans.js"></script>
+<script src="shared.js?v=75"></script>
 <script src="calendar-plugin.js?v=74"></script>
 <script src="agent.js?v=74"></script>
 <script src="clinic.js?v=74"></script>
