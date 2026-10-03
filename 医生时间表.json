@@ -1,0 +1,3242 @@
+[
+  {
+    "date": "2026-09-01",
+    "day_of_week": "星期二",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y018",
+        "patient_name": "Y018",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y018"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y002",
+        "patient_name": "Y002",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y002"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y016",
+        "patient_name": "Y016",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y016"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-02",
+    "day_of_week": "星期三",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y003",
+        "patient_name": "Y003",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y003"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y006",
+        "patient_name": "Y006",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y006"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y015",
+        "patient_name": "Y015",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y015"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y002",
+        "patient_name": "Y002",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y002"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y014",
+        "patient_name": "Y014",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y014"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y033",
+        "patient_name": "Y033",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y033"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-03",
+    "day_of_week": "星期四",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y014",
+        "patient_name": "Y014",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y014"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y018",
+        "patient_name": "Y018",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y018"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y022",
+        "patient_name": "Y022",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y022"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y010",
+        "patient_name": "Y010",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y010"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y007",
+        "patient_name": "Y007",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y007"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-04",
+    "day_of_week": "星期五",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y025",
+        "patient_name": "Y025",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y025"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y036",
+        "patient_name": "Y036",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y036"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y006",
+        "patient_name": "Y006",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y006"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-05",
+    "day_of_week": "星期六",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y019",
+        "patient_name": "Y019",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y019"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y005",
+        "patient_name": "Y005",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y005"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y003",
+        "patient_name": "Y003",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y003"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y015",
+        "patient_name": "Y015",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y015"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-06",
+    "day_of_week": "星期日",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y024",
+        "patient_name": "Y024",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y024"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y023",
+        "patient_name": "Y023",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y023"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y014",
+        "patient_name": "Y014",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y014"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y018",
+        "patient_name": "Y018",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y018"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-07",
+    "day_of_week": "星期一",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y018",
+        "patient_name": "Y018",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y018"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y015",
+        "patient_name": "Y015",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y015"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y021",
+        "patient_name": "Y021",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y021"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y004",
+        "patient_name": "Y004",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y004"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y036",
+        "patient_name": "Y036",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y036"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y038",
+        "patient_name": "Y038",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y038"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-08",
+    "day_of_week": "星期二",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y035",
+        "patient_name": "Y035",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y035"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y016",
+        "patient_name": "Y016",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y016"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y010",
+        "patient_name": "Y010",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y010"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y017",
+        "patient_name": "Y017",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y017"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y036",
+        "patient_name": "Y036",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y036"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y009",
+        "patient_name": "Y009",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y009"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-09",
+    "day_of_week": "星期三",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y010",
+        "patient_name": "Y010",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y010"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y011",
+        "patient_name": "Y011",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y011"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y028",
+        "patient_name": "Y028",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y028"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-10",
+    "day_of_week": "星期四",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y001",
+        "patient_name": "Y001",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y001"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y018",
+        "patient_name": "Y018",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y018"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y008",
+        "patient_name": "Y008",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y008"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y035",
+        "patient_name": "Y035",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y035"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y036",
+        "patient_name": "Y036",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y036"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-11",
+    "day_of_week": "星期五",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y033",
+        "patient_name": "Y033",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y033"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y039",
+        "patient_name": "Y039",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y039"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y020",
+        "patient_name": "Y020",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y020"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-12",
+    "day_of_week": "星期六",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y039",
+        "patient_name": "Y039",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y039"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y032",
+        "patient_name": "Y032",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y032"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y021",
+        "patient_name": "Y021",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y021"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-13",
+    "day_of_week": "星期日",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y006",
+        "patient_name": "Y006",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y006"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y037",
+        "patient_name": "Y037",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y037"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y005",
+        "patient_name": "Y005",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y005"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y032",
+        "patient_name": "Y032",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y032"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-14",
+    "day_of_week": "星期一",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y020",
+        "patient_name": "Y020",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y020"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y026",
+        "patient_name": "Y026",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y026"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y013",
+        "patient_name": "Y013",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y013"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y035",
+        "patient_name": "Y035",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y035"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y024",
+        "patient_name": "Y024",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y024"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y014",
+        "patient_name": "Y014",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y014"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-15",
+    "day_of_week": "星期二",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y005",
+        "patient_name": "Y005",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y005"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y001",
+        "patient_name": "Y001",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y001"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y004",
+        "patient_name": "Y004",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y004"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y015",
+        "patient_name": "Y015",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y015"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-16",
+    "day_of_week": "星期三",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y035",
+        "patient_name": "Y035",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y035"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y031",
+        "patient_name": "Y031",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y031"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y009",
+        "patient_name": "Y009",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y009"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y037",
+        "patient_name": "Y037",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y037"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-17",
+    "day_of_week": "星期四",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y028",
+        "patient_name": "Y028",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y028"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y004",
+        "patient_name": "Y004",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y004"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y027",
+        "patient_name": "Y027",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y027"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y030",
+        "patient_name": "Y030",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y030"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y007",
+        "patient_name": "Y007",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y007"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-18",
+    "day_of_week": "星期五",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y018",
+        "patient_name": "Y018",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y018"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y028",
+        "patient_name": "Y028",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y028"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y012",
+        "patient_name": "Y012",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y012"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y030",
+        "patient_name": "Y030",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y030"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-19",
+    "day_of_week": "星期六",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y016",
+        "patient_name": "Y016",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y016"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y006",
+        "patient_name": "Y006",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y006"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y011",
+        "patient_name": "Y011",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y011"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-20",
+    "day_of_week": "星期日",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y001",
+        "patient_name": "Y001",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y001"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y025",
+        "patient_name": "Y025",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y025"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y017",
+        "patient_name": "Y017",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y017"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y030",
+        "patient_name": "Y030",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y030"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-21",
+    "day_of_week": "星期一",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y004",
+        "patient_name": "Y004",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y004"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y021",
+        "patient_name": "Y021",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y021"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y035",
+        "patient_name": "Y035",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y035"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y038",
+        "patient_name": "Y038",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y038"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-22",
+    "day_of_week": "星期二",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y012",
+        "patient_name": "Y012",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y012"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y005",
+        "patient_name": "Y005",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y005"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y039",
+        "patient_name": "Y039",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y039"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-23",
+    "day_of_week": "星期三",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y038",
+        "patient_name": "Y038",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y038"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y039",
+        "patient_name": "Y039",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y039"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y040",
+        "patient_name": "Y040",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y040"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y003",
+        "patient_name": "Y003",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y003"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-24",
+    "day_of_week": "星期四",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y021",
+        "patient_name": "Y021",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y021"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y016",
+        "patient_name": "Y016",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y016"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y017",
+        "patient_name": "Y017",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y017"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y026",
+        "patient_name": "Y026",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y026"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-25",
+    "day_of_week": "星期五",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y005",
+        "patient_name": "Y005",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y005"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y037",
+        "patient_name": "Y037",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y037"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y007",
+        "patient_name": "Y007",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y007"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y014",
+        "patient_name": "Y014",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y014"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "appointment",
+        "patient_id": "Y040",
+        "patient_name": "Y040",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y040"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y035",
+        "patient_name": "Y035",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y035"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-26",
+    "day_of_week": "星期六",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y007",
+        "patient_name": "Y007",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y007"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y036",
+        "patient_name": "Y036",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y036"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y020",
+        "patient_name": "Y020",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y020"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-27",
+    "day_of_week": "星期日",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y014",
+        "patient_name": "Y014",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y014"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y039",
+        "patient_name": "Y039",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y039"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y017",
+        "patient_name": "Y017",
+        "appointment_type": "初诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "初诊 - 患者 Y017"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y022",
+        "patient_name": "Y022",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y022"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y019",
+        "patient_name": "Y019",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y019"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-28",
+    "day_of_week": "星期一",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y029",
+        "patient_name": "Y029",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y029"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y011",
+        "patient_name": "Y011",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y011"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y036",
+        "patient_name": "Y036",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y036"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "appointment",
+        "patient_id": "Y001",
+        "patient_name": "Y001",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y001"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "appointment",
+        "patient_id": "Y028",
+        "patient_name": "Y028",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y028"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-29",
+    "day_of_week": "星期二",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y023",
+        "patient_name": "Y023",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y023"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y024",
+        "patient_name": "Y024",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y024"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "appointment",
+        "patient_id": "Y003",
+        "patient_name": "Y003",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y003"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y020",
+        "patient_name": "Y020",
+        "appointment_type": "术后复查",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "术后复查 - 患者 Y020"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-30",
+    "day_of_week": "星期三",
+    "doctor": {
+      "doctor_id": "D001",
+      "doctor_name": "李医生",
+      "specialty": "运动康复科",
+      "department": "康复医学科",
+      "title": "主治医师"
+    },
+    "work_hours": {
+      "start": "08:00",
+      "end": "17:00",
+      "lunch_break": "12:00-13:00"
+    },
+    "schedule": [
+      {
+        "hour": "08:00-09:00",
+        "type": "appointment",
+        "patient_id": "Y016",
+        "patient_name": "Y016",
+        "appointment_type": "随访",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "随访 - 患者 Y016"
+      },
+      {
+        "hour": "09:00-10:00",
+        "type": "appointment",
+        "patient_id": "Y011",
+        "patient_name": "Y011",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y011"
+      },
+      {
+        "hour": "10:00-11:00",
+        "type": "appointment",
+        "patient_id": "Y027",
+        "patient_name": "Y027",
+        "appointment_type": "康复评估",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "康复评估 - 患者 Y027"
+      },
+      {
+        "hour": "11:00-12:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "12:00-13:00",
+        "type": "break",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "午休"
+      },
+      {
+        "hour": "13:00-14:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "14:00-15:00",
+        "type": "appointment",
+        "patient_id": "Y012",
+        "patient_name": "Y012",
+        "appointment_type": "复诊",
+        "prescription": null,
+        "prescription_slot": false,
+        "notes": "复诊 - 患者 Y012"
+      },
+      {
+        "hour": "15:00-16:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      },
+      {
+        "hour": "16:00-17:00",
+        "type": "prescription",
+        "patient_id": null,
+        "patient_name": null,
+        "appointment_type": null,
+        "prescription": null,
+        "prescription_slot": true,
+        "notes": "可开处方 / 整理病历 / 休息"
+      }
+    ]
+  }
+]
