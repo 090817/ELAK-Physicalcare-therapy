@@ -1,5 +1,5 @@
 /** AI 服务封装（OpenAI 兼容接口）。密钥来自 config.local.js。 */
-import { getConfig } from "./config.js";
+import { getConfig } from "./config.js?v=6";
 
 /** 是否已配置 API key。 */
 export function hasApiKey() {

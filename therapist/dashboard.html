@@ -8,6 +8,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </head>
 <body>
+  <div id="page-fade" style="position:fixed;inset:0;background:#0b0b0f;z-index:99999;pointer-events:none;opacity:1;transition:opacity .55s ease"></div>
   <div class="app">
     <aside class="sidebar">
       <div class="sidebar__head">
@@ -28,6 +29,14 @@
     </main>
   </div>
 
-  <script type="module" src="./js/main.js"></script>
+  <script type="module" src="./js/main.js?v=6"></script>
+  <script>
+    addEventListener("load", function () {
+      var f = document.getElementById("page-fade");
+      if (!f) return;
+      requestAnimationFrame(function () { f.style.opacity = "0"; });
+      setTimeout(function () { f.remove(); }, 700);
+    });
+  </script>
 </body>
 </html>

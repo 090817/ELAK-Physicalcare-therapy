@@ -220,6 +220,69 @@ h1, h2, h3 { margin: 0; font-weight: 700; }
   grid-template-columns: minmax(360px, 1.3fr) 1fr;
 }
 
+/* 单个处方动作的标题 */
+.exercise-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 2px 10px;
+}
+.ex-title { font-size: 15px; font-weight: 700; }
+.ex-meta { font-size: 12px; color: var(--text2); }
+
+/* SOAP 病历 */
+.soap { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.soap__row { display: grid; grid-template-columns: 62px 1fr; gap: 10px; }
+.soap__k {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+  padding-top: 2px;
+}
+.soap__row p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text); }
+
+/* AI 分析框 */
+.ai-box {
+  margin-top: 16px;
+  background: var(--card);
+  border: 1px solid rgba(88, 86, 214, 0.28);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 6px 24px rgba(88, 86, 214, 0.08);
+}
+.ai-box__head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ai-box__badge {
+  display: inline-grid;
+  place-items: center;
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #7c6cff, #5856d6);
+  color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+}
+.ai-box__title { font-weight: 700; font-size: 15px; }
+.ai-box__btn {
+  margin-left: auto;
+  border: 1px solid var(--sep);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer;
+}
+.ai-box__btn:hover { background: #eef0f4; }
+.ai-box__btn:disabled { opacity: 0.5; cursor: default; }
+.ai-box__body {
+  white-space: pre-wrap;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text);
+  max-height: 460px;
+  overflow: auto;
+}
+.ai-loading { color: var(--text2); }
+
 /* 三线表（可滚动，表头吸顶） */
 .table-wrap {
   max-height: 240px;

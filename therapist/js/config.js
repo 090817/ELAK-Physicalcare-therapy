@@ -9,8 +9,7 @@ export const CONFIG = {
   role: "therapist",
 
   // 数据集路径（相对于本文件所在目录）
-  dataFile: "stepheal_youth_v8.json",
-  scheduleFile: "青少年时间表.json",
+  dataFile: "stepheal_youth.json",
 
   // AI 服务配置（留空则不启用）
   ai: {
