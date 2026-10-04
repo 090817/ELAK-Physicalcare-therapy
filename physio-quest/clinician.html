@@ -36,10 +36,18 @@
     z-index: 1;
     pointer-events: none;
     overflow: hidden;
+    background-image:
+      linear-gradient(rgba(111, 88, 64, 0.16) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(111, 88, 64, 0.16) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: shapeGridDrift 20s linear infinite;
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
   }
   .shapegrid-canvas { width: 100%; height: 100%; display: block; }
+  @keyframes shapeGridDrift {
+    to { background-position: 40px 40px; }
+  }
   button, input, select, textarea { font: inherit; color: inherit; }
   input, select, textarea {
     border: 1px solid var(--line);
@@ -278,11 +286,12 @@
   .overlay {
     position: fixed;
     inset: 0;
-    z-index: 40;
+    z-index: 80;
     display: grid;
     place-items: center;
     background: rgba(42, 36, 28, 0.28);
     padding: 24px;
+    overflow: auto;
   }
   .overlay[hidden] { display: none !important; }
   .overlay .card {
@@ -293,10 +302,55 @@
     padding: 22px;
     box-shadow: var(--shadow);
   }
-  .overlay .card.mail-card { width: min(560px, 100%); }
+  .overlay .card.mail-card {
+    width: min(640px, 100%);
+    max-height: min(86vh, 860px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 16px;
+  }
+  .mail-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
+  }
+  .mail-card .mail-actions {
+    flex: 0 0 auto;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    background: #fff;
+  }
+  .overlay .card.health-card {
+    width: min(1100px, 100%);
+    height: min(88vh, 920px);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+  }
+  #health-frame {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    border: 0;
+    border-radius: 16px;
+    background: #f4efe4;
+  }
+  #clinic-health-preview {
+    max-height: 240px;
+    overflow: auto;
+    white-space: pre-wrap;
+    margin: 8px 0 12px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
   #mail-kale { margin: 14px 0 8px; }
   #mail-kale .row { display: flex; flex-wrap: wrap; gap: 8px; }
-  #clinic-notes { max-width: 720px; margin: 0 auto; }
+  #clinic-notes, #clinic-reports { max-width: 720px; margin: 0 auto; }
+  #tab-reports.sel { background: #6f5840; color: #f7f1e6; }
   .mail-row {
     display: block;
     width: 100%;
@@ -333,7 +387,10 @@
     color: var(--muted);
     white-space: nowrap;
   }
-  .mail-letter { white-space: pre-wrap; line-height: 1.5; }
+  .mail-letter { white-space: pre-wrap; line-height: 1.5; overflow-wrap: break-word; }
+  @media (prefers-reduced-motion: reduce) {
+    .shape-grid { animation: none; }
+  }
   @media (max-width: 900px) {
     .shape-grid { inset: 0; }
     #app { padding: 8px 40px 104px; }
@@ -349,19 +406,20 @@
 </head>
 <body>
 <div id="shape-grid" class="shape-grid" aria-hidden="true"></div>
-<script type="module" src="shape-grid.js?v=29"></script>
+<script src="shape-grid.js?v=30"></script>
 <div id="app">
   <header>
     <button class="brand" id="clinic-home-btn" type="button"><img class="mark" src="elak-logo.png?v=2" alt=""> ELAK</button>
-    <div class="header-actions">
+    <div class="header-actions" id="header-actions" hidden>
       <span class="chip" id="who" hidden></span>
       <button class="ghost" id="clinic-home-open" type="button" hidden>Home</button>
       <div class="tabs" id="clinic-tabs" hidden>
         <button class="tab" id="tab-current" type="button">Current patients</button>
         <button class="tab" id="tab-archive" type="button">Patient archive</button>
         <button class="tab" id="tab-notes" type="button">Notifications<span class="notes-dot" id="clinic-notes-dot" hidden></span></button>
+        <button class="tab" id="tab-reports" type="button">Reports</button>
       </div>
-      <button class="ghost" id="sign-out" type="button">Sign out</button>
+      <button class="ghost" id="sign-out" type="button" hidden>Sign out</button>
     </div>
   </header>
 
@@ -401,6 +459,8 @@
       <div class="row" style="margin:12px 0 16px">
         <button class="primary" id="home-current" type="button">Current patients</button>
         <button class="secondary" id="home-archive" type="button">Patient archive</button>
+        <button class="secondary" id="home-notes" type="button">Notifications</button>
+        <button class="secondary" id="home-reports" type="button">Reports</button>
       </div>
       <div class="saved-box" id="clinic-home-cal" tabindex="0">
         <strong>Your calendar</strong>
@@ -467,6 +527,13 @@
           <p class="note" id="clinic-login-error"></p>
           <p class="note" id="account-box-foot" hidden></p>
         </div>
+        <div class="saved-box" id="clinic-health" hidden tabindex="0">
+          <h3 style="font-size:1.7rem;margin:4px 0 8px">Health report</h3>
+          <p class="note" id="clinic-health-status"></p>
+          <div class="row">
+            <button class="primary" id="clinic-health-open" type="button" hidden>New report</button>
+          </div>
+        </div>
         <div id="visit-toolbar" hidden>
           <div class="row">
             <button class="primary" id="clinic-new-visit" type="button">New visit</button>
@@ -522,41 +589,58 @@
     <h2 style="font-size:2.4rem;margin-bottom:12px">Notifications</h2>
     <div id="clinic-inbox"></div>
   </section>
+
+  <section id="clinic-reports" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:12px">Reports</h2>
+    <p class="note" id="clinic-reports-status"></p>
+    <div id="clinic-report-list"></div>
+  </section>
 </div>
 <div class="overlay" id="overlay-mail" hidden>
   <div class="card mail-card">
-    <p class="kicker">From</p>
-    <p id="mail-from"></p>
-    <p class="kicker">Subject</p>
-    <h2 id="mail-subject"></h2>
-    <p class="note" id="mail-when"></p>
-    <p id="mail-body" class="mail-letter"></p>
-    <div id="mail-negotiate" hidden>
-      <div class="field">
-        <label for="mail-new-time">Negotiate a new time</label>
-        <input id="mail-new-time" type="datetime-local">
+    <div class="mail-scroll">
+      <p class="kicker">From</p>
+      <p id="mail-from"></p>
+      <p class="kicker">Subject</p>
+      <h2 id="mail-subject"></h2>
+      <p class="note" id="mail-when"></p>
+      <p id="mail-body" class="mail-letter"></p>
+      <div id="mail-negotiate" hidden>
+        <div class="field">
+          <label for="mail-new-time">Negotiate a new time</label>
+          <input id="mail-new-time" type="datetime-local">
+        </div>
+        <p class="note" id="mail-negotiate-msg"></p>
+        <div class="row">
+          <button class="secondary" id="mail-negotiate-btn" type="button">Negotiate</button>
+        </div>
       </div>
-      <p class="note" id="mail-negotiate-msg"></p>
-      <div class="row">
-        <button class="secondary" id="mail-negotiate-btn" type="button">Negotiate</button>
+      <div id="mail-kale" hidden>
+        <p class="note" id="mail-kale-msg"></p>
+        <div class="row" id="mail-kale-actions">
+          <button class="primary" id="mail-kale-agree" type="button">Agree</button>
+          <button class="secondary" id="mail-kale-disagree" type="button">Disagree</button>
+        </div>
       </div>
     </div>
-    <div id="mail-kale" hidden>
-      <p class="note" id="mail-kale-msg"></p>
-      <div class="row" id="mail-kale-actions">
-        <button class="primary" id="mail-kale-agree" type="button">Agree</button>
-        <button class="secondary" id="mail-kale-disagree" type="button">Disagree</button>
-      </div>
-    </div>
-    <div class="row">
+    <div class="row mail-actions">
+      <button class="secondary" id="mail-open-report" type="button" hidden>Open report</button>
       <button class="primary" id="mail-close" type="button">Close</button>
     </div>
   </div>
 </div>
+<div class="overlay" id="overlay-health" hidden>
+  <div class="card health-card">
+    <iframe id="health-frame" title="Health report"></iframe>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="health-close" type="button">Close</button>
+    </div>
+  </div>
+</div>
 <script src="shared.js?v=85"></script>
-<script src="calendar-plugin.js?v=89"></script>
-<script src="agent.js?v=87"></script>
-<script src="clinic.js?v=86"></script>
-<script src="buddy.js?v=94"></script>
+<script src="calendar-plugin.js?v=94"></script>
+<script src="agent.js?v=88"></script>
+<script src="clinic.js?v=91"></script>
+<script src="buddy.js?v=95"></script>
 </body>
 </html>

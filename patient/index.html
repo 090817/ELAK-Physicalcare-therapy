@@ -34,15 +34,22 @@
   }
   .shape-grid {
     position: fixed;
-    top: 100px;
-    left: 76px;
-    right: 76px;
-    bottom: 100px;
+    inset: 0;
     z-index: 1;
     pointer-events: none;
     overflow: hidden;
+    background-image:
+      linear-gradient(rgba(111, 88, 64, 0.16) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(111, 88, 64, 0.16) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: shapeGridDrift 20s linear infinite;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
   }
   .shapegrid-canvas { width: 100%; height: 100%; display: block; }
+  @keyframes shapeGridDrift {
+    to { background-position: 40px 40px; }
+  }
   button, input, select, textarea { font: inherit; color: inherit; }
   input, select, textarea {
     border: 1px solid var(--line);
@@ -65,10 +72,10 @@
   #app {
     position: relative;
     z-index: 2;
-    max-width: 1120px;
+    max-width: 1480px;
     margin: 0 auto;
     min-height: 100%;
-    padding: 8px 96px 114px;
+    padding: 8px 56px 56px;
     display: flex;
     flex-direction: column;
   }
@@ -111,28 +118,574 @@
     backdrop-filter: blur(4px);
   }
   .ghost:hover { border-color: rgba(247, 244, 238, 0.4); color: white; }
+  #notes-open { position: relative; }
+  .notes-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e23b2e;
+    box-shadow: 0 0 0 2px #fff7ec;
+    pointer-events: none;
+  }
   .screen { display: none; flex: 1; min-height: 0; }
   .screen.on { display: flex; flex-direction: column; }
   .screen[hidden] { display: none !important; }
-  #screen-title.on, #screen-signin.on {
+  .slot-card, .busy-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 22px 24px 24px;
+    margin: 0 0 20px;
+  }
+  .slot-card .row { margin-top: 10px; }
+  .slot-card.ok { border-color: var(--leaf); }
+  .choice-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: rgba(255,250,242,0.8);
+  }
+  .choice.sel { border-color: var(--leaf); box-shadow: inset 0 0 0 1px var(--leaf); }
+  .choice small { display: block; color: var(--muted); }
+  #overlay-nudge {
+    background: rgba(18, 14, 10, 0.55);
+    place-items: center;
+    padding: 18px;
+    pointer-events: auto;
+  }
+  #overlay-nudge .card {
+    width: min(440px, calc(100vw - 32px));
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 50px rgba(42, 36, 28, 0.28);
+  }
+  .cal-pop {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 16px;
+    align-items: center;
+    margin: 0 0 14px;
+  }
+  .cal-pop-date {
+    background: #fffaf3;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    text-align: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+  }
+  .cal-pop-month {
+    display: block;
+    background: #b23a2f;
+    color: #fffaf3;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    font-weight: 800;
+    padding: 6px 4px 4px;
+  }
+  .cal-pop-date strong {
+    display: block;
+    font-family: Fraunces, Georgia, serif;
+    font-size: 2.2rem;
+    line-height: 1;
+    padding: 8px 4px 0;
+  }
+  .cal-pop-dow {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 4px 8px;
+  }
+  #nudge-when { margin: 0 0 6px; font-weight: 700; color: var(--terra-deep); }
+  #screen-story.on {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    flex: 1;
+    min-height: 0;
+  }
+  .reward-shell {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  #reward-frame {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: calc(100vh - 132px);
+    height: calc(100vh - 132px);
+    border: 0;
+    border-radius: 24px;
+    background: #f6f3ec;
+    box-shadow: var(--shadow);
+  }
+  .reel-shell { width: min(420px, 100%); }
+  .story-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    height: auto;
+    max-height: min(86vh, 780px);
+    background: #0c0b0a;
+    color: #f7f1e6;
+    border-radius: 28px;
+    padding: 0;
+    box-shadow: 0 22px 48px rgba(20, 16, 12, 0.35);
+    overflow: hidden;
+  }
+  .reel-bars {
+    position: absolute;
+    top: 10px; left: 10px; right: 10px;
+    z-index: 7;
+    display: flex;
+    gap: 3px;
+  }
+  .reel-bars i {
+    flex: 1;
+    height: 3px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.22);
+  }
+  .reel-bars i.done { background: rgba(255,255,255,0.72); }
+  .reel-bars i.on { background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+  .reel-meta {
+    position: absolute;
+    top: 22px; left: 14px; right: 14px;
+    z-index: 6;
+    pointer-events: none;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.45);
+  }
+  .reel-meta .kicker { color: #f3d9a4; }
+  .reel-meta h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+    margin: 2px 0 4px;
+    color: #fffaf3;
+  }
+  .reel-meta .note { color: rgba(247,241,230,0.78); max-width: none; }
+  .reel-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .reel-hit button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+  .story-set {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transition: background 0.8s ease;
+  }
+  .story-set[data-set="ward"] { background: radial-gradient(ellipse at 20% 10%, #3a2a1c 0%, #1a1410 55%, #0e0c0a 100%); }
+  .story-set[data-set="gym"] { background: radial-gradient(ellipse at 80% 0%, #243040 0%, #141820 60%, #0c0e12 100%); }
+  .story-set[data-set="hall"] { background: linear-gradient(180deg, #2a2420 0%, #161310 48%, #0f0d0b 100%); }
+  .story-set[data-set="garden"] { background: radial-gradient(ellipse at 50% 120%, #2a3a28 0%, #141910 70%, #0c100c 100%); }
+  .story-set[data-set="office"] { background: radial-gradient(ellipse at 10% 0%, #2c3340 0%, #161820 60%, #0c0d10 100%); }
+  .story-set[data-set="room"] { background: radial-gradient(ellipse at 70% 20%, #2a221c 0%, #16130f 60%, #0e0c0a 100%); }
+  .story-set::before, .story-set::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+  .story-set[data-set="ward"]::before {
+    width: 120px; height: 160px; right: 12%; top: 8%;
+    background: linear-gradient(#f3d9a4, #c9a36a);
+    opacity: 0.18;
+    filter: blur(18px);
+    animation: storyGlow 4.5s ease-in-out infinite;
+  }
+  .story-set[data-set="ward"]::after {
+    left: 8%; bottom: 18%; width: 38%; height: 18%;
+    background: #2a221c;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -10px 0 #3a3028;
+    opacity: 0.55;
+  }
+  .story-set[data-set="gym"]::before {
+    inset: 22% 8% auto;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #6a7a88 0 18px, transparent 18px 36px);
+    opacity: 0.35;
+  }
+  .story-set[data-set="garden"]::before {
+    width: 180px; height: 180px; left: -20px; bottom: -40px;
+    background: #2f4a32;
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+  .story-set[data-set="garden"]::after {
+    width: 140px; height: 140px; right: -10px; top: 20px;
+    background: #3a5a3c;
+    border-radius: 50%;
+    opacity: 0.28;
+    animation: storyFloat 7s ease-in-out infinite;
+  }
+  .story-set[data-set="hall"]::before {
+    inset: 0 18%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    animation: storySweep 6s linear infinite;
+  }
+  .story-dust span {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(255,236,200,0.45);
+    animation: storyDust 9s linear infinite;
+  }
+  .story-set { animation: reelKen 18s ease-in-out infinite alternate; }
+  .story-stage.talk-close .story-set { animation-duration: 10s; }
+  .story-cast {
+    position: absolute;
+    left: 0; right: 0; bottom: 132px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    min-height: 260px;
+    z-index: 2;
+    padding: 0 12px;
+    transition: transform 0.6s ease;
+  }
+  .story-stage.talk-close .story-cast { transform: scale(1.18) translateY(18px); }
+  .story-actor {
+    width: 104px;
+    text-align: center;
+    transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+    opacity: 0.5;
+  }
+  .story-actor.talk {
+    opacity: 1;
+    transform: translateY(-18px) scale(1.22);
+    z-index: 3;
+  }
+  .story-actor.talk .puppet::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: 70px;
+    height: 16px;
+    margin-left: -35px;
+    background: radial-gradient(ellipse, rgba(226,196,138,0.45), transparent 70%);
+    filter: blur(2px);
+  }
+  .story-actor.dim { opacity: 0.3; filter: saturate(0.6); }
+  .story-stage.narrate .story-actor { opacity: 0.2; transform: scale(0.96); }
+  .puppet {
+    position: relative;
+    height: 186px;
+    margin: 0 auto;
+  }
+  .puppet .head {
+    position: absolute;
+    left: 50%; top: 28px;
+    width: 52px; height: 52px;
+    margin-left: -26px;
+    border-radius: 50%;
+    background: #f0d0b0;
+    box-shadow: inset 0 -8px 0 rgba(0,0,0,0.06), 0 0 0 3px rgba(255,236,200,0.08);
+    z-index: 3;
+  }
+  .puppet .hair {
+    position: absolute;
+    left: 50%; top: 16px;
+    width: 58px; height: 26px;
+    margin-left: -29px;
+    border-radius: 24px 24px 10px 10px;
+    background: #1a1410;
+    z-index: 4;
+  }
+  .puppet .eye {
+    position: absolute;
+    top: 22px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1c1612;
+    box-shadow: 0 0 0 2px #fff6ea;
+  }
+  .puppet .eye.l { left: 12px; }
+  .puppet .eye.r { right: 12px; }
+  .puppet .mouth {
+    position: absolute;
+    left: 50%; bottom: 11px;
+    width: 14px; height: 4px;
+    margin-left: -7px;
+    border-radius: 0 0 10px 10px;
+    background: #a45a4a;
+  }
+  .story-actor.talk .mouth { animation: storyTalk 0.28s ease-in-out infinite; }
+  .story-actor.talk .puppet { animation: storyBreathe 1.4s ease-in-out infinite; }
+  .story-actor.talk .eye { animation: storyBlink 3.2s ease-in-out infinite; }
+  .puppet .body {
+    position: absolute;
+    left: 50%; top: 76px;
+    width: 64px; height: 86px;
+    margin-left: -32px;
+    border-radius: 18px 18px 12px 12px;
+    background: #1d2a44;
+    box-shadow: inset 10px 0 0 rgba(255,255,255,0.06);
+  }
+  .puppet .arm {
+    position: absolute;
+    top: 84px;
+    width: 15px; height: 56px;
+    border-radius: 10px;
+    background: #1d2a44;
+    transform-origin: top center;
+  }
+  .puppet .arm.l { left: 18px; }
+  .puppet .arm.r { right: 18px; }
+  .story-actor.talk .arm.r { animation: storyGesture 1.6s ease-in-out infinite; }
+  .actor-tag {
+    margin: 6px 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: #d8cbb6;
+  }
+  .story-actor[data-look="su"] .hair { background: #4a3428; height: 34px; border-radius: 24px 24px 12px 12px; }
+  .story-actor[data-look="su"] .body, .story-actor[data-look="su"] .arm { background: #f3eee6; }
+  .story-actor[data-look="su"] .body { box-shadow: inset 0 0 0 2px #d8cfc3; }
+  .story-actor[data-look="zhou"] .hair { background: #2c241c; height: 22px; }
+  .story-actor[data-look="zhou"] .body, .story-actor[data-look="zhou"] .arm { background: #6d7380; }
+  .story-actor[data-look="gu"] .hair { width: 40px; margin-left: -20px; height: 16px; top: 16px; background: #3a3228; }
+  .story-actor[data-look="gu"] .body, .story-actor[data-look="gu"] .arm { background: #4a3828; }
+  .story-actor[data-look="wang"] .body, .story-actor[data-look="wang"] .arm { background: #2a4a4a; }
+  .story-actor[data-look="zhao"] .body, .story-actor[data-look="zhao"] .arm { background: #3a2a4a; }
+  .story-actor[data-look="other"] .body, .story-actor[data-look="other"] .arm { background: #3a4038; }
+  .story-caption {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 6;
+    background: linear-gradient(180deg, transparent, rgba(8,6,4,0.88) 38%);
+    border: 0;
+    border-radius: 0;
+    padding: 48px 16px 22px;
+    min-height: 128px;
+    backdrop-filter: none;
+    pointer-events: none;
+  }
+  .story-caption .who {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #f3d9a4;
+    margin-bottom: 6px;
+    font-weight: 800;
+  }
+  .story-caption .line {
+    margin: 0;
+    font-size: 1.22rem;
+    line-height: 1.35;
+    min-height: 2.6em;
+    font-weight: 650;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+  }
+  .story-caption.talking .who::after {
+    content: " · speaking";
+    letter-spacing: 0.08em;
+    color: #b9a888;
+  }
+  .story-log { display: none; }
+  .story-line {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: storyIn 0.7s ease forwards;
+    margin: 0 0 12px;
+    line-height: 1.55;
+  }
+  .story-line .who {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a7d6c;
+    margin-bottom: 4px;
+  }
+  .story-line .line { font-size: 0.98rem; color: var(--ink); }
+  @keyframes storyIn { to { opacity: 1; transform: none; } }
+  @keyframes storyTalk {
+    0%, 100% { height: 3px; border-radius: 8px; }
+    50% { height: 9px; border-radius: 8px; }
+  }
+  @keyframes storyBlink {
+    0%, 88%, 100% { transform: scaleY(1); }
+    92% { transform: scaleY(0.15); }
+  }
+  @keyframes storyBreathe {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes storyGesture {
+    0%, 100% { transform: rotate(8deg); }
+    50% { transform: rotate(-12deg); }
+  }
+  @keyframes storyGlow {
+    0%, 100% { opacity: 0.12; }
+    50% { opacity: 0.28; }
+  }
+  @keyframes storyFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes storySweep { to { transform: translateX(18%); } }
+  @keyframes storyDust {
+    0% { transform: translateY(20px); opacity: 0; }
+    15% { opacity: 0.6; }
+    100% { transform: translateY(-220px); opacity: 0; }
+  }
+  @keyframes reelKen {
+    0% { transform: scale(1) translate3d(0, 0, 0); }
+    100% { transform: scale(1.08) translate3d(-2%, 1%, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .story-actor.talk .mouth, .story-actor.talk .puppet, .story-actor.talk .arm.r,
+    .story-set, .story-set::before, .story-set::after, .story-dust span { animation: none; }
+  }
+  .story-stage.paused .story-actor.talk .mouth,
+  .story-stage.paused .story-actor.talk .puppet,
+  .story-stage.paused .story-actor.talk .arm.r,
+  .story-stage.paused .story-actor.talk .eye,
+  .story-stage.paused .story-set::before,
+  .story-stage.paused .story-set::after,
+  .story-stage.paused .story-dust span { animation-play-state: paused; }
+  .story-transport { flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+  .story-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .cal-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .cal-table th, .cal-table td { border-bottom: 1px solid var(--line); padding: 12px 12px; text-align: left; vertical-align: top; color: var(--ink); }
+  .cal-table th { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .cal-table .day { font-weight: 700; white-space: nowrap; }
+  .mail-row {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 0 8px;
+  }
+  .mail-row-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+  .mail-row .notes-dot {
+    position: static;
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    box-shadow: none;
+    transform: none;
+    margin-top: 6px;
+  }
+  .mail-row.read .notes-dot { visibility: hidden; }
+  .mail-copy { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .mail-copy strong, .mail-copy span { display: block; overflow-wrap: anywhere; }
+  .mail-copy strong { font-weight: 700; }
+  .mail-copy span { color: var(--muted); }
+  .mail-row small {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding-left: 16px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .mail-letter { white-space: pre-wrap; line-height: 1.5; }
+  .overlay .card.mail-card { width: min(560px, 100%); }
+  #mail-kale { margin: 14px 0 8px; }
+  #mail-kale .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cal-wrap { max-height: 320px; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,250,242,0.55); margin-top: 14px; }
+  #screen-title.on {
+    display: grid;
+    grid-template-columns: minmax(36rem, 1.55fr) minmax(240px, 0.55fr);
+    column-gap: clamp(20px, 4vw, 48px);
+    align-items: start;
+  }
+  #screen-title .home-copy {
+    min-width: 0;
+    margin-left: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  #screen-title .home-hero {
+    justify-self: end;
+    align-self: start;
+    margin-top: 5.2rem;
+    transform: translateX(-40px);
+  }
+  #screen-title .home-hero img { width: min(340px, 28vw); height: auto; }
+  #home-title {
+    white-space: nowrap;
+    font-size: clamp(2.6rem, 5.4vw, 4.6rem);
+    margin: 0 0 0.55em;
+    line-height: 1.05;
+  }
+  #screen-title .lede { max-width: 46rem; }
+  #screen-signin.on {
     display: grid;
     grid-template-columns: 1.15fr 0.85fr;
     gap: 28px;
     align-items: center;
   }
   #screen-signin .gate { margin: 0; width: min(480px, 100%); }
+  .home-start {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 22px;
+  }
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 14px;
+    font-size: 0.95rem;
+    color: var(--ink);
+    cursor: pointer;
+    user-select: none;
+  }
+  .remember input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--terra);
+    flex: none;
+  }
   .kicker {
-    margin: 0 0 8px;
+    margin: 0 0 16px;
     color: #8a6a45;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     font-size: 0.78rem;
+    line-height: 1.4;
   }
   h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 680; letter-spacing: -0.03em; margin: 0; }
   h1 { font-size: clamp(3rem, 7vw, 5.4rem); line-height: 0.92; }
-  .lede { font-size: 1.18rem; line-height: 1.45; max-width: 38rem; color: var(--ink); }
-  .note { color: var(--muted); font-size: 0.92rem; line-height: 1.45; max-width: 40rem; }
+  .lede { font-size: 1.18rem; line-height: 1.5; max-width: 38rem; color: var(--ink); margin: 0 0 12px; }
+  .note { color: var(--muted); font-size: 0.92rem; line-height: 1.5; max-width: 40rem; margin: 0 0 12px; }
+  .note:empty, .lede:empty { display: none; margin: 0; }
   .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .primary, .secondary {
     border-radius: 999px;
@@ -183,18 +736,33 @@
   .quest .time { color: var(--leaf); font-weight: 700; font-size: 0.86rem; letter-spacing: 0.04em; text-transform: uppercase; }
   .quest p { margin: 0; color: var(--muted); line-height: 1.4; flex: 1; }
   .quest .go { color: var(--terra-deep); font-weight: 700; }
-  .plan-list { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 10px; }
-  .plan-list li {
-    background: var(--paper);
+  .plan-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+  .plan-list li, .plan-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255, 250, 242, 0.72);
     border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 14px 16px;
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(6px);
+    border-radius: 16px;
+    padding: 16px 18px;
   }
-  .plan-list strong { display: block; font-size: 1.05rem; }
-  .plan-list span { color: var(--leaf); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; }
-  .plan-list p { margin: 6px 0 0; color: var(--muted); }
+  .plan-item-name, .plan-list strong {
+    display: block;
+    margin: 0;
+    font-size: 1.12rem;
+    line-height: 1.35;
+    font-weight: 700;
+  }
+  .plan-item-meta, .plan-list span {
+    display: block;
+    color: var(--leaf);
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.35;
+  }
+  .plan-list p { margin: 0; color: var(--muted); line-height: 1.45; }
   .clinic-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
   .clinic-side, .clinic-main {
     background: var(--paper);
@@ -243,27 +811,16 @@
   .icon-row { display: flex; gap: 6px; justify-content: flex-end; }
   .icon-row button { padding: 6px 10px; }
   #screen-play.on {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 16px;
-    align-items: start;
+    display: block;
   }
-  .stage-wrap {
-    position: relative;
-    width: 100%;
-    height: min(720px, calc(100vh - 118px));
-    min-height: 480px;
-    border-radius: 28px;
-    overflow: hidden;
-    background: #f3ead7;
-    border: 1px solid rgba(111, 88, 64, 0.22);
-    box-shadow: var(--shadow);
-  }
-  #stage { width: 100%; height: 100%; display: block; }
+  .play-studio { position: relative; min-height: calc(100vh - 140px); padding-bottom: 88px; }
+  .play-grid { display: grid; gap: 16px; }
+  .play-studio.watch .play-grid { grid-template-columns: 1fr; }
+  .play-studio.watch .teach { width: min(920px, 100%); margin: 0 auto; }
+  .play-studio.film .play-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+  .play-studio.watch #film-booth { display: none; }
+  .play-studio.film #watch-ready { display: none; }
   .teach {
-    position: absolute;
-    inset: 18px;
-    z-index: 2;
     display: grid;
     grid-template-rows: 1fr auto;
     gap: 10px;
@@ -272,6 +829,7 @@
   .teach[hidden] { display: none; }
   .teach-screen {
     min-height: 0;
+    aspect-ratio: 16 / 9;
     border-radius: 22px;
     overflow: hidden;
     background: #1c1914;
@@ -289,6 +847,34 @@
     color: #6e6458;
     font-size: 0.92rem;
     font-weight: 600;
+  }
+  .film-pane {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+  }
+  .film-pane video {
+    width: 100%;
+    border-radius: 16px;
+    background: #111;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .play-submit {
+    position: fixed;
+    right: 40px;
+    bottom: 28px;
+    z-index: 6;
+  }
+  .play-submit:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
   #banner {
     position: absolute;
@@ -328,7 +914,7 @@
   .coach-line { font-size: 1.05rem; line-height: 1.35; min-height: 2.7em; }
   .side-line { color: var(--sky); font-weight: 700; min-height: 1.2em; }
   .block { display: flex; flex-direction: column; gap: 6px; }
-  .spread { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.92rem; color: var(--muted); }
+  .spread { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 14px; font-size: 0.92rem; color: var(--muted); }
   .pips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
   .pip { width: 12px; height: 12px; border-radius: 99px; background: rgba(111, 88, 64, 0.18); display: block; }
   .pip.on { background: var(--terra); }
@@ -434,34 +1020,40 @@
     clip: rect(0 0 0 0);
   }
   @media (max-width: 900px) {
-    .shape-grid { top: 90px; left: 32px; right: 32px; bottom: 90px; }
+    .shape-grid { inset: 0; }
     #app { padding: 8px 40px 104px; }
     .mark { width: 64px; height: 54px; }
-    #screen-title.on, #screen-signin.on, #quest-cards, #screen-play.on, .clinic-layout, .ex-grid, .profile-layout { grid-template-columns: 1fr; }
-    .stage-wrap { min-height: 340px; height: 46vh; }
-    .hud { max-height: none; }
+    #screen-title.on, #screen-signin.on, #quest-cards, #screen-play.on, .clinic-layout, .ex-grid, .profile-layout, .play-studio.film .play-grid { grid-template-columns: 1fr; }
+    #screen-title.on { grid-template-columns: 1fr; }
+    #screen-title .home-hero { margin-top: 8px; justify-self: start; }
+    #home-title { white-space: normal; }
+    .play-submit { right: 20px; bottom: 18px; }
     .brand { white-space: nowrap; font-size: 1.15rem; }
     header { align-items: center; }
     h1 { font-size: 3.2rem; }
   }
   @media (prefers-reduced-motion: reduce) {
     .quest { transition: none; }
+    .shape-grid { animation: none; }
   }
 </style>
 </head>
 <body>
 <div id="page-fade" style="position:fixed;inset:0;background:#0b0b0f;z-index:99999;pointer-events:none;opacity:1;transition:opacity .55s ease"></div>
 <div id="shape-grid" class="shape-grid" aria-hidden="true"></div>
-<script type="module" src="shape-grid.js?v=28"></script>
+<script src="shape-grid.js?v=30"></script>
 <div id="app">
   <header>
     <button class="brand" id="home" type="button"><img class="mark" src="elak-logo.png?v=2" alt=""> ELAK</button>
-    <div class="header-actions">
+    <div class="header-actions" id="header-actions" hidden>
       <span class="chip" id="streak" hidden></span>
-      <button class="ghost" id="profile-open" type="button" hidden>Avatars</button>
+      <button class="ghost" id="home-open" type="button" hidden>Home</button>
+      <button class="ghost" id="book-open" type="button" hidden>Edit schedule</button>
+      <button class="ghost" id="notes-open" type="button" hidden>Notifications<span class="notes-dot" id="patient-notes-dot" hidden></span></button>
+      <button class="ghost" id="films-open" type="button" hidden>Films</button>
+      <button class="ghost" id="stories-open" type="button" hidden>Rewards</button>
       <button class="ghost" id="patient-out" type="button" hidden>Sign out</button>
-      <a class="ghost" href="clinician.html">Clinician</a>
-      <button class="ghost" id="mute" type="button">Sound on</button>
+      <button class="ghost" id="mute" type="button" hidden>Sound on</button>
     </div>
   </header>
 
@@ -469,7 +1061,6 @@
     <form class="gate" id="patient-form">
       <p class="kicker">Patient</p>
       <h1>Sign in</h1>
-      <p class="lede">Use the username and password your physiotherapist gave you. Stars and streaks stay on this account.</p>
       <div class="field">
         <label for="patient-user">Username</label>
         <input id="patient-user" autocapitalize="none" autocomplete="username" spellcheck="false" required>
@@ -478,6 +1069,10 @@
         <label for="patient-pass">Password</label>
         <input id="patient-pass" type="password" autocomplete="current-password" required>
       </div>
+      <label class="remember" for="patient-remember">
+        <input id="patient-remember" type="checkbox">
+        Remember me
+      </label>
       <p class="note" id="patient-error"></p>
       <button class="primary" type="submit">Sign in</button>
     </form>
@@ -487,37 +1082,49 @@
   </section>
 
   <section class="screen on" id="screen-title">
-    <div>
-      <p class="kicker">Ankle rehab, at home</p>
-      <h1>Finish the ankle set.</h1>
-      <p class="lede">Your physiotherapist writes the ankle set after treatment. You play those ankle exercises, one at a time, and collect stars for smooth reps.</p>
-      <div class="row">
-        <button class="primary" id="start-btn" type="button" hidden>Play your ankle set</button>
-        <button class="secondary" id="how-open" type="button">How to play</button>
+    <div class="home-copy">
+      <h1 id="home-title">Today's practice</h1>
+      <div class="home-start row">
+        <button class="primary" id="start-btn" type="button" hidden>Start today's exercise</button>
+        <button class="secondary" id="how-open" type="button" hidden>How to play</button>
       </div>
-      <p class="note" id="plan-status">No ankle set yet. Your physiotherapist adds it after the visit.</p>
-      <p class="note" id="best-line">The ankle set updates after each visit.</p>
-      <p class="note">This is general ankle practice, not a personal prescription. Stay comfortable. Stop if you feel pain, dizziness, or numbness.</p>
+      <p class="lede" id="home-lede" hidden></p>
+      <p class="note" id="nudge-line"></p>
+      <p class="note" id="plan-status"></p>
+      <p class="note" id="best-line" hidden></p>
+      <div id="home-plan" class="busy-box" hidden></div>
+      <div id="home-schedule" class="busy-box" hidden></div>
+      <div id="home-calendar" class="busy-box" hidden></div>
+      <div id="home-story" class="busy-box" hidden></div>
     </div>
-    <div class="hero-card">
+    <div class="hero-card home-hero">
       <img src="hero.png?v=22" alt="A physiotherapist with a clipboard stands beside a patient practising at parallel bars.">
     </div>
   </section>
 
-  <section class="screen" id="screen-quests" hidden>
-    <p class="kicker" id="plan-kicker">Your ankle set</p>
-    <h2 id="plan-title" style="font-size:2.4rem;margin-bottom:6px">Ankle set</h2>
-    <p class="note" id="plan-note" style="margin-top:0">Two ways to practise the ankle. The video check stays on this device.</p>
-    <div class="modes" role="radiogroup" aria-label="Play mode">
-      <button class="mode sel" id="mode-button" type="button" role="radio" aria-checked="true">
-        <strong>Follow the video</strong>
-        <span>Hold Space while you copy the ankle teaching clip. The camera scores the ankle posture it can see.</span>
-      </button>
-      <button class="mode" id="mode-camera" type="button" role="radio" aria-checked="false">
-        <strong>Camera ankle check</strong>
-        <span>Locks onto one person and will not switch. A rep counts when the ankle posture matches the reference. Video stays on this device.</span>
-      </button>
+  <section class="screen" id="screen-book" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:6px">This week's exercise plan</h2>
+    <p class="note" id="book-lede">Times were chosen around your calendar. Change any day you need.</p>
+    <div class="busy-box" id="book-plan" hidden></div>
+    <div id="book-slots"></div>
+    <p class="note" id="book-error"></p>
+    <div class="row">
+      <button class="primary" id="book-save" type="button">Save changes</button>
     </div>
+    <div class="busy-box">
+      <p class="note" id="book-cal-status"></p>
+      <div id="busy-list"></div>
+    </div>
+    <div class="field" hidden>
+      <label for="book-sentence">Nudge</label>
+      <input id="book-sentence" maxlength="120">
+    </div>
+  </section>
+
+  <section class="screen" id="screen-quests" hidden>
+    <p class="kicker" id="plan-kicker" hidden>Your ankle set</p>
+    <h2 id="plan-title" style="font-size:2.4rem;margin-bottom:6px">Ankle set</h2>
+    <p class="note" id="plan-note" style="margin-top:0" hidden></p>
     <ol class="plan-list" id="plan-list"></ol>
     <div class="row">
       <button class="primary" id="plan-start" type="button">Start the ankle set</button>
@@ -525,75 +1132,100 @@
   </section>
 
   <section class="screen" id="screen-play" hidden>
-    <div class="stage-wrap">
-      <canvas id="stage"></canvas>
-      <div class="teach" id="teach" hidden>
-        <div class="teach-screen">
-          <iframe id="teach-frame" title="Teaching video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-        </div>
-        <p class="teach-cap" id="teach-cap"></p>
-      </div>
-      <div id="banner" hidden><div><strong id="banner-title"></strong><span id="banner-sub"></span></div></div>
-    </div>
-    <aside class="hud">
-      <p class="kicker" id="play-kicker">Set</p>
+    <div class="play-studio watch" id="play-studio">
+      <p class="kicker" id="play-kicker" hidden></p>
       <h2 id="play-name">Exercise</h2>
-      <p class="step" id="play-step"></p>
-      <p class="coach-line" id="coach-line"></p>
-      <p class="side-line" id="side-line"></p>
-      <div class="block">
-        <div class="spread"><span>Reps</span><div class="pips" id="pips"></div></div>
-        <div class="spread"><span id="meter-label">Match</span><strong id="form-num">0</strong></div>
-        <div class="bar" aria-hidden="true"><span id="form-fill"></span></div>
-        <div class="spread" id="accuracy-row"><span id="accuracy-label">Posture</span><strong id="accuracy-num">—</strong></div>
-        <div class="bar" id="accuracy-bar" aria-hidden="true"><span id="accuracy-fill"></span></div>
-        <p class="note" id="posture-line"></p>
+      <p class="note" id="play-step"></p>
+      <div class="play-grid">
+        <div class="teach" id="teach">
+          <div class="teach-screen">
+            <iframe id="teach-frame" title="Teaching video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+          <p class="teach-cap" id="teach-cap"></p>
+        </div>
+        <div class="film-pane" id="film-booth">
+          <p class="kicker" style="margin:0">Your film</p>
+          <video id="film-live" autoplay muted playsinline></video>
+          <video id="film-replay" controls playsinline hidden></video>
+          <div class="row">
+            <button class="primary" id="film-bout" type="button">Start filming</button>
+            <button class="secondary" id="film-stop" type="button">Stop and keep</button>
+            <button class="secondary" id="film-again" type="button">Refilm</button>
+          </div>
+          <p class="note" id="film-status"></p>
+        </div>
       </div>
-      <p class="combo" id="combo"></p>
-      <button id="hold" type="button" aria-label="Hold while you move into the exercise">
-        <span id="hold-fill"></span>
-        <span id="hold-label">Hold and move</span>
-      </button>
-      <p class="hold-hint" id="hold-hint">Copy the ankle clip with your body while you hold.</p>
-      <div class="spread"><span>Score</span><strong id="score">0</strong></div>
-      <div class="hud-actions">
-        <button class="ghost" id="pause" type="button">Pause</button>
+      <div class="row">
+        <button class="primary" id="watch-ready" type="button">I'm ready to film</button>
         <button class="texty" id="pain" type="button">Stop if it hurts</button>
       </div>
-      <button class="texty" id="skip" type="button">Skip this exercise</button>
-      <p class="keys" id="keys">Space to hold · Esc to pause</p>
-      <p class="fine">Comfortable range only. Sharp pain, dizziness, or numbness means stop.</p>
-    </aside>
+      <button class="primary play-submit" id="play-submit" type="button" hidden disabled>Submit this practice</button>
+    </div>
+    <div class="sr" aria-hidden="true" hidden>
+      <canvas id="stage"></canvas>
+      <div id="banner" hidden><div><strong id="banner-title"></strong><span id="banner-sub"></span></div></div>
+      <p id="coach-line"></p>
+      <p id="side-line"></p>
+      <span id="meter-label"></span>
+      <strong id="form-num"></strong>
+      <span id="form-fill"></span>
+      <div id="accuracy-row"><strong id="accuracy-num"></strong></div>
+      <div id="accuracy-bar"><span id="accuracy-fill"></span></div>
+      <p id="posture-line"></p>
+      <div id="pips"></div>
+      <p id="combo"></p>
+      <strong id="score"></strong>
+      <button id="hold" type="button"><span id="hold-fill"></span><span id="hold-label"></span></button>
+      <p id="hold-hint"></p>
+      <button id="pause" type="button">Pause</button>
+      <button id="skip" type="button">Skip</button>
+      <p id="keys"></p>
+      <button id="mode-button" type="button">Follow</button>
+      <button id="mode-camera" type="button">Camera</button>
+    </div>
   </section>
 
-  <section class="screen" id="screen-profile" hidden>
-    <div class="profile-layout">
-      <canvas id="avatar-preview" width="280" height="340" aria-hidden="true"></canvas>
-      <div>
-        <p class="kicker">Avatars</p>
-        <h2 id="profile-name" style="font-size:2.4rem;margin-bottom:6px">Your avatar</h2>
-        <p class="note" id="profile-user"></p>
-        <p class="field-label">Skin</p>
-        <div class="swatches" id="pick-skin"></div>
-        <p class="field-label">Hair</p>
-        <div class="swatches" id="pick-hair"></div>
-        <p class="field-label">Hair style</p>
-        <div class="styles" id="pick-hairStyle"></div>
-        <p class="field-label">Shirt</p>
-        <div class="swatches" id="pick-shirt"></div>
-        <p class="field-label">Shorts</p>
-        <div class="swatches" id="pick-shorts"></div>
-        <p class="note">This is the figure marked You while you play. The stretch on screen is a teaching clip from a physiotherapist.</p>
-        <button class="primary" id="profile-back" type="button">Back home</button>
+  <section class="screen" id="screen-notes" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:12px">Notifications</h2>
+    <div id="patient-inbox"></div>
+  </section>
+
+  <section class="screen" id="screen-films" hidden>
+    <h2 style="font-size:2.4rem;margin-bottom:6px">Films</h2>
+    <div id="film-list"></div>
+    <div class="row">
+      <button class="primary" id="films-back" type="button">Back home</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-story" hidden>
+    <div class="reward-shell">
+      <p class="kicker" id="story-kicker" hidden>Reward</p>
+      <h2 id="story-title" style="font-size:2.1rem;margin-bottom:8px">Rewards</h2>
+      <p class="note" id="story-scene" hidden></p>
+      <iframe id="reward-frame" title="ELAK reward game" src="about:blank"></iframe>
+      <div class="row story-transport">
+        <button class="secondary" id="story-home" type="button">Back home</button>
       </div>
+    </div>
+    <div hidden>
+      <div id="story-stage"><div id="story-set"></div><div id="story-dust"></div><div id="story-cast"></div><div id="reel-bars"></div></div>
+      <div id="story-caption"><span id="story-who"></span><p id="story-caption-text"></p></div>
+      <div id="story-lines"></div>
+      <p id="story-voice-note"></p>
+      <button id="story-play" type="button"></button>
+      <button id="story-pause" type="button"></button>
+      <button id="story-next" type="button"></button>
+      <button id="reel-back" type="button"></button>
+      <button id="reel-fwd" type="button"></button>
     </div>
   </section>
 
   <section class="screen" id="screen-done" hidden>
     <div class="done">
-      <p class="kicker" id="done-kicker">Ankle set complete</p>
+      <p class="kicker" id="done-kicker" hidden>Ankle set complete</p>
       <h2 id="done-title">You finished.</h2>
-      <p id="done-sub" class="lede"></p>
+      <p id="done-sub" class="lede" hidden></p>
       <div class="stars" id="done-stars"></div>
       <ul class="done-list" id="done-list"></ul>
       <div class="row">
@@ -606,13 +1238,8 @@
 
 <div class="overlay" id="overlay-how" hidden>
   <div class="card">
-    <p class="kicker">How ankle rehab works</p>
-    <h2>Follow the ankle clip.</h2>
-    <p>The set is the ankle program your physiotherapist saved after the visit. It is only ankle work.</p>
-    <p><strong>Follow the video.</strong> Hold the button while you copy the teaching clip. Release as you come back. The camera writes a posture report for the ankle areas it can see.</p>
-    <p><strong>Camera ankle check.</strong> The camera locks onto the person who starts and will not switch. Standing still stays still. A rep counts when the ankle posture matches the reference, then you return.</p>
-    <p>Use a chair nearby for balance and heel raises. This is general ankle practice, not a personal prescription. Stop for pain, dizziness, or numbness.</p>
-    <button class="primary" id="how-close" type="button">Got it</button>
+    <h2>How to play</h2>
+    <button class="primary" id="how-close" type="button">Close</button>
   </div>
 </div>
 
@@ -621,9 +1248,8 @@
     <p class="kicker" id="brief-kicker">Exercise</p>
     <h2 id="brief-name">Name</h2>
     <p id="brief-cue"></p>
-    <p id="brief-why" class="note"></p>
-    <p id="brief-how"></p>
-    <p class="note">Move only where it stays comfortable.</p>
+    <p id="brief-why" class="note" hidden></p>
+    <p id="brief-how" hidden></p>
     <div class="row">
       <button class="primary" id="brief-ready" type="button">I’m ready</button>
       <button class="secondary" id="brief-back" type="button">Back</button>
@@ -633,9 +1259,7 @@
 
 <div class="overlay" id="overlay-pause" hidden>
   <div class="card">
-    <p class="kicker">Paused</p>
-    <h2>Take a breath.</h2>
-    <p>The set waits here. Shake out anything that feels tight, then continue.</p>
+    <h2>Paused</h2>
     <div class="row">
       <button class="primary" id="pause-resume" type="button">Resume</button>
       <button class="secondary" id="pause-quit" type="button">End set</button>
@@ -646,7 +1270,6 @@
 <div class="overlay" id="overlay-leave" hidden>
   <div class="card">
     <h2>Leave this set?</h2>
-    <p>You can come back and start fresh.</p>
     <div class="row">
       <button class="primary" id="leave-yes" type="button">Leave</button>
       <button class="secondary" id="leave-no" type="button">Keep going</button>
@@ -656,9 +1279,8 @@
 
 <div class="overlay" id="overlay-cam" hidden>
   <div class="card">
-    <p class="kicker">Camera</p>
     <h2>Camera isn’t available</h2>
-    <p id="cam-msg">Allow the camera, or follow the ankle video with the hold button.</p>
+    <p id="cam-msg"></p>
     <div class="row">
       <button class="primary" id="cam-switch" type="button">Follow the video</button>
       <button class="secondary" id="cam-retry" type="button">Try camera again</button>
@@ -678,10 +1300,128 @@
   </div>
 </div>
 
+<div class="overlay" id="overlay-mail" hidden>
+  <div class="card mail-card">
+    <p class="kicker">From</p>
+    <p id="mail-from"></p>
+    <p class="kicker">Subject</p>
+    <h2 id="mail-subject"></h2>
+    <p class="note" id="mail-when"></p>
+    <p id="mail-body" class="mail-letter"></p>
+    <div id="mail-negotiate" hidden>
+      <div class="field">
+        <label for="mail-new-time">Negotiate a new time</label>
+        <input id="mail-new-time" type="datetime-local">
+      </div>
+      <p class="note" id="mail-negotiate-msg"></p>
+      <div class="row">
+        <button class="secondary" id="mail-negotiate-btn" type="button">Negotiate</button>
+      </div>
+    </div>
+    <div id="mail-kale" hidden>
+      <p class="note" id="mail-kale-msg"></p>
+      <div class="row" id="mail-kale-actions">
+        <button class="primary" id="mail-kale-agree" type="button">Agree</button>
+        <button class="secondary" id="mail-kale-disagree" type="button">Disagree</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="primary" id="mail-close" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-nudge" hidden>
+  <div class="card">
+    <div class="cal-pop">
+      <div class="cal-pop-date">
+        <span class="cal-pop-month" id="nudge-month">OCT</span>
+        <strong id="nudge-day">3</strong>
+        <span class="cal-pop-dow" id="nudge-dow">Friday</span>
+      </div>
+      <div>
+        <h2 id="nudge-title">Practice</h2>
+        <p id="nudge-when">Today</p>
+      </div>
+    </div>
+    <p id="nudge-msg"></p>
+    <p class="note" id="nudge-rule" hidden></p>
+    <div class="row">
+      <button class="primary" id="nudge-start" type="button">Start this practice</button>
+      <button class="secondary" id="nudge-later" type="button">Not now</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-miss" hidden>
+  <div class="card">
+    <h2>Missed practice</h2>
+    <div class="field">
+      <label for="miss-reason">Reason</label>
+      <select id="miss-reason">
+        <option value="forgot">I forgot</option>
+        <option value="tired">I was too tired</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="miss-note">If other, write it here</label>
+      <input id="miss-note" maxlength="80">
+    </div>
+    <div class="row">
+      <button class="primary" id="miss-freeze" type="button">Freeze and draft</button>
+      <button class="secondary" id="miss-move" type="button">Move the nudge</button>
+      <button class="secondary" id="miss-replay" type="button">Replay instruction</button>
+      <button class="secondary" id="miss-rebook" type="button">Rebook</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-feedback" hidden>
+  <div class="card">
+    <h2>How did that practice feel?</h2>
+    <div class="field">
+      <label for="fb-pain">Pain now, 0 to 10</label>
+      <input id="fb-pain" type="number" min="0" max="10" value="2">
+    </div>
+    <div class="field">
+      <label for="fb-stop">Did you stop for pain?</label>
+      <select id="fb-stop">
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fb-mob">Mobility today, 0 to 10</label>
+      <input id="fb-mob" type="number" min="0" max="10" value="5">
+    </div>
+    <div class="field">
+      <label for="fb-note">Anything else</label>
+      <input id="fb-note" maxlength="80">
+    </div>
+    <button class="primary" id="fb-save" type="button">Log this practice</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-verify" hidden>
+  <div class="card">
+    <h2>Submit video</h2>
+    <video id="verify-preview" playsinline muted style="width:100%;border-radius:16px;background:#111;max-height:220px"></video>
+    <p class="note" id="verify-msg"></p>
+    <div class="row">
+      <button class="primary" id="verify-ok" type="button">Use this video</button>
+      <button class="secondary" id="verify-skip" type="button">No video this time</button>
+    </div>
+  </div>
+</div>
+
 <p id="live" class="sr" aria-live="polite"></p>
 <video id="cam" playsinline muted hidden></video>
 
-<script src="shared.js"></script>
+<script src="shared.js?v=85"></script>
+<script src="calendar-plugin.js?v=94"></script>
+<script src="agent.js?v=88"></script>
+<script src="buddy.js?v=95"></script>
 <script>
 const SAVE_KEY = "full-range-v1";
 const UP = 0.40;
@@ -762,7 +1502,15 @@ const S = {
   w: 640,
   h: 520,
   pipKey: "",
-  stopReason: "pain"
+  stopReason: "pain",
+  slotId: null,
+  videoOk: false,
+  videoBlob: null,
+  recorder: null,
+  chunks: [],
+  filmMs: 0,
+  filmAt: 0,
+  filmStream: null
 };
 
 let audioCtx = null;
@@ -855,7 +1603,8 @@ function quest() {
   const plan = activePlan();
   const visit = latestVisit(plan);
   if (!plan || !visit) return null;
-  const exercises = ankleExercises(visit.exercises);
+  let exercises = ankleExercises(visit.exercises);
+  if (cycleOf(plan)) exercises = exercises.filter((item) => item.essential !== false);
   if (!exercises.length) return null;
   const seconds = exercises.reduce((sum, item) => {
     const base = EX[item.pattern];
@@ -890,7 +1639,7 @@ function teachSrc(clip) {
   return "https://www.youtube.com/embed/" + id + "?rel=0&modestbranding=1&playsinline=1&autoplay=1&mute=1&loop=1&playlist=" + encodeURIComponent(id) + "&enablejsapi=1";
 }
 function teachShowing() {
-  return S.screen === "play" && !!S.questId && (S.mode !== "camera" || S.phaseName === "brief");
+  return S.screen === "play" && !!S.questId;
 }
 function teachCommand(fn) {
   const frame = $("teach-frame");
@@ -929,7 +1678,7 @@ function breathLevel(phase) { return phase < 0.5 ? ease(phase / 0.5) : ease(1 - 
 
 function show(screen) {
   S.screen = screen;
-  for (const id of ["signin", "title", "profile", "quests", "play", "done"]) {
+  for (const id of ["signin", "title", "book", "notes", "films", "quests", "play", "done", "story"]) {
     const el = $("screen-" + id);
     const on = id === screen;
     el.classList.toggle("on", on);
@@ -937,14 +1686,24 @@ function show(screen) {
   }
   if (screen !== "play") S.holding = false;
   if (screen === "play") requestAnimationFrame(resize);
+  if (screen !== "story") stopStoryVoice();
   syncTeach();
+  if (window.ELAKBuddy) window.ELAKBuddy.refresh();
 }
 
 function updateChrome() {
   const plan = activePlan();
-  $("profile-open").hidden = !plan;
-  $("patient-out").hidden = AUTH_OFF || !plan;
-  $("mute").hidden = !plan;
+  const inApp = patientUiOn() && S.screen !== "signin";
+  if ($("header-actions")) $("header-actions").hidden = !inApp;
+  $("stories-open").hidden = !plan || !inApp;
+  if ($("notes-open")) $("notes-open").hidden = !plan || !inApp;
+  $("films-open").hidden = !plan || !inApp;
+  $("patient-out").hidden = !inApp;
+  if ($("home-open")) $("home-open").hidden = !inApp;
+  $("book-open").hidden = !inApp || !cycleOf(plan);
+  $("mute").hidden = !plan || !inApp;
+  paintNotesDot();
+  if (window.ELAKBuddy) window.ELAKBuddy.refresh();
 }
 function refreshMeta() {
   updateChrome();
@@ -964,13 +1723,1270 @@ function refreshMeta() {
   } else streak.hidden = true;
   const visit = latestVisit(plan);
   const ankle = visit ? ankleExercises(visit.exercises) : [];
+  const cycle = cycleOf(plan);
+  markPhoneDay(plan);
+  if (cycleNeedsBooking(cycle)) {
+    if (autoBookCycle(plan)) notifyPracticePlan(loadPlans().plans[plan.code] || plan);
+  }
+  ensurePlanVisit(plan);
+  const live = loadPlans().plans[plan.code] || plan;
+  if (keepVisitOnCalendar(live) && live.code) {
+    const store = loadPlans();
+    store.plans[live.code] = live;
+    savePlans(store);
+  }
+  const fresh = loadPlans().plans[plan.code] || plan;
+  const booked = cycleOf(fresh);
+  $("book-open").hidden = !patientUiOn() || S.screen === "signin" || !booked;
   $("start-btn").hidden = !ankle.length;
+  $("start-btn").textContent = "Start today's exercise";
   $("plan-status").textContent = ankle.length
-    ? plan.patient + " · updated " + formatWhen(visit.date) + " · " + ankle.length + " ankle exercises"
-    : "No ankle set yet. Your physiotherapist adds it after the visit.";
-  $("best-line").textContent = s.best > 0
-    ? "Best stars on this ankle set: " + s.best
-    : "Your stars stay with this ankle set.";
+    ? plan.patient + " · " + formatWhen(visit.date)
+    : (plan.patient || "");
+  if ($("best-line")) $("best-line").hidden = true;
+  paintNudgeLine(fresh, booked);
+  renderHomePlan(fresh);
+  renderHomeSchedule(fresh);
+  renderHomeCalendar(fresh);
+  renderHomeStories(fresh);
+  paintNotesDot();
+  if (S.screen === "notes") renderPatientInbox();
+  if (fresh) {
+    startCalendarWatch();
+    ensureCalendarOnPlan(fresh).then(() => {
+      if (S.screen === "title") renderHomeCalendar(activePlan() || fresh);
+    });
+  }
+  if (S.screen === "title") maybePromptCycle();
+  if (S.screen === "title") maybeShowAppointment(fresh);
+}
+function maybeShowAppointment(plan) {
+  const appt = plan && plan.appointment;
+  if (!appt || !appt.start || appt.patientSeen) return;
+  notifyAppointment(plan, appt);
+}
+function renderPatientInbox() {
+  const plan = activePlan();
+  renderInboxList($("patient-inbox"), inboxFor("patient", plan && plan.username), (item) => {
+    markInboxRead("patient", plan && plan.username, item.id);
+    fillMailView(item);
+    renderPatientInbox();
+    paintNotesDot();
+    if (item.type === "appointment") markAppointmentSeen(plan, "patient");
+  });
+}
+
+function paintNudgeLine(plan, cycle) {
+  const line = $("nudge-line");
+  if ($("home-lede")) {
+    $("home-lede").hidden = true;
+    $("home-lede").textContent = "";
+  }
+  if ($("home-title")) $("home-title").textContent = "Today's practice";
+  if (!cycle) {
+    line.textContent = "";
+    return;
+  }
+  if (cycleNeedsBooking(cycle)) {
+    line.textContent = "Choosing practice times around your calendar…";
+    return;
+  }
+  const due = dueSlot(cycle);
+  if (due) {
+    line.textContent = cycle.sentence || "";
+    return;
+  }
+  const left = cycle.slots.filter((slot) => slot.status === "accepted").length;
+  line.textContent = left ? left + " left" : "";
+}
+
+function toLocalInput(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+async function openBook() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (!cycle) {
+    show("title");
+    return;
+  }
+  if (cycleNeedsBooking(cycle)) {
+    autoBookCycle(plan);
+    notifyPracticePlan(loadPlans().plans[plan.code] || plan);
+  }
+  $("book-sentence").value = cycle.sentence || "";
+  $("book-error").textContent = "";
+  $("busy-list").textContent = "Reading your calendar…";
+  S.bookPicks = {};
+  show("book");
+  refreshMeta();
+  await ensureCalendarOnPlan(activePlan() || plan);
+  renderBusy();
+  renderBookSlots();
+}
+
+function renderBusy() {
+  const plan = activePlan();
+  paintRoleCalendar($("busy-list"), $("book-cal-status"), "patient", plan);
+}
+
+function bookPickOf(slot) {
+  S.bookPicks = S.bookPicks || {};
+  if (!S.bookPicks[slot.id]) {
+    const offerIndex = slot.start && slot.offers ? slot.offers.indexOf(slot.start) : -1;
+    S.bookPicks[slot.id] = {
+      choice: offerIndex >= 0 ? "offer-" + offerIndex : (slot.start ? "custom" : ""),
+      custom: slot.start ? toLocalInput(slot.start) : slot.date + "T09:00"
+    };
+  }
+  return S.bookPicks[slot.id];
+}
+function appendExerciseItems(root, plan) {
+  const visit = latestVisit(plan);
+  const items = visit ? ankleExercises(visit.exercises) : [];
+  if (!items.length) {
+    const empty = document.createElement("p");
+    empty.className = "note";
+    empty.textContent = "No ankle set yet.";
+    root.appendChild(empty);
+    return;
+  }
+  const ol = document.createElement("ol");
+  ol.className = "plan-list";
+  items.forEach((item, index) => {
+    const base = EX[item.pattern];
+    if (!base) return;
+    const li = document.createElement("li");
+    li.className = "plan-item";
+    const kicker = document.createElement("span");
+    kicker.className = "plan-item-meta";
+    const count = base.type === "sustain" ? item.reps + " breaths" : item.reps + " reps";
+    const days = clamp(Number(item.daysPerWeek) || (cycleOf(plan) && cycleOf(plan).daysPerWeek) || 7, 1, 7);
+    kicker.textContent = (index + 1) + " · " + count + " · " + days + (days === 1 ? " day" : " days");
+    const name = document.createElement("strong");
+    name.className = "plan-item-name";
+    name.textContent = base.name;
+    li.append(kicker, name);
+    ol.appendChild(li);
+  });
+  root.appendChild(ol);
+}
+function renderBookPlan(plan) {
+  const root = $("book-plan");
+  if (!root) return;
+  root.replaceChildren();
+  const title = document.createElement("h3");
+  title.style.cssText = "font-size:1.4rem;margin:4px 0 8px";
+  title.textContent = plan.patient;
+  root.append(title);
+  appendExerciseItems(root, plan);
+}
+function renderHomePlan(plan) {
+  const root = $("home-plan");
+  if (!root) return;
+  if (!plan || !latestVisit(plan)) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
+  }
+  root.hidden = false;
+  root.replaceChildren();
+  const kicker = document.createElement("p");
+  kicker.className = "kicker";
+  kicker.textContent = "Exercise plan";
+  root.appendChild(kicker);
+  appendExerciseItems(root, plan);
+}
+function renderHomeSchedule(plan) {
+  const root = $("home-schedule");
+  if (!root) return;
+  if (!plan) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
+  }
+  const cycle = cycleOf(plan);
+  root.hidden = false;
+  root.replaceChildren();
+  const kicker = document.createElement("p");
+  kicker.className = "kicker";
+  kicker.textContent = "This week's exercise plan";
+  root.appendChild(kicker);
+  if (!cycle || !cycle.slots || !cycle.slots.length) {
+    const empty = document.createElement("p");
+    empty.className = "note";
+    empty.textContent = "No practice days booked yet.";
+    root.appendChild(empty);
+    return;
+  }
+  if (!window.ELAK_WEEK) window.ELAK_WEEK = mondayOf(cycle.periodStart || new Date());
+  const days = weekDays(window.ELAK_WEEK);
+  const nav = document.createElement("div");
+  nav.className = "spread";
+  const prev = document.createElement("button");
+  prev.type = "button";
+  prev.className = "ghost";
+  prev.textContent = "Previous week";
+  const label = document.createElement("strong");
+  const first = new Date(days[0] + "T12:00:00");
+  const last = new Date(days[6] + "T12:00:00");
+  label.textContent = first.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " – " + last.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "ghost";
+  next.textContent = "Next week";
+  prev.addEventListener("click", () => {
+    window.ELAK_WEEK = shiftDay(window.ELAK_WEEK, -7);
+    renderHomeSchedule(activePlan() || plan);
+  });
+  next.addEventListener("click", () => {
+    window.ELAK_WEEK = shiftDay(window.ELAK_WEEK, 7);
+    renderHomeSchedule(activePlan() || plan);
+  });
+  nav.append(prev, label, next);
+  root.appendChild(nav);
+  const table = document.createElement("table");
+  table.className = "cal-table";
+  const head = document.createElement("thead");
+  const hr = document.createElement("tr");
+  ["Day", "Time", "Plan"].forEach((text) => {
+    const th = document.createElement("th");
+    th.textContent = text;
+    hr.appendChild(th);
+  });
+  head.appendChild(hr);
+  const body = document.createElement("tbody");
+  days.forEach((key) => {
+    const slot = cycle.slots.find((item) => item.date === key);
+    const visit = plan.appointment && dayKey(plan.appointment.start) === key ? plan.appointment : null;
+    const tr = document.createElement("tr");
+    const day = document.createElement("td");
+    day.className = "day";
+    day.textContent = weekdayName(key);
+    const time = document.createElement("td");
+    const what = document.createElement("td");
+    if (slot && slot.start) {
+      time.textContent = new Date(slot.start).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+      what.textContent = slot.status && String(slot.status).startsWith("done") ? "Done" : "Ankle practice";
+    } else if (visit) {
+      time.textContent = new Date(visit.start).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+      what.textContent = "Next visit";
+    } else {
+      time.textContent = "—";
+      what.textContent = slot ? "Choosing a time" : "Rest";
+    }
+    if (visit && slot && slot.start) what.textContent = "Ankle practice · next visit";
+    tr.append(day, time, what);
+    body.appendChild(tr);
+  });
+  table.append(head, body);
+  const wrap = document.createElement("div");
+  wrap.className = "cal-wrap";
+  wrap.appendChild(table);
+  root.appendChild(wrap);
+  const edit = document.createElement("button");
+  edit.type = "button";
+  edit.className = "secondary";
+  edit.style.marginTop = "10px";
+  edit.textContent = "Edit schedule";
+  edit.addEventListener("click", () => openBook());
+  root.appendChild(edit);
+}
+function renderHomeCalendar(plan) {
+  const root = $("home-calendar");
+  if (!root) return;
+  if (!plan) {
+    root.hidden = true;
+    root.replaceChildren();
+    return;
+  }
+  root.hidden = false;
+  let status = $("home-cal-status");
+  let table = $("home-cal-table");
+  if (!status || !table || status.parentElement !== root) {
+    root.replaceChildren();
+    const kicker = document.createElement("p");
+    kicker.className = "kicker";
+    kicker.textContent = "Calendar";
+    status = document.createElement("p");
+    status.className = "note";
+    status.id = "home-cal-status";
+    table = document.createElement("div");
+    table.id = "home-cal-table";
+    root.append(kicker, status, table);
+  }
+  paintRoleCalendar(table, status, "patient", plan);
+}
+function renderHomeStories(plan) {
+  const root = $("home-story");
+  if (!root || !plan) {
+    if (root) { root.hidden = true; root.replaceChildren(); }
+    return;
+  }
+  root.hidden = false;
+  root.replaceChildren();
+  const kicker = document.createElement("p");
+  kicker.className = "kicker";
+  kicker.textContent = "Rewards";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "secondary";
+  btn.textContent = "Open reward game";
+  btn.addEventListener("click", () => { sfxClick(); openReward(); });
+  root.append(kicker, btn);
+}
+const REWARD_TRAINING = {
+  pump: "anklePumps",
+  toe: "toeRaises",
+  ever: "ankleEversion",
+  invert: "ankleInversion",
+  heel: "heelRaises",
+  squat: "heelsDownSquat",
+  balance: "singleLegBalance",
+  alphabet: "ankleAlphabet"
+};
+function creditsFromSession() {
+  const cmds = [];
+  (S.results || []).forEach((row) => {
+    if (row.stopped) return;
+    const id = REWARD_TRAINING[row.id];
+    if (!id) return;
+    const base = EX[row.id];
+    const sec = Math.max(30, Math.round(((base && base.period) || 5000) * (row.reps || (base && base.reps) || 6) / 1000));
+    cmds.push({ type: "checkin", trainingId: id });
+    cmds.push({ type: "addTime", seconds: sec, trainingId: id });
+  });
+  return cmds;
+}
+function rewardUser() {
+  const plan = activePlan();
+  return normalizeUsername(plan && plan.username) || "guest";
+}
+function sendRewardCommands(commands, frame) {
+  const win = (frame || $("reward-frame")) && (frame || $("reward-frame")).contentWindow;
+  if (!win || !commands || !commands.length) return;
+  let i = 0;
+  const next = () => {
+    if (i >= commands.length) return;
+    try {
+      const result = win.RehabAwards && win.RehabAwards.dispatch(commands[i]);
+      if (!result || result.error === "not-ready") {
+        setTimeout(next, 80);
+        return;
+      }
+      i += 1;
+      setTimeout(next, 40);
+    } catch {
+      setTimeout(next, 80);
+    }
+  };
+  next();
+}
+function openReward(credits) {
+  stopStoryVoice();
+  const frame = $("reward-frame");
+  if (!frame) return;
+  S.pendingReward = Array.isArray(credits) ? credits : [];
+  if ($("story-kicker")) {
+    $("story-kicker").textContent = "";
+    $("story-kicker").hidden = true;
+  }
+  if ($("story-title")) {
+    $("story-title").textContent = "Rewards";
+    $("story-title").hidden = true;
+  }
+  if ($("story-scene")) {
+    $("story-scene").textContent = "";
+    $("story-scene").hidden = true;
+  }
+  frame.onload = () => {
+    sendRewardCommands(S.pendingReward || [], frame);
+    S.pendingReward = [];
+  };
+  const plan = activePlan();
+  const n = typeof storyUnlockedCount === "function" ? storyUnlockedCount(plan) : 0;
+  const growth = typeof avatarGrowthOf === "function" ? avatarGrowthOf(plan) : 0;
+  const justFinished = Array.isArray(credits) && credits.length;
+  const tab = (S.lastReward && S.lastReward.evolved) ? "avatar" : "episodes";
+  frame.src = "reward/index.html?embed=1&user=" + encodeURIComponent(rewardUser()) + "&story=" + n + "&growth=" + growth + "&tab=" + tab + (justFinished && tab === "episodes" ? "&watch=1" : "") + "&t=" + Date.now();
+  if (S.lastReward) S.lastReward.evolved = false;
+  show("story");
+}
+const STORY_CAST = {
+  Narration: { look: "narrator", gender: "narrator", name: "Narrator", voiceRole: "narrator", pitch: 0.96, rate: 0.92, vol: 0.96, pause: 340 },
+  Narrator: { look: "narrator", gender: "narrator", name: "Narrator", voiceRole: "narrator", pitch: 0.96, rate: 0.92, vol: 0.96, pause: 340 },
+  旁白: { look: "narrator", gender: "narrator", name: "Narrator", voiceRole: "narrator", pitch: 0.96, rate: 0.92, vol: 0.96, pause: 340 },
+  Ethan: { look: "lu", gender: "male", name: "Ethan", voiceRole: "ceo", pitch: 0.94, rate: 0.9, vol: 1, pause: 420 },
+  陆珩: { look: "lu", gender: "male", name: "Ethan", voiceRole: "ceo", pitch: 0.94, rate: 0.9, vol: 1, pause: 420 },
+  Sophie: { look: "su", gender: "female", name: "Sophie", voiceRole: "sophie", pitch: 1.04, rate: 0.94, vol: 0.98, pause: 300 },
+  苏晚: { look: "su", gender: "female", name: "Sophie", voiceRole: "sophie", pitch: 1.04, rate: 0.94, vol: 0.98, pause: 300 },
+  Miles: { look: "zhou", gender: "male", name: "Miles", voiceRole: "joe", pitch: 1.02, rate: 0.96, vol: 0.98, pause: 240 },
+  小周: { look: "zhou", gender: "male", name: "Miles", voiceRole: "joe", pitch: 1.02, rate: 0.96, vol: 0.98, pause: 240 },
+  Adrian: { look: "gu", gender: "male", name: "Adrian", voiceRole: "rival", pitch: 0.95, rate: 0.93, vol: 1, pause: 320 },
+  顾衍: { look: "gu", gender: "male", name: "Adrian", voiceRole: "rival", pitch: 0.95, rate: 0.93, vol: 1, pause: 320 },
+  "Mr. Wallace": { look: "wang", gender: "male", name: "Mr. Wallace", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.96, pause: 280 },
+  "Mr. Donovan": { look: "zhao", gender: "male", name: "Mr. Donovan", voiceRole: "male", pitch: 0.99, rate: 0.95, vol: 0.96, pause: 280 },
+  王总: { look: "wang", gender: "male", name: "Mr. Wallace", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.96, pause: 280 },
+  赵总: { look: "zhao", gender: "male", name: "Mr. Donovan", voiceRole: "male", pitch: 0.99, rate: 0.95, vol: 0.96, pause: 280 },
+  "Client A": { look: "other", gender: "male", name: "Client A", voiceRole: "male", pitch: 1.0, rate: 0.95, vol: 0.94, pause: 240 },
+  "Client B": { look: "other", gender: "female", name: "Client B", voiceRole: "female", pitch: 1.05, rate: 0.96, vol: 0.94, pause: 240 },
+  "Client C": { look: "other", gender: "male", name: "Client C", voiceRole: "male", pitch: 0.98, rate: 0.95, vol: 0.94, pause: 240 },
+  "Board Member A": { look: "gu", gender: "male", name: "Board Member A", voiceRole: "rival", pitch: 0.95, rate: 0.92, vol: 0.95, pause: 300 },
+  "Board Member B": { look: "other", gender: "male", name: "Board Member B", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.95, pause: 300 },
+  客户甲: { look: "other", gender: "male", name: "Client A", voiceRole: "male", pitch: 1.0, rate: 0.95, vol: 0.94, pause: 240 },
+  客户乙: { look: "other", gender: "female", name: "Client B", voiceRole: "female", pitch: 1.05, rate: 0.96, vol: 0.94, pause: 240 },
+  客户丙: { look: "other", gender: "male", name: "Client C", voiceRole: "male", pitch: 0.98, rate: 0.95, vol: 0.94, pause: 240 },
+  董事甲: { look: "gu", gender: "male", name: "Board Member A", voiceRole: "rival", pitch: 0.95, rate: 0.92, vol: 0.95, pause: 300 },
+  董事乙: { look: "other", gender: "male", name: "Board Member B", voiceRole: "male", pitch: 0.97, rate: 0.93, vol: 0.95, pause: 300 }
+};
+function storyLang() {
+  const ep = storyEpisodes()[0];
+  return ep && ep.lang === "en" ? "en" : "zh";
+}
+function storyCastOf(who) {
+  return STORY_CAST[who] || { look: "other", gender: /Sophie|Reed|女|晚/i.test(who) ? "female" : "male", name: who, voiceRole: "male", pitch: 1, rate: 1, vol: 0.92, pause: 200 };
+}
+function storyDisplayName(who) {
+  return storyCastOf(who).name || who;
+}
+function storySetKind(scene) {
+  const s = String(scene || "");
+  if (/训练|train|gym|exercise/i.test(s)) return "gym";
+  if (/花园|garden/i.test(s)) return "garden";
+  if (/走廊|hall|corridor/i.test(s)) return "hall";
+  if (/办公|董事|会议|office|board|meeting/i.test(s)) return "office";
+  if (/病房|VIP|ward|hospital/i.test(s)) return "ward";
+  return "room";
+}
+function storyVoiceList() {
+  if (!window.speechSynthesis) return [];
+  return S.storyVoiceList && S.storyVoiceList.length ? S.storyVoiceList : speechSynthesis.getVoices();
+}
+function scoreStoryVoice(voice, gender) {
+  const n = ((voice && voice.name) || "") + " " + ((voice && voice.lang) || "");
+  const t = n.toLowerCase();
+  const en = storyLang() === "en";
+  let s = 0;
+  if (en && /en[-_]/.test(t)) s += 8;
+  if (en && /english|united states|united kingdom|australia|ireland/.test(t)) s += 5;
+  if (!en && /zh|cmn|chinese|中文|普通话|粤/.test(t)) s += 8;
+  if (!en && /zh-cn|zh_cn|cmn-hans|普通话/.test(t)) s += 5;
+  if (/premium|enhanced|neural|natural|siri|online \(natural\)|aria|guy|ava|allison|zoe/.test(t)) s += 10;
+  if (/compact|novelty|bad news|good news|jester|organ|whisper|zarvox|trinoids|boing|bubbles|cellos/.test(t)) s -= 12;
+  if (/fred|ralph|junior|kathy/.test(t)) s -= 6;
+  if (voice && voice.localService) s += 2;
+  if (gender === "female" && /female|samantha|karen|moira|tessa|allison|ava|zoe|nicky|fiona|susan|samantha|aria|ting|xiao/.test(t)) s += 7;
+  if (gender === "male" && /male|daniel|aaron|alex|nathan|evan|tom|guy|rishi|reed|albert/.test(t)) s += 7;
+  if (gender === "narrator" && /daniel|aaron|alex|guy|nathan|moira|karen/.test(t)) s += 5;
+  if (gender === "female" && /male|daniel|alex|fred|eddy|joe|aaron|nathan/.test(t)) s -= 4;
+  if (gender === "male" && /female|samantha|sandy|karen|moira|aria|ting/.test(t)) s -= 4;
+  return s;
+}
+const STORY_VOICE_PREFS = {
+  ceo: ["Daniel", "Aaron", "Alex", "Nathan", "Microsoft Guy Online (Natural) - English (United States)", "Google UK English Male", "Eddy (English (United States))"],
+  joe: ["Tom", "Evan", "Nicky", "Google US English", "Daniel", "Eddy (English (United States))"],
+  sophie: ["Samantha", "Karen", "Moira", "Tessa", "Allison", "Ava", "Microsoft Aria Online (Natural) - English (United States)", "Google UK English Female", "Sandy (English (United States))"],
+  narrator: ["Daniel", "Moira", "Karen", "Aaron", "Microsoft Aria Online (Natural) - English (United States)"],
+  rival: ["Aaron", "Alex", "Daniel", "Albert"],
+  male: ["Daniel", "Aaron", "Alex", "Google UK English Male"],
+  female: ["Samantha", "Karen", "Moira", "Tessa", "Allison"]
+};
+function voiceForCharacter(who) {
+  const list = storyVoiceList();
+  if (!list.length) return null;
+  const role = storyCastOf(who).voiceRole || "male";
+  const prefs = STORY_VOICE_PREFS[role] || STORY_VOICE_PREFS.male;
+  for (const name of prefs) {
+    const want = name.toLowerCase();
+    const hit = list.find((v) => {
+      const have = (v.name || "").toLowerCase();
+      return have === want || have.includes(want) || want.includes(have);
+    });
+    if (hit) return hit;
+  }
+  const langRe = storyLang() === "en" ? /en[-_]|english/i : /zh|cmn|chinese|中文|普通话|粤/i;
+  const pool = list.filter((v) => langRe.test((v.lang || "") + " " + (v.name || "")));
+  const use = pool.length ? pool : list;
+  return use.slice().sort((a, b) => scoreStoryVoice(b, storyCastOf(who).gender) - scoreStoryVoice(a, storyCastOf(who).gender))[0] || null;
+}
+function lineWait(text, who) {
+  const n = String(text || "").length;
+  const rate = storyCastOf(who).rate || 1;
+  return Math.max(900, Math.min(9000, 400 + (n * (storyLang() === "en" ? 75 : 170)) / rate));
+}
+function storyPhrases(text) {
+  return String(text || "")
+    .split(/(?<=[。！？…—,.!?;；])/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+function cancelStorySpeech() {
+  S.storyGen = (S.storyGen || 0) + 1;
+  if (S.storyTimer) clearTimeout(S.storyTimer);
+  if (S.storyType) clearTimeout(S.storyType);
+  if (S.storySpeakAt) clearTimeout(S.storySpeakAt);
+  S.storyTimer = null;
+  S.storyType = null;
+  S.storySpeakAt = null;
+  S.storyUtter = null;
+  if (window.speechSynthesis) {
+    try { speechSynthesis.cancel(); } catch (err) { /* ignore */ }
+  }
+}
+function stopStoryVoice() {
+  S.storyPlaying = false;
+  S.storyPaused = false;
+  cancelStorySpeech();
+  if ($("story-stage")) $("story-stage").classList.remove("paused");
+  if ($("story-caption")) $("story-caption").classList.remove("talking");
+  document.querySelectorAll(".story-actor.talk").forEach((el) => el.classList.remove("talk"));
+  updateStoryTransport();
+}
+function updateStoryTransport() {
+  const ep = S.storyEp;
+  const done = !ep || S.storyIndex >= (ep.dialogue || []).length;
+  const play = $("story-play");
+  const pause = $("story-pause");
+  const skip = $("story-next");
+  if (!play || !pause || !skip) return;
+  play.hidden = false;
+  pause.hidden = false;
+  skip.hidden = false;
+  play.disabled = false;
+  skip.textContent = "Skip line";
+  if (done && !S.storyPlaying) {
+    play.textContent = S.storyIndex ? "Play again" : "Start";
+    pause.disabled = true;
+    skip.disabled = true;
+  } else if (S.storyPaused) {
+    play.textContent = "Resume";
+    pause.disabled = true;
+    skip.disabled = false;
+  } else if (S.storyPlaying) {
+    play.textContent = "Playing";
+    play.disabled = true;
+    pause.disabled = false;
+    skip.disabled = false;
+  } else {
+    play.textContent = "Start";
+    pause.disabled = true;
+    skip.disabled = !ep;
+  }
+}
+function typeStoryCaption(text) {
+  const el = $("story-caption-text");
+  if (!el) return;
+  if (S.storyType) clearTimeout(S.storyType);
+  el.textContent = "";
+  let i = 0;
+  const step = Math.max(22, Math.min(64, 1400 / Math.max((text || "").length, 1)));
+  const tick = () => {
+    i += 1;
+    el.textContent = text.slice(0, i);
+    if (i < text.length) S.storyType = setTimeout(tick, step);
+  };
+  tick();
+}
+function renderStoryDust() {
+  const root = $("story-dust");
+  if (!root || root.childElementCount) return;
+  for (let i = 0; i < 8; i++) {
+    const dot = document.createElement("span");
+    dot.style.left = (8 + i * 11) + "%";
+    dot.style.bottom = (6 + (i % 4) * 8) + "%";
+    dot.style.animationDelay = (i * 0.7) + "s";
+    root.appendChild(dot);
+  }
+}
+function renderStoryCast(ep) {
+  const root = $("story-cast");
+  if (!root) return;
+  const names = [];
+  (ep.dialogue || []).forEach((line) => {
+    if (!line.who || /^(旁白|Narration|Narrator)$/.test(line.who)) return;
+    if (!names.includes(line.who)) names.push(line.who);
+  });
+  root.replaceChildren();
+  names.slice(0, 4).forEach((who) => {
+    const cast = storyCastOf(who);
+    const actor = document.createElement("div");
+    actor.className = "story-actor";
+    actor.dataset.who = who;
+    actor.dataset.look = cast.look;
+    actor.innerHTML = '<div class="puppet"><div class="hair"></div><div class="head"><span class="eye l"></span><span class="eye r"></span><span class="mouth"></span></div><div class="arm l"></div><div class="body"></div><div class="arm r"></div></div>';
+    const tag = document.createElement("p");
+    tag.className = "actor-tag";
+    tag.textContent = storyDisplayName(who);
+    actor.appendChild(tag);
+    root.appendChild(actor);
+  });
+}
+function markStorySpeaker(who) {
+  const stage = $("story-stage");
+  const narrating = /^(旁白|Narration|Narrator)$/.test(who);
+  if (stage) {
+    stage.classList.toggle("narrate", narrating);
+    stage.classList.toggle("talk-close", !narrating && !!who);
+  }
+  document.querySelectorAll(".story-actor").forEach((el) => {
+    const on = el.dataset.who === who;
+    el.classList.toggle("talk", on);
+    el.classList.toggle("dim", narrating || !on);
+  });
+}
+function renderReelBars(index) {
+  const root = $("reel-bars");
+  const ep = S.storyEp;
+  if (!root || !ep) return;
+  const n = Math.max(1, (ep.dialogue || []).length);
+  root.replaceChildren();
+  for (let i = 0; i < n; i++) {
+    const bar = document.createElement("i");
+    if (i < index) bar.className = "done";
+    else if (i === index) bar.className = "on";
+    root.appendChild(bar);
+  }
+}
+function speakStoryChunk(text, who, onDone) {
+  const gen = S.storyGen;
+  let once = false;
+  const done = () => {
+    if (once || S.storyGen !== gen) return;
+    once = true;
+    if (S.storyTimer) clearTimeout(S.storyTimer);
+    onDone();
+  };
+  if (S.muted || !window.speechSynthesis) {
+    S.storyTimer = setTimeout(done, lineWait(text, who));
+    return;
+  }
+  const spoken = String(text || "").replace(/([,;:—–-])\s+/g, "$1 … ");
+  const utter = new SpeechSynthesisUtterance(spoken);
+  const cast = storyCastOf(who);
+  const question = /[？?]$/.test(text.trim());
+  utter.lang = storyLang() === "en" ? "en-US" : "zh-CN";
+  utter.pitch = Math.max(0.9, Math.min(1.12, cast.pitch + (question ? 0.04 : 0)));
+  utter.rate = Math.max(0.86, Math.min(1.05, cast.rate + (text.length > 90 ? -0.04 : 0)));
+  utter.volume = cast.vol;
+  const voice = voiceForCharacter(who);
+  if (voice) {
+    utter.voice = voice;
+    if (voice.lang) utter.lang = voice.lang;
+  }
+  utter.onend = done;
+  utter.onerror = () => {
+    if (S.storyGen !== gen) return;
+    if (!speechSynthesis.speaking && !speechSynthesis.pending) done();
+  };
+  S.storyUtter = utter;
+  S.storySpeakAt = setTimeout(() => {
+    if (S.storyGen !== gen || S.storyPaused) return;
+    try {
+      speechSynthesis.resume();
+      speechSynthesis.speak(utter);
+      S.storyTimer = setTimeout(done, Math.max(lineWait(text, who) * 2.2, 10000));
+    } catch (err) {
+      S.storyTimer = setTimeout(done, lineWait(text, who));
+    }
+  }, 80);
+}
+function speakStoryLine(line, onDone) {
+  const gen = S.storyGen;
+  const phrases = storyPhrases(line.text);
+  const parts = phrases.length ? phrases : [line.text];
+  const cast = storyCastOf(line.who);
+  let i = 0;
+  const next = () => {
+    if (S.storyGen !== gen || S.storyPaused) return;
+    if (i >= parts.length) {
+      onDone();
+      return;
+    }
+    const chunk = parts[i++];
+    speakStoryChunk(chunk, line.who, () => {
+      if (S.storyGen !== gen || S.storyPaused) return;
+      if (i >= parts.length) onDone();
+      else S.storyTimer = setTimeout(next, cast.pause || 220);
+    });
+  };
+  next();
+}
+function appendStoryLog(line) {
+  const p = document.createElement("p");
+  p.className = "story-line";
+  const who = document.createElement("span");
+  who.className = "who";
+  who.textContent = line.who;
+  const text = document.createElement("span");
+  text.className = "line";
+  text.textContent = line.text;
+  p.append(who, text);
+  $("story-lines").appendChild(p);
+  $("story-lines").scrollTop = $("story-lines").scrollHeight;
+}
+function showStoryReady() {
+  const ep = S.storyEp;
+  $("story-who").textContent = "Ready";
+  $("story-caption").classList.remove("talking");
+  $("story-caption-text").textContent = "Press Start when you want the voices to begin. Pause any time.";
+  markStorySpeaker("");
+  updateStoryTransport();
+}
+async function openStory(n, revise) {
+  openReward();
+  return;
+  await preloadStory();
+  const ep = storyEpisodes()[n - 1];
+  if (!ep) {
+    show("title");
+    refreshMeta();
+    return;
+  }
+  stopStoryVoice();
+  S.storyIndex = 0;
+  S.storyLogged = -1;
+  S.storyEp = ep;
+  S.storyPlaying = false;
+  S.storyPaused = false;
+  $("story-kicker").textContent = revise ? "Rewatch" : "New episode unlocked";
+  $("story-title").textContent = ep.title || ep.label;
+  $("story-scene").textContent = ep.scene || "";
+  $("story-set").dataset.set = storySetKind(ep.scene);
+  $("story-lines").replaceChildren();
+  $("story-voice-note").textContent = S.muted
+    ? "Sound is off. Turn Sound on to hear the episode."
+    : "Tap the left side to go back, the right side to skip. Voices stay on this device.";
+  renderStoryDust();
+  renderStoryCast(ep);
+  renderReelBars(0);
+  show("story");
+  showStoryReady();
+}
+function playCurrentLine() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  cancelStorySpeech();
+  if (S.storyIndex >= ep.dialogue.length) {
+    S.storyPlaying = false;
+    S.storyPaused = false;
+    $("story-who").textContent = "End";
+    $("story-caption").classList.remove("talking");
+    $("story-caption-text").textContent = "This episode is finished. Press Play again to restart.";
+    $("story-stage").classList.remove("paused");
+    markStorySpeaker("");
+    updateStoryTransport();
+    return;
+  }
+  const line = ep.dialogue[S.storyIndex];
+  const gen = S.storyGen;
+  renderReelBars(S.storyIndex);
+  $("story-who").textContent = storyDisplayName(line.who);
+  $("story-caption").classList.add("talking");
+  $("story-stage").classList.remove("paused");
+  typeStoryCaption(line.text);
+  markStorySpeaker(line.who);
+  if (S.storyLogged !== S.storyIndex) {
+    appendStoryLog(Object.assign({}, line, { who: storyDisplayName(line.who) }));
+    S.storyLogged = S.storyIndex;
+  }
+  updateStoryTransport();
+  speakStoryLine(line, () => {
+    if (S.storyGen !== gen || S.storyPaused || !S.storyPlaying) return;
+    S.storyIndex += 1;
+    playCurrentLine();
+  });
+}
+function startStory() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  if (S.storyPaused) {
+    resumeStory();
+    return;
+  }
+  if (S.storyIndex >= ep.dialogue.length) S.storyIndex = 0;
+  if (S.storyIndex === 0) {
+    $("story-lines").replaceChildren();
+    S.storyLogged = -1;
+  }
+  S.storyPlaying = true;
+  S.storyPaused = false;
+  playCurrentLine();
+}
+function pauseStory() {
+  if (!S.storyPlaying) return;
+  S.storyPaused = true;
+  S.storyPlaying = false;
+  if (S.storyTimer) clearTimeout(S.storyTimer);
+  if (S.storyType) clearTimeout(S.storyType);
+  if (S.storySpeakAt) clearTimeout(S.storySpeakAt);
+  if (window.speechSynthesis) {
+    try { speechSynthesis.pause(); } catch (err) { /* ignore */ }
+    if (!speechSynthesis.paused) {
+      try { speechSynthesis.cancel(); } catch (err2) { /* ignore */ }
+    }
+  }
+  $("story-stage").classList.add("paused");
+  $("story-caption").classList.remove("talking");
+  updateStoryTransport();
+}
+function resumeStory() {
+  S.storyPaused = false;
+  S.storyPlaying = true;
+  $("story-stage").classList.remove("paused");
+  $("story-caption").classList.add("talking");
+  const synth = window.speechSynthesis;
+  if (synth && synth.paused && synth.speaking) {
+    try { synth.resume(); } catch (err) { /* ignore */ }
+    updateStoryTransport();
+    return;
+  }
+  playCurrentLine();
+}
+function skipStoryLine() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  S.storyIndex = Math.min(ep.dialogue.length, S.storyIndex + 1);
+  if (S.storyPlaying && !S.storyPaused) playCurrentLine();
+  else {
+    cancelStorySpeech();
+    if (S.storyIndex >= ep.dialogue.length) playCurrentLine();
+    else {
+      const line = ep.dialogue[S.storyIndex];
+      renderReelBars(S.storyIndex);
+      $("story-who").textContent = storyDisplayName(line.who);
+      $("story-caption-text").textContent = line.text;
+      markStorySpeaker(line.who);
+      updateStoryTransport();
+    }
+  }
+}
+function prevStoryLine() {
+  const ep = S.storyEp;
+  if (!ep) return;
+  S.storyIndex = Math.max(0, (S.storyIndex || 0) - 1);
+  if (S.storyPlaying && !S.storyPaused) playCurrentLine();
+  else {
+    cancelStorySpeech();
+    const line = ep.dialogue[S.storyIndex];
+    if (!line) return;
+    renderReelBars(S.storyIndex);
+    $("story-who").textContent = storyDisplayName(line.who);
+    $("story-caption-text").textContent = line.text;
+    markStorySpeaker(line.who);
+    updateStoryTransport();
+  }
+}
+function playStoryLine() {
+  startStory();
+}
+function renderBookSlots() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const root = $("book-slots");
+  root.replaceChildren();
+  if (!cycle) return;
+  S.bookPicks = S.bookPicks || {};
+  cycle.slots.forEach((slot) => {
+    if (!S.bookPicks[slot.id]) {
+      S.bookPicks[slot.id] = { custom: slot.start ? toLocalInput(slot.start) : slot.date + "T09:00" };
+    }
+    const pick = S.bookPicks[slot.id];
+    const card = document.createElement("div");
+    card.className = "slot-card ok";
+    const head = document.createElement("p");
+    const strong = document.createElement("strong");
+    strong.textContent = weekdayName(slot.date) + " · " + slot.date;
+    head.append(strong);
+    const field = document.createElement("div");
+    field.className = "field";
+    const label = document.createElement("label");
+    label.textContent = "Practice time";
+    const input = document.createElement("input");
+    input.type = "datetime-local";
+    input.value = pick.custom || slot.date + "T09:00";
+    input.addEventListener("input", () => { pick.custom = input.value; });
+    field.append(label, input);
+    card.append(head, field);
+    root.appendChild(card);
+  });
+}
+
+function saveBook() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (!cycle) return;
+  for (const slot of cycle.slots) {
+    const pick = (S.bookPicks || {})[slot.id];
+    const stamp = pick && pick.custom ? new Date(pick.custom) : (slot.start ? new Date(slot.start) : null);
+    if (!stamp || Number.isNaN(stamp.getTime())) {
+      $("book-error").textContent = "Add a time for " + slot.date + ".";
+      return;
+    }
+    acceptSlot(cycle, slot.id, stamp.toISOString());
+  }
+  cycle.sentence = ($("book-sentence").value || "").trim() || cycle.sentence;
+  writeAcceptedEvents(plan, cycle);
+  notifyPracticePlan(loadPlans().plans[plan.code] || plan);
+  S.bookPicks = {};
+  $("book-error").textContent = "";
+  refreshMeta();
+  show("title");
+}
+
+function scheduleWindow(plan) {
+  const cycle = cycleOf(plan);
+  if (cycle && cycle.periodStart && cycle.periodEnd) {
+    return { start: cycle.periodStart, end: cycle.periodEnd };
+  }
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 14);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+function persistPlanCalendar(plan) {
+  const data = loadPlans();
+  if (!plan || !data.plans[plan.code]) return plan;
+  const cycle = cycleOf(plan);
+  data.plans[plan.code].calendar = plan.calendar;
+  data.plans[plan.code].calendarId = plan.calendarId;
+  data.plans[plan.code].deviceCalendar = plan.deviceCalendar;
+  data.plans[plan.code].patientCalendar = plan.patientCalendar;
+  data.plans[plan.code].clinicianCalendar = plan.clinicianCalendar;
+  data.plans[plan.code].appointment = plan.appointment;
+  if (cycle) data.plans[plan.code].cycle = cycle;
+  savePlans(data);
+  return data.plans[plan.code];
+}
+async function ensureCalendarOnPlan(plan) {
+  if (!plan) return;
+  window.ELAK_CAL_READING = true;
+  const span = displayWindowForPlan(plan);
+  applyRoleCalendarsToPlan(plan, span.start, span.end);
+  refreshPlanOffers(plan);
+  persistPlanCalendar(plan);
+  try {
+    const next = await syncDeviceCalendarToPlan(plan, false, "patient");
+    if (next) {
+      plan.patientCalendar = next.patientCalendar;
+      plan.deviceCalendar = next.deviceCalendar;
+      plan.calendar = next.calendar;
+      plan.cycle = next.cycle || plan.cycle;
+    }
+  } catch (err) { /* keep this device's last patient calendar */ }
+  window.ELAK_CAL_READING = false;
+}
+
+function formatSlotWhen(iso, minutes) {
+  const start = new Date(iso);
+  if (Number.isNaN(start.getTime())) return "On your calendar";
+  const end = new Date(start.getTime() + (minutes || 15) * 60000);
+  const clock = (d) => d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  return start.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }) + " · " + clock(start) + " – " + clock(end);
+}
+function openNudge(slot) {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (!slot || !cycle) return;
+  if (S.nudgeSnooze && Date.now() < S.nudgeSnooze && S.nudgeSlot === slot.id) return;
+  S.slotId = slot.id;
+  S.nudgeSlot = slot.id;
+  const when = new Date(slot.start || Date.now());
+  const title = cycle.sentence || "Time for your ankle practice.";
+  if ($("nudge-month")) $("nudge-month").textContent = when.toLocaleDateString(undefined, { month: "short" }).toUpperCase();
+  if ($("nudge-day")) $("nudge-day").textContent = String(when.getDate());
+  if ($("nudge-dow")) $("nudge-dow").textContent = when.toLocaleDateString(undefined, { weekday: "long" });
+  if ($("nudge-when")) $("nudge-when").textContent = formatSlotWhen(slot.start || when.toISOString(), cycle.minutes);
+  $("nudge-title").textContent = title;
+  $("nudge-msg").textContent = "This time is on your practice calendar. Finish " + cycle.minBout + " ankle exercise" + (cycle.minBout === 1 ? "" : "s") + " and film it so the visit log can count it.";
+  if ($("nudge-rule")) {
+    $("nudge-rule").textContent = "";
+    $("nudge-rule").hidden = true;
+  }
+  $("overlay-nudge").hidden = false;
+}
+
+function startDueBout() {
+  $("overlay-nudge").hidden = true;
+  startDailyExercise();
+}
+
+function openMiss(slot) {
+  if (!slot) return;
+  S.slotId = slot.id;
+  $("miss-reason").value = "forgot";
+  $("miss-note").value = "";
+  $("overlay-miss").hidden = false;
+}
+
+function handleMiss(action) {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const slot = cycle && cycle.slots.find((item) => item.id === S.slotId);
+  if (!plan || !slot) {
+    $("overlay-miss").hidden = true;
+    return;
+  }
+  let reason = $("miss-reason").value;
+  if (reason === "other") reason = ($("miss-note").value || "").trim() || "other";
+  missBout(plan, slot, reason, action);
+  $("overlay-miss").hidden = true;
+  S.slotId = null;
+  refreshMeta();
+  if (action === "rebook") openBook();
+  else if (action === "replay") {
+    $("overlay-how").hidden = false;
+    show("title");
+  } else {
+    show("title");
+    maybePromptCycle();
+  }
+}
+
+function maybePromptCycle() {
+  const plan = activePlan();
+  if (!plan || S.screen === "play" || S.screen === "book" || S.screen === "story") return;
+  if (anyOverlay() && $("overlay-nudge").hidden) return;
+  const cycle = cycleOf(plan);
+  if (!cycle || cycleNeedsBooking(cycle)) return;
+  const due = dueSlot(cycle);
+  if (due) openNudge(due);
+}
+
+async function ensureFilmStream() {
+  if (S.filmStream && S.filmStream.getTracks().some((track) => track.readyState === "live")) {
+    $("film-live").srcObject = S.filmStream;
+    return S.filmStream;
+  }
+  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error("Open this page through localhost to film.");
+  }
+  S.filmStream = await navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 360 } }
+  });
+  $("film-live").srcObject = S.filmStream;
+  await $("film-live").play();
+  return S.filmStream;
+}
+function stopFilmStream() {
+  if (S.filmStream && S.filmStream !== S.stream) {
+    S.filmStream.getTracks().forEach((track) => track.stop());
+  }
+  S.filmStream = null;
+  $("film-live").srcObject = null;
+}
+async function startFilm() {
+  if (S.recorder && S.recorder.state === "recording") {
+    $("film-status").textContent = "Already filming this practice.";
+    return;
+  }
+  try {
+    const stream = await ensureFilmStream();
+    if (typeof MediaRecorder === "undefined") {
+      $("film-status").textContent = "Cannot record.";
+      S.filmAt = performance.now();
+      return;
+    }
+    S.chunks = [];
+    S.videoBlob = null;
+    S.filmAt = performance.now();
+    S.filmMs = 0;
+    S.recorder = new MediaRecorder(stream);
+    S.recorder.ondataavailable = (event) => {
+      if (event.data && event.data.size) S.chunks.push(event.data);
+    };
+    S.recorder.onstop = () => {
+      S.filmMs = performance.now() - S.filmAt;
+      S.videoBlob = new Blob(S.chunks, { type: S.recorder.mimeType || "video/webm" });
+      const replay = $("film-replay");
+      replay.src = URL.createObjectURL(S.videoBlob);
+      replay.hidden = false;
+      $("film-status").textContent = "Kept.";
+      $("film-live").hidden = true;
+      syncSubmit();
+    };
+    S.recorder.start();
+    $("film-replay").hidden = true;
+    $("film-live").hidden = false;
+    $("film-status").textContent = "Filming";
+    $("film-bout").textContent = "Filming…";
+    syncSubmit();
+  } catch (err) {
+    $("film-status").textContent = err && err.message ? err.message : "Could not start the camera film.";
+  }
+}
+
+function stopFilm() {
+  if (S.filmAt && !S.filmMs) S.filmMs = performance.now() - S.filmAt;
+  if (S.recorder && S.recorder.state !== "inactive") {
+    try { S.recorder.stop(); } catch (err) { /* already stopped */ }
+  }
+  $("film-bout").textContent = "Start filming";
+  syncSubmit();
+}
+
+async function openFilms() {
+  const plan = activePlan();
+  const root = $("film-list");
+  root.replaceChildren();
+  const films = planFilms(plan);
+  if (!films.length) {
+    const empty = document.createElement("p");
+    empty.className = "note";
+    empty.textContent = "No films yet. Film a practice after you watch the teaching clip.";
+    root.appendChild(empty);
+  }
+  for (const item of films) {
+    const card = document.createElement("div");
+    card.className = "slot-card";
+    const head = document.createElement("p");
+    const strong = document.createElement("strong");
+    strong.textContent = item.date || formatWhen(item.at);
+    const review = item.review === "refilm"
+      ? " · please refilm"
+      : (item.review === "keep" ? " · kept by clinician" : " · submitted");
+    head.append(strong, document.createTextNode((item.name ? " · " + item.name : "") + review));
+    card.appendChild(head);
+    if (item.reviewNote) {
+      const note = document.createElement("p");
+      note.className = "note";
+      note.textContent = "Clinician note: " + item.reviewNote;
+      card.appendChild(note);
+    }
+    const player = document.createElement("video");
+    player.controls = true;
+    player.playsInline = true;
+    player.style.cssText = "width:100%;border-radius:16px;background:#111;max-height:220px";
+    try {
+      const row = await getFilm(plan.code, item.slotId);
+      if (row && row.blob) player.src = URL.createObjectURL(row.blob);
+    } catch (err) { /* skip missing clip */ }
+    card.appendChild(player);
+    root.appendChild(card);
+  }
+  show("films");
+}
+
+async function keepCurrentFilm() {
+  const plan = activePlan();
+  const slotId = filmSlotId();
+  if (!plan || !S.videoBlob) return;
+  await putFilm(plan.code, slotId, S.videoBlob, {
+    date: dayKey(new Date()),
+    name: spec().name,
+    ok: true,
+    seconds: S.filmMs / 1000
+  });
+}
+
+function verifyBoutVideo() {
+  const filmed = !!(S.videoBlob && S.videoBlob.size > 8000) || S.filmMs >= 5000;
+  const moved = S.results.some((row) => row.accuracy != null || row.stars > 0) || S.reps > 0;
+  S.videoOk = filmed && moved;
+  return S.videoOk;
+}
+
+function openVerify() {
+  stopFilm();
+  const preview = $("verify-preview");
+  if (S.videoBlob) {
+    preview.src = URL.createObjectURL(S.videoBlob);
+    preview.hidden = false;
+  } else {
+    preview.removeAttribute("src");
+    preview.hidden = true;
+  }
+  const ok = verifyBoutVideo();
+  $("verify-msg").textContent = ok
+    ? "The agent saw a filmed practice and movement. This checks completion only."
+    : (S.videoBlob
+      ? "A video is here, but the agent did not see enough movement yet. You can still log the practice."
+      : "No video yet. Film the next practice, or continue without one.");
+  $("overlay-verify").hidden = false;
+}
+
+function boutLevelFromSession() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const q = quest();
+  if (!cycle || !q) return "";
+  const done = S.results.filter((row) => !row.stopped).length;
+  if (done >= q.exercises.length) return "full plan";
+  if (done >= (cycle.minBout || 1)) return "minimum";
+  return "";
+}
+
+function openFeedback() {
+  $("overlay-verify").hidden = true;
+  $("fb-pain").value = "2";
+  $("fb-stop").value = "no";
+  $("fb-mob").value = "5";
+  $("fb-note").value = "";
+  $("overlay-feedback").hidden = false;
+}
+
+function saveFeedback() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const slot = cycle && cycle.slots.find((item) => item.id === S.slotId);
+  const pain = clamp(Number($("fb-pain").value) || 0, 0, 10);
+  const mobility = clamp(Number($("fb-mob").value) || 0, 0, 10);
+  const painStop = $("fb-stop").value === "yes" || S.results.some((row) => row.stopped);
+  const feedback = ($("fb-note").value || "").trim();
+  const level = boutLevelFromSession() || (S.results.some((row) => row.filmed && !row.stopped) ? "minimum" : "");
+  $("overlay-feedback").hidden = true;
+  if (plan && level) {
+    if (slot) completeBout(plan, slot, { level, videoOk: S.videoOk, pain, mobility, feedback, painStop });
+    else window.ELAKReward.grant({ type: "story", level });
+    $("done-sub").textContent = "";
+    $("done-sub").hidden = true;
+    keepCurrentFilm().catch(() => {});
+    openReward(creditsFromSession());
+    S.slotId = null;
+    S.videoOk = false;
+    S.videoBlob = null;
+    refreshMeta();
+    return;
+  } else if (plan && slot) {
+    missBout(plan, slot, "short practice", "freeze");
+    $("done-sub").textContent = "";
+    $("done-sub").hidden = true;
+  } else if (plan) {
+    const data = loadPlans();
+    const cur = data.plans[plan.code];
+    if (!cur.logs) cur.logs = [];
+    cur.logs.push({
+      at: new Date().toISOString(),
+      slotId: "",
+      pain,
+      mobility,
+      feedback,
+      painStop
+    });
+    savePlans(data);
+    if (typeof notifyPatientReport === "function") notifyPatientReport(cur);
+  }
+  keepCurrentFilm().catch(() => {});
+  S.slotId = null;
+  S.videoOk = false;
+  S.videoBlob = null;
+  refreshMeta();
+}
+
+function homeFromStart() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  if (cycleNeedsBooking(cycle)) {
+    autoBookCycle(plan);
+    notifyPracticePlan(loadPlans().plans[plan.code] || plan);
+  }
+  sfxClick();
+  startDailyExercise();
 }
 
 function renderPlan() {
@@ -980,26 +2996,31 @@ function renderPlan() {
   if (!q) {
     $("plan-kicker").textContent = "Your ankle set";
     $("plan-title").textContent = "No ankle set yet";
-    $("plan-note").textContent = "Your physiotherapist has not saved an ankle set yet.";
+    $("plan-note").textContent = "";
+    $("plan-note").hidden = true;
     $("plan-start").hidden = true;
     return;
   }
   $("plan-start").hidden = false;
-  $("plan-kicker").textContent = q.minutes;
+  $("plan-kicker").textContent = "";
+  $("plan-kicker").hidden = true;
   $("plan-title").textContent = q.title;
-  $("plan-note").textContent = (q.blurb ? q.blurb + " " : "") + "Updated " + formatWhen(q.updated) + ". Ankle work only. The video check stays on this device.";
+  $("plan-note").textContent = "";
+  $("plan-note").hidden = true;
   q.exercises.forEach((item, index) => {
     const base = EX[item.pattern];
     if (!base) return;
     const li = document.createElement("li");
+    li.className = "plan-item";
     const kicker = document.createElement("span");
+    kicker.className = "plan-item-meta";
     const count = base.type === "sustain" ? item.reps + " breaths" : item.reps + " reps";
-    kicker.textContent = (index + 1) + " · " + count;
+    const days = clamp(Number(item.daysPerWeek) || (cycleOf(activePlan()) && cycleOf(activePlan()).daysPerWeek) || 7, 1, 7);
+    kicker.textContent = (index + 1) + " · " + count + " · " + days + (days === 1 ? " day" : " days");
     const name = document.createElement("strong");
+    name.className = "plan-item-name";
     name.textContent = base.name;
-    const cue = document.createElement("p");
-    cue.textContent = (item.cue || base.cue) + (item.note ? " " + item.note : "");
-    li.append(kicker, name, cue);
+    li.append(kicker, name);
     list.appendChild(li);
   });
 }
@@ -1018,16 +3039,131 @@ function setMode(mode) {
   syncTeach();
 }
 
+function startDailyExercise() {
+  const plan = activePlan();
+  const cycle = cycleOf(plan);
+  const today = dayKey(new Date());
+  const pick = (cycle && cycle.slots || []).find((slot) => slot.date === today && slot.status === "accepted")
+    || (cycle && cycle.slots || []).find((slot) => slot.status === "accepted");
+  if (pick) S.slotId = pick.id;
+  startPlan();
+}
 function startPlan() {
   const q = quest();
   if (!q || !q.exercises.length) return;
   sfxClick();
+  S.studio = true;
   S.questId = q.id;
   S.exIndex = 0;
   S.results = [];
   S.saved = false;
-  openBrief();
+  S.logged = false;
+  resetFilmTake();
   show("play");
+  enterWatch();
+}
+function resetFilmTake() {
+  if (S.recorder && S.recorder.state === "recording") {
+    try { S.recorder.stop(); } catch (err) { /* already stopped */ }
+  }
+  S.recorder = null;
+  S.chunks = [];
+  S.videoBlob = null;
+  S.videoOk = false;
+  S.filmMs = 0;
+  S.filmAt = 0;
+  if ($("film-replay")) {
+    $("film-replay").hidden = true;
+    $("film-replay").removeAttribute("src");
+  }
+  if ($("film-live")) $("film-live").hidden = false;
+  if ($("film-bout")) $("film-bout").textContent = "Start filming";
+  syncSubmit();
+}
+function hasFilmedClip() {
+  return !!(S.videoBlob && S.videoBlob.size > 4000) || S.filmMs >= 2500;
+}
+function syncSubmit() {
+  const btn = $("play-submit");
+  if (!btn) return;
+  const recording = S.recorder && S.recorder.state === "recording";
+  btn.disabled = !hasFilmedClip() || recording;
+}
+function enterWatch() {
+  S.studio = true;
+  S.studioPhase = "watch";
+  S.phaseName = "watch";
+  S.logged = false;
+  resetFilmTake();
+  const studio = $("play-studio");
+  studio.classList.remove("film");
+  studio.classList.add("watch");
+  $("watch-ready").hidden = false;
+  $("play-submit").hidden = true;
+  $("play-submit").disabled = true;
+  const sp = spec();
+  const q = quest();
+  $("play-kicker").textContent = "";
+  $("play-kicker").hidden = true;
+  $("play-name").textContent = sp.name;
+  $("play-step").textContent = (S.exIndex + 1) + " / " + q.exercises.length;
+  $("film-status").textContent = "";
+  syncTeach();
+}
+async function enterFilm() {
+  S.studioPhase = "film";
+  S.phaseName = "film";
+  const studio = $("play-studio");
+  studio.classList.remove("watch");
+  studio.classList.add("film");
+  $("watch-ready").hidden = true;
+  $("play-submit").hidden = false;
+  $("play-kicker").textContent = "Film this practice";
+  syncSubmit();
+  syncTeach();
+  try {
+    await ensureFilmStream();
+    $("film-status").textContent = "";
+  } catch (err) {
+    $("film-status").textContent = err && err.message ? err.message : "Camera film is not available.";
+  }
+}
+function filmSlotId() {
+  return (S.slotId || ("practice-" + dayKey(new Date()))) + "-" + spec().id;
+}
+function refilmPractice() {
+  resetFilmTake();
+  $("film-status").textContent = "Ready to film again.";
+  ensureFilmStream().catch((err) => {
+    $("film-status").textContent = err && err.message ? err.message : "Camera film is not available.";
+  });
+}
+async function submitPractice() {
+  if (!hasFilmedClip()) return;
+  S.videoOk = true;
+  await keepCurrentFilm();
+  if (!S.logged) {
+    S.results.push({
+      id: spec().id,
+      name: spec().name,
+      stars: 1,
+      avg: 100,
+      accuracy: null,
+      points: 0,
+      stopped: false,
+      reps: spec().reps,
+      filmed: true
+    });
+    S.logged = true;
+    if (window.ELAKReward && typeof window.ELAKReward.grow === "function") window.ELAKReward.grow(1);
+  }
+  if (S.exIndex >= quest().exercises.length - 1) {
+    stopFilmStream();
+    finishSession();
+  } else {
+    S.exIndex += 1;
+    enterWatch();
+  }
 }
 
 function openBrief() {
@@ -1772,6 +3908,7 @@ function finishExercise(stopped) {
     accuracy,
     points: S.exPoints,
     stopped: !!stopped,
+    reps: S.reps,
     report: mergeReports(S.repReports || [])
   });
   S.logged = true;
@@ -1779,6 +3916,7 @@ function finishExercise(stopped) {
   if (!stopped) {
     S.celebrate = 1.25;
     sfxWin();
+    if (window.ELAKReward && typeof window.ELAKReward.grow === "function") window.ELAKReward.grow(1);
   }
 }
 
@@ -1792,12 +3930,13 @@ function advance() {
   if (S.exIndex >= quest().exercises.length - 1) finishSession();
   else {
     S.exIndex += 1;
-    openBrief();
+    if (S.studio) enterWatch();
+    else openBrief();
   }
 }
 
 function finishSession() {
-  if (!S.logged && S.questId) {
+  if (!S.studio && !S.logged && S.questId) {
     const started = S.reps > 0 || S.phaseName === "play";
     if (started) finishExercise(true);
   }
@@ -1813,12 +3952,14 @@ function finishSession() {
     const stars = S.results.reduce((s, r) => s + r.stars, 0);
     save.best = Math.max(save.best || 0, stars);
     save.muted = S.muted;
-    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+    persist(save);
     S.saved = true;
   }
+  stopFilmStream();
   renderDone();
   show("done");
   refreshMeta();
+  if (S.results.length) openFeedback();
 }
 
 function renderDone() {
@@ -1826,14 +3967,11 @@ function renderDone() {
   const stars = S.results.reduce((s, r) => s + r.stars, 0);
   const max = q.exercises.length * 3;
   const finishedAll = S.results.length === q.exercises.length && S.results.every((r) => !r.stopped);
-  $("done-kicker").textContent = finishedAll ? "Ankle set complete" : "Saved for later";
-  $("done-title").textContent = finishedAll ? q.title + " complete" : "That's a wrap for now";
-  const sawCamera = S.results.some((r) => r.accuracy != null);
-  $("done-sub").textContent = finishedAll
-    ? (sawCamera
-      ? "Stars mix your pace with the ankle clip and how closely the camera saw each ankle movement."
-      : "You finished the ankle set. Stars reflect how closely each rep matched the clip.")
-    : "Here's the ankle work you got through. You can run the set again whenever you want.";
+  $("done-kicker").textContent = "";
+  $("done-kicker").hidden = true;
+  $("done-title").textContent = finishedAll ? q.title : q.title;
+  $("done-sub").textContent = "";
+  $("done-sub").hidden = true;
   const starRow = document.createElement("div");
   $("done-stars").textContent = stars + " / " + max + " stars";
   const list = $("done-list");
@@ -1843,7 +3981,7 @@ function renderDone() {
     const name = document.createElement("span");
     name.textContent = r.stopped ? r.name + " · stopped" : r.name;
     const meta = document.createElement("strong");
-    meta.textContent = "★".repeat(r.stars) + (r.stars ? "" : "—") + "  " + r.points + (r.accuracy != null ? "  ·  " + r.accuracy + "% posture" : "");
+    meta.textContent = r.filmed ? "Filmed" : (r.stopped ? "Stopped" : "Saved");
     const head = document.createElement("div");
     head.className = "spread";
     head.append(name, meta);
@@ -2714,6 +4852,11 @@ function frame(now) {
   const dt = Math.min(0.05, (now - S.last) / 1000);
   S.last = now;
   S.t += dt;
+  if (S.studio && S.screen === "play") {
+    syncTeach();
+    requestAnimationFrame(frame);
+    return;
+  }
   const live = S.screen === "play" && !S.paused && S.questId;
   S.dt = live ? dt : 0;
   if (live) update(dt);
@@ -2723,6 +4866,10 @@ function frame(now) {
 
 function pauseGame() {
   if (S.screen !== "play") return;
+  if (S.studio) {
+    $("overlay-leave").hidden = false;
+    return;
+  }
   if (S.phaseName === "brief" || S.phaseName === "camerror") return;
   S.paused = true;
   S.holding = false;
@@ -2738,6 +4885,10 @@ function resumeGame() {
 }
 
 function endEarly(reason) {
+  if (S.studio) {
+    finishSession();
+    return;
+  }
   S.holding = false;
   S.running = false;
   S.stopReason = reason;
@@ -2752,79 +4903,84 @@ function endEarly(reason) {
   $("overlay-stop").hidden = false;
 }
 
-function renderAvatarPickers() {
-  const avatar = playerAvatar();
-  for (const key of ["skin", "hair", "hairStyle", "shirt", "shorts"]) {
-    const root = $("pick-" + key);
-    root.replaceChildren();
-    for (const choice of AVATAR_CHOICES[key]) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      const selected = avatar[key] === choice;
-      if (key === "hairStyle") {
-        btn.className = "style-chip" + (selected ? " sel" : "");
-        btn.textContent = choice.charAt(0).toUpperCase() + choice.slice(1);
-      } else {
-        btn.className = "swatch" + (selected ? " sel" : "");
-        btn.style.background = choice;
-        btn.setAttribute("aria-label", key + " " + choice);
-      }
-      btn.addEventListener("click", () => {
-        const next = playerAvatar();
-        next[key] = choice;
-        saveAvatar(next);
-        renderAvatarPickers();
-        drawAvatarPreview();
-      });
-      root.appendChild(btn);
-    }
-  }
-}
-function drawAvatarPreview() {
-  const preview = $("avatar-preview");
-  const g = preview.getContext("2d");
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  g.clearRect(0, 0, preview.width, preview.height);
-  g.fillStyle = "#f3ead7";
-  g.fillRect(0, 0, preview.width, preview.height);
-  drawPerson(preview.width / 2, preview.height * 0.9, 1.15, poseFor("pump", 0.15, 0), { g });
-}
-function openProfile() {
-  const plan = activePlan();
-  if (!plan) return;
-  $("profile-name").textContent = plan.patient;
-  $("profile-user").textContent = AUTH_OFF || !plan.username ? "" : "Username " + plan.username;
-  renderAvatarPickers();
-  show("profile");
-  drawAvatarPreview();
-}
+function renderAvatarPickers() {}
+function drawAvatarPreview() {}
+function openProfile() {}
 
 function wire() {
+  $("patient-user").required = true;
+  $("patient-pass").required = true;
+  if (patientRemembered()) {
+    const last = localStorage.getItem("full-range-patient-last-user") || "";
+    if (last && !$("patient-user").value) $("patient-user").value = last;
+    $("patient-remember").checked = true;
+  }
   $("patient-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     $("patient-error").textContent = "";
     try {
-      const ok = await signInPatient($("patient-user").value, $("patient-pass").value);
-      if (!ok) {
-        $("patient-error").textContent = "That username and password don't match an account from your physiotherapist.";
+      const result = await signInPatient($("patient-user").value, $("patient-pass").value, $("patient-remember").checked);
+      if (!result || !result.ok) {
+        $("patient-error").textContent = result && result.reason === "unknown"
+          ? "That username is not on your physiotherapist's list."
+          : result && result.reason === "no-pass"
+            ? "This account is not ready. Ask your physiotherapist to set a password."
+            : "That username and password don't match an account from your physiotherapist.";
         return;
       }
       $("patient-pass").value = "";
-      refreshMeta();
       show("title");
+      refreshMeta();
     } catch (err) {
       $("patient-error").textContent = "Sign-in needs a secure page, opened through localhost.";
     }
   });
   $("patient-out").addEventListener("click", () => {
     stopCamera();
+    stopFilmStream();
     signOutPatient();
     show("signin");
     refreshMeta();
   });
-  $("profile-open").addEventListener("click", openProfile);
-  $("profile-back").addEventListener("click", () => { refreshMeta(); show("title"); });
-  $("start-btn").addEventListener("click", () => { sfxClick(); renderPlan(); show("quests"); });
+  $("stories-open").addEventListener("click", () => { openReward(); });
+  if ($("story-play")) $("story-play").addEventListener("click", startStory);
+  if ($("story-pause")) $("story-pause").addEventListener("click", pauseStory);
+  if ($("story-next")) $("story-next").addEventListener("click", skipStoryLine);
+  if ($("reel-fwd")) $("reel-fwd").addEventListener("click", skipStoryLine);
+  if ($("reel-back")) $("reel-back").addEventListener("click", prevStoryLine);
+  $("story-home").addEventListener("click", () => {
+    stopStoryVoice();
+    const frame = $("reward-frame");
+    if (frame) frame.src = "about:blank";
+    show("title");
+    refreshMeta();
+  });
+  $("films-open").addEventListener("click", () => { openFilms(); });
+  $("films-back").addEventListener("click", () => { refreshMeta(); show("title"); });
+  if ($("notes-open")) $("notes-open").addEventListener("click", () => { show("notes"); renderPatientInbox(); updateChrome(); });
+  if ($("mail-negotiate-btn")) $("mail-negotiate-btn").addEventListener("click", submitVisitNegotiate);
+  if ($("mail-close")) $("mail-close").addEventListener("click", () => { $("overlay-mail").hidden = true; });
+  $("book-open").addEventListener("click", openBook);
+  $("book-save").addEventListener("click", saveBook);
+  $("start-btn").addEventListener("click", homeFromStart);
+  $("nudge-start").addEventListener("click", startDueBout);
+  $("nudge-later").addEventListener("click", () => {
+    $("overlay-nudge").hidden = true;
+    S.nudgeSnooze = Date.now() + 5 * 60000;
+    S.nudgeSlot = S.slotId;
+  });
+  $("miss-freeze").addEventListener("click", () => handleMiss("freeze"));
+  $("miss-move").addEventListener("click", () => handleMiss("move-nudge"));
+  $("miss-replay").addEventListener("click", () => handleMiss("replay"));
+  $("miss-rebook").addEventListener("click", () => handleMiss("rebook"));
+  $("verify-ok").addEventListener("click", openFeedback);
+  $("verify-skip").addEventListener("click", () => { S.videoOk = false; openFeedback(); });
+  $("fb-save").addEventListener("click", saveFeedback);
+  $("film-bout").addEventListener("click", startFilm);
+  $("film-stop").addEventListener("click", stopFilm);
+  $("film-again").addEventListener("click", refilmPractice);
+  $("watch-ready").addEventListener("click", enterFilm);
+  $("play-submit").addEventListener("click", submitPractice);
   $("how-open").addEventListener("click", () => { $("overlay-how").hidden = false; });
   $("how-close").addEventListener("click", () => { $("overlay-how").hidden = true; });
   $("mode-button").addEventListener("click", () => setMode("button"));
@@ -2834,11 +4990,13 @@ function wire() {
     if (S.results.length) $("overlay-leave").hidden = false;
     else { stopCamera(); show("quests"); $("overlay-brief").hidden = true; renderPlan(); }
   });
-  $("home").addEventListener("click", () => {
-    if (!activePlan()) { stopCamera(); show(AUTH_OFF ? "title" : "signin"); return; }
-    if (S.screen === "play" && (S.results.length || S.phaseName !== "brief")) $("overlay-leave").hidden = false;
-    else { stopCamera(); show("title"); refreshMeta(); }
-  });
+  function goHome() {
+    if (!patientUiOn() || !activePlan()) { stopCamera(); stopFilmStream(); show("signin"); return; }
+    if (S.screen === "play" && (S.results.length || S.studioPhase === "film" || S.phaseName !== "brief")) $("overlay-leave").hidden = false;
+    else { stopStoryVoice(); stopCamera(); show("title"); refreshMeta(); maybePromptCycle(); }
+  }
+  $("home").addEventListener("click", goHome);
+  if ($("home-open")) $("home-open").addEventListener("click", goHome);
   $("leave-no").addEventListener("click", () => { $("overlay-leave").hidden = true; });
   $("leave-yes").addEventListener("click", () => {
     $("overlay-leave").hidden = true;
@@ -2855,7 +5013,7 @@ function wire() {
   $("stop-next").addEventListener("click", () => { $("overlay-stop").hidden = true; advance(); });
   $("stop-end").addEventListener("click", () => { $("overlay-stop").hidden = true; finishSession(); });
   $("done-again").addEventListener("click", () => startPlan());
-  $("done-more").addEventListener("click", () => { refreshMeta(); show("title"); });
+  $("done-more").addEventListener("click", () => { refreshMeta(); show("title"); maybePromptCycle(); });
   $("plan-start").addEventListener("click", startPlan);
   $("cam-switch").addEventListener("click", () => {
     $("overlay-cam").hidden = true;
@@ -2868,6 +5026,17 @@ function wire() {
   $("mute").addEventListener("click", () => {
     S.muted = !S.muted;
     persist({ muted: S.muted });
+    if (S.muted && S.screen === "story") {
+      if (S.storyPlaying) {
+        cancelStorySpeech();
+        playCurrentLine();
+      } else stopStoryVoice();
+    }
+    if ($("story-voice-note")) {
+      $("story-voice-note").textContent = S.muted
+        ? "Sound is off. Turn Sound on to hear Ethan, Miles, and Sophie."
+        : "Ethan uses the Domineering CEO voice. Miles uses Joe. Sophie uses 清醒小白花.";
+    }
     refreshMeta();
   });
 
@@ -2903,13 +5072,33 @@ function wire() {
   document.addEventListener("pointerdown", () => { if (!S.muted) ac(); }, { once: true });
 }
 
+preloadStory().then(() => refreshMeta());
+if (window.speechSynthesis) {
+  S.storyVoiceList = speechSynthesis.getVoices();
+  speechSynthesis.addEventListener("voiceschanged", () => {
+    S.storyVoiceList = speechSynthesis.getVoices();
+  });
+}
+$("overlay-miss").hidden = true;
+clearStalePatientSession();
 refreshMeta();
-if (AUTH_OFF || activePlan()) show("title");
-else show("signin");
+if (activePlan()) {
+  show("title");
+  refreshMeta();
+} else {
+  show("signin");
+  refreshMeta();
+}
 setMode("button");
 wire();
 resize();
 requestAnimationFrame(frame);
+setInterval(() => {
+  if (S.screen === "play" || S.screen === "book" || S.screen === "story") return;
+  if (anyOverlay() && $("overlay-nudge").hidden) return;
+  refreshMeta();
+  maybePromptCycle();
+}, 10000);
 </script>
 <script>
   addEventListener("load", function () {

@@ -89,6 +89,8 @@ function loadPlans() {
 function savePlans(data) { localStorage.setItem(PLAN_KEY, JSON.stringify(data)); }
 const CLINICIANS_KEY = "full-range-clinicians-v1";
 const PATIENT_SESSION_KEY = "full-range-patient-session";
+const PATIENT_REMEMBER_KEY = "full-range-patient-remember";
+const CLINIC_REMEMBER_KEY = "full-range-clinic-remember";
 
 const AVATAR_CHOICES = {
   skin: ["#f3d2b5", "#e0ac84", "#c68642", "#8d5524", "#4a3124"],
@@ -105,25 +107,61 @@ const DEFAULT_AVATAR = {
   shorts: AVATAR_CHOICES.shorts[0]
 };
 
+function normalizeUsername(raw) {
+  return (raw || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+function validUsername(raw) {
+  const key = normalizeUsername(raw);
+  return key.length >= 3 && key.length <= 24 && /^[a-z0-9][a-z0-9._\- ]*$/.test(key);
+}
+function patientRemembered() {
+  return localStorage.getItem(PATIENT_REMEMBER_KEY) === "1";
+}
 function patientSessionName() {
-  return (sessionStorage.getItem(PATIENT_SESSION_KEY) || "").toLowerCase();
+  const lasting = patientRemembered() ? (localStorage.getItem(PATIENT_SESSION_KEY) || "") : "";
+  return normalizeUsername(lasting || sessionStorage.getItem(PATIENT_SESSION_KEY) || "");
+}
+function rememberPatient(username, code, persist) {
+  const name = normalizeUsername(username);
+  if (name) sessionStorage.setItem(PATIENT_SESSION_KEY, name);
+  sessionStorage.setItem("full-range-patient-ui", "1");
+  if (persist && name) {
+    localStorage.setItem(PATIENT_SESSION_KEY, name);
+    localStorage.setItem(PATIENT_REMEMBER_KEY, "1");
+    localStorage.setItem("full-range-patient-last-user", name);
+  } else {
+    localStorage.removeItem(PATIENT_SESSION_KEY);
+    localStorage.removeItem(PATIENT_REMEMBER_KEY);
+  }
+  if (code) {
+    const data = loadPlans();
+    data.active = code;
+    savePlans(data);
+  }
 }
 function activePlan() {
-  const data = loadPlans();
-  if (AUTH_OFF) {
-    if (data.active && data.plans[data.active]) return data.plans[data.active];
-    return Object.values(data.plans)[0] || null;
-  }
-  const plan = data.plans[data.active] || null;
   const who = patientSessionName();
-  if (!plan || !who) return null;
-  if ((plan.username || "").toLowerCase() !== who) return null;
-  return plan;
+  if (!who) return null;
+  const named = planByUsername(who);
+  if (!named || !named.hash || !named.salt) return null;
+  const data = loadPlans();
+  if (data.active !== named.code) {
+    data.active = named.code;
+    savePlans(data);
+  }
+  return named;
 }
 function planByUsername(username) {
-  const key = (username || "").trim().toLowerCase();
+  const key = normalizeUsername(username);
   if (!key) return null;
-  return Object.values(loadPlans().plans).find((plan) => (plan.username || "").toLowerCase() === key) || null;
+  return Object.values(loadPlans().plans).find((plan) => normalizeUsername(plan.username) === key) || null;
+}
+function clearStalePatientSession() {
+  if (!patientRemembered()) localStorage.removeItem(PATIENT_SESSION_KEY);
+  const who = patientSessionName();
+  if (!who) return;
+  const plan = planByUsername(who);
+  if (!plan || !plan.hash || !plan.salt) signOutPatient();
 }
 function playerAvatar() {
   const plan = activePlan();
@@ -136,22 +174,53 @@ function saveAvatar(avatar) {
   data.plans[plan.code].avatar = { ...DEFAULT_AVATAR, ...avatar };
   savePlans(data);
 }
-async function signInPatient(username, password) {
+async function signInPatient(username, password, persist) {
   const plan = planByUsername(username);
-  if (!plan || !plan.hash || !plan.salt) return false;
+  if (!plan) return { ok: false, reason: "unknown" };
+  if (!plan.hash || !plan.salt) return { ok: false, reason: "no-pass" };
   const hash = await hashPassword(password, plan.salt);
-  if (hash !== plan.hash) return false;
-  const data = loadPlans();
-  data.active = plan.code;
-  savePlans(data);
-  sessionStorage.setItem(PATIENT_SESSION_KEY, plan.username.toLowerCase());
-  return true;
+  if (hash !== plan.hash) return { ok: false, reason: "bad-pass" };
+  rememberPatient(plan.username, plan.code, persist);
+  return { ok: true };
 }
 function signOutPatient() {
   sessionStorage.removeItem(PATIENT_SESSION_KEY);
+  sessionStorage.removeItem("full-range-patient-ui");
+  localStorage.removeItem(PATIENT_SESSION_KEY);
+  localStorage.removeItem(PATIENT_REMEMBER_KEY);
   const data = loadPlans();
   data.active = "";
   savePlans(data);
+}
+function markPatientIn() {
+  sessionStorage.setItem("full-range-patient-ui", "1");
+}
+function patientUiOn() {
+  return !!activePlan();
+}
+function clinicRemembered() {
+  return localStorage.getItem(CLINIC_REMEMBER_KEY) === "1";
+}
+function persistClinicianSession(id, persist) {
+  if (id) sessionStorage.setItem(SESSION_KEY, id);
+  sessionStorage.setItem("full-range-clinic-ui", "1");
+  if (persist) {
+    if (id) localStorage.setItem(SESSION_KEY, id);
+    localStorage.setItem("full-range-clinic-ui", "1");
+    localStorage.setItem(CLINIC_REMEMBER_KEY, "1");
+  } else {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem("full-range-clinic-ui");
+    localStorage.removeItem(CLINIC_REMEMBER_KEY);
+  }
+}
+function markClinicIn(persist) {
+  persistClinicianSession(clinicianSessionId(), persist);
+}
+function clinicUiOn() {
+  if (sessionStorage.getItem("full-range-clinic-ui") === "1") return true;
+  if (clinicRemembered() && localStorage.getItem("full-range-clinic-ui") === "1") return true;
+  return !AUTH_OFF && sessionOn();
 }
 function latestVisit(plan) {
   if (!plan || !Array.isArray(plan.visits) || !plan.visits.length) return null;
@@ -186,11 +255,13 @@ function loadClinicians() {
 }
 function saveClinicians(data) { localStorage.setItem(CLINICIANS_KEY, JSON.stringify(data)); }
 function clinicianSessionId() {
-  const id = sessionStorage.getItem(SESSION_KEY) || "";
+  const lasting = clinicRemembered() ? (localStorage.getItem(SESSION_KEY) || "") : "";
+  const id = sessionStorage.getItem(SESSION_KEY) || lasting || "";
   if (id === "ok") {
     const first = loadClinicians().accounts[0];
     if (!first) return "";
     sessionStorage.setItem(SESSION_KEY, first.id);
+    if (clinicRemembered()) localStorage.setItem(SESSION_KEY, first.id);
     return first.id;
   }
   return id;
@@ -201,7 +272,13 @@ function authRecord() {
   return loadClinicians().accounts.find((account) => account.id === id) || null;
 }
 function sessionOn() { return !!authRecord(); }
-function signOutClinician() { sessionStorage.removeItem(SESSION_KEY); }
+function signOutClinician() {
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem("full-range-clinic-ui");
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem("full-range-clinic-ui");
+  localStorage.removeItem(CLINIC_REMEMBER_KEY);
+}
 function claimLegacyPlans(clinicianId) {
   if (!clinicianId) return;
   const data = loadPlans();
@@ -241,9 +318,9 @@ async function createClinician(name, password) {
   const account = { id: clinicianId(), name: trimmed, salt, hash };
   data.accounts.push(account);
   saveClinicians(data);
-  sessionStorage.setItem(SESSION_KEY, account.id);
+  persistClinicianSession(account.id, false);
   claimLegacyPlans(account.id);
-  return { ok: true };
+  return { ok: true, id: account.id };
 }
 async function signInClinician(name, password) {
   const data = loadClinicians();
@@ -251,7 +328,7 @@ async function signInClinician(name, password) {
   if (!account) return false;
   const hash = await hashPassword(password, account.salt);
   if (hash !== account.hash) return false;
-  sessionStorage.setItem(SESSION_KEY, account.id);
+  persistClinicianSession(account.id, false);
   claimLegacyPlans(account.id);
   return true;
 }

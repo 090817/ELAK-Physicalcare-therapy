@@ -68,6 +68,7 @@ function syncTabs() {
   if ($c("tab-current")) $c("tab-current").classList.toggle("sel", clinic.page === "list" && clinic.listMode === "current");
   if ($c("tab-archive")) $c("tab-archive").classList.toggle("sel", clinic.page === "list" && clinic.listMode === "archive");
   if ($c("tab-notes")) $c("tab-notes").classList.toggle("sel", clinic.page === "notes");
+  if ($c("tab-reports")) $c("tab-reports").classList.toggle("sel", clinic.page === "reports");
 }
 function syncWho() {
   const who = $c("who");
@@ -914,15 +915,184 @@ function renderClinicOwnCalendar() {
 async function loadClinicCalendar() {
   startCalendarWatch();
 }
+function healthEngine() {
+  return import("./health-report/js/engine.js?v=3");
+}
+function unreadHealthReport(plan) {
+  if (!plan || typeof inboxFor !== "function") return false;
+  return inboxFor("clinic").some((item) => item.type === "health-report" && item.username === plan.username && !item.read);
+}
+function markHealthReportsRead(plan) {
+  if (!plan || typeof inboxFor !== "function") return;
+  inboxFor("clinic").forEach((item) => {
+    if (item.type === "health-report" && item.username === plan.username && !item.read) {
+      markInboxRead("clinic", plan.username, item.id);
+    }
+  });
+}
 function renderReport(plan) {
-  const root = $c("clinic-report");
-  if (root) {
+  const root = $c("clinic-health");
+  if (!root) return;
+  const btn = $c("clinic-health-open");
+  const status = $c("clinic-health-status");
+  if (!plan || clinic.creating) {
     root.hidden = true;
-    root.replaceChildren();
+    return;
   }
+  root.hidden = false;
+  healthEngine().then((mod) => {
+    const saved = mod.readSavedReport(plan);
+    if (btn) {
+      btn.hidden = !saved;
+      btn.textContent = "New report";
+    }
+    if (status) {
+      status.textContent = saved && saved.at ? "Latest report " + new Date(saved.at).toLocaleString() : "Writing the latest report…";
+    }
+    if (!saved) ensureOneHealthReport(plan);
+  }).catch(() => {
+    if (status) status.textContent = "Health report tools could not load.";
+    if (btn) btn.hidden = true;
+  });
+}
+function openHealthReport(plan) {
+  const overlay = $c("overlay-health");
+  const frame = $c("health-frame");
+  if (!overlay || !frame || !plan) return;
+  markHealthReportsRead(plan);
+  const user = encodeURIComponent(plan.username || plan.code || "");
+  const health = plan.healthId ? "&id=" + encodeURIComponent(plan.healthId) : "";
+  frame.src = "health-report/dashboard.html?user=" + user + health + "&t=" + Date.now();
+  overlay.hidden = false;
+  if (typeof paintNotesDot === "function") paintNotesDot();
+}
+function closeHealthReport() {
+  if ($c("overlay-health")) $c("overlay-health").hidden = true;
+  if ($c("health-frame")) $c("health-frame").src = "about:blank";
+  const plan = clinic.code ? loadPlans().plans[clinic.code] : null;
+  if (plan) renderReport(plan);
+  if (typeof paintNotesDot === "function") paintNotesDot();
+  if (clinic.page === "notes" && typeof renderClinicInbox === "function") renderClinicInbox();
+  if (clinic.page === "reports") renderClinicReports();
+}
+function closeMailOverlay() {
+  if ($c("overlay-mail")) $c("overlay-mail").hidden = true;
+}
+async function ensureOneHealthReport(plan, quiet) {
+  if (!plan) return null;
+  try {
+    const mod = await healthEngine();
+    const result = await mod.generateHealthReport(plan, { force: false });
+    if (!quiet) {
+      if (clinic.code === plan.code) renderReport(loadPlans().plans[plan.code] || plan);
+      if (typeof paintNotesDot === "function") paintNotesDot();
+      if (clinic.page === "notes") renderClinicInbox();
+      if (clinic.page === "reports") renderClinicReports();
+    }
+    return result;
+  } catch {
+    return null;
+  }
+}
+let reportSweep = false;
+async function sweepHealthReports() {
+  if (reportSweep) return;
+  reportSweep = true;
+  try {
+    const plans = Object.values(loadPlans().plans || {}).filter((plan) => !plan.archived);
+    for (const plan of plans) {
+      if (!plan.username && !plan.code) continue;
+      await ensureOneHealthReport(plan, true);
+    }
+  } finally {
+    reportSweep = false;
+    if (typeof paintNotesDot === "function") paintNotesDot();
+    if (clinic.page === "reports") renderClinicReports();
+  }
+}
+function openHealthFromMail() {
+  const item = window.ELAK_MAIL;
+  const plan = typeof planForInboxItem === "function" ? planForInboxItem(item) : null;
+  if ($c("overlay-mail")) $c("overlay-mail").hidden = true;
+  if (!plan) return;
+  clinic.page = "list";
+  clinic.listMode = plan.archived ? "archive" : "current";
+  showClinicChrome();
+  if ($c("clinic-home")) {
+    $c("clinic-home").hidden = true;
+    $c("clinic-home").classList.remove("on");
+  }
+  $c("editor").hidden = false;
+  hideClinicNotes();
+  loadClinicDraft(plan);
+  renderPatients();
+  openHealthReport(plan);
 }
 function hideClinicNotes() {
   if ($c("clinic-notes")) $c("clinic-notes").hidden = true;
+  if ($c("clinic-reports")) $c("clinic-reports").hidden = true;
+  if ($c("overlay-health") && !$c("overlay-health").hidden) closeHealthReport();
+}
+function renderClinicReports() {
+  const root = $c("clinic-report-list");
+  const status = $c("clinic-reports-status");
+  if (!root) return;
+  root.replaceChildren();
+  healthEngine().then((mod) => {
+    const reports = mod.readHealthReports ? mod.readHealthReports() : {};
+    const plans = Object.values(loadPlans().plans || {}).sort((a, b) => (b.updated || "").localeCompare(a.updated || ""));
+    const rows = plans.map((plan) => {
+      const saved = mod.readSavedReport(plan);
+      return saved ? { plan, saved } : null;
+    }).filter(Boolean);
+    if (status) {
+      status.textContent = rows.length ? "" : "Reports appear here once health data is ready for a patient.";
+    }
+    rows.sort((a, b) => String(b.saved.at || "").localeCompare(String(a.saved.at || "")));
+    rows.forEach(({ plan, saved }) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mail-row" + (unreadHealthReport(plan) ? "" : " read");
+      const inner = document.createElement("span");
+      inner.className = "mail-row-inner";
+      const dot = document.createElement("span");
+      dot.className = "notes-dot";
+      dot.hidden = !unreadHealthReport(plan);
+      const copy = document.createElement("div");
+      copy.className = "mail-copy";
+      const name = document.createElement("strong");
+      name.textContent = plan.patient || "Patient";
+      const sub = document.createElement("span");
+      sub.textContent = unreadHealthReport(plan) ? "New report" : "Health report";
+      copy.append(name, sub);
+      const when = document.createElement("small");
+      when.textContent = saved.at ? new Date(saved.at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+      inner.append(dot, copy, when);
+      btn.appendChild(inner);
+      btn.addEventListener("click", () => openHealthReport(plan));
+      root.appendChild(btn);
+    });
+  }).catch(() => {
+    if (status) status.textContent = "Health reports could not load.";
+  });
+}
+function showClinicReports() {
+  if (!clinicUiOn()) {
+    showGate();
+    return;
+  }
+  clinic.page = "reports";
+  showClinicChrome();
+  if ($c("clinic-home")) {
+    $c("clinic-home").hidden = true;
+    $c("clinic-home").classList.remove("on");
+  }
+  $c("editor").hidden = true;
+  if ($c("clinic-notes")) $c("clinic-notes").hidden = true;
+  if ($c("clinic-reports")) $c("clinic-reports").hidden = false;
+  renderClinicReports();
+  sweepHealthReports();
+  paintNotesDot();
 }
 function renderClinicInbox() {
   const items = inboxFor("clinic").slice().sort((a, b) => {
@@ -965,6 +1135,7 @@ function showClinicNotes() {
   }
   $c("editor").hidden = true;
   if ($c("clinic-notes")) $c("clinic-notes").hidden = false;
+  if ($c("clinic-reports")) $c("clinic-reports").hidden = true;
   renderClinicInbox();
   paintNotesDot();
 }
@@ -982,6 +1153,7 @@ function showGate(mode) {
     $c("clinic-home").classList.remove("on");
   }
   $c("gate").hidden = false;
+  if ($c("header-actions")) $c("header-actions").hidden = true;
   $c("sign-out").hidden = true;
   $c("who").hidden = true;
   if ($c("clinic-new")) $c("clinic-new").hidden = true;
@@ -1011,6 +1183,7 @@ function showGate(mode) {
 }
 function showClinicChrome() {
   $c("gate").hidden = true;
+  if ($c("header-actions")) $c("header-actions").hidden = false;
   $c("sign-out").hidden = false;
   if ($c("clinic-tabs")) $c("clinic-tabs").hidden = false;
   if ($c("clinic-home-open")) $c("clinic-home-open").hidden = false;
@@ -1043,6 +1216,7 @@ function showClinicHome() {
   startCalendarWatch();
   renderClinicOwnCalendar();
   paintNotesDot();
+  sweepHealthReports();
   if (window.ELAKBuddy) window.ELAKBuddy.refresh();
 }
 function openClinicList(mode) {
@@ -1138,9 +1312,33 @@ if ($c("clinic-home-open")) $c("clinic-home-open").addEventListener("click", goC
 if ($c("tab-current")) $c("tab-current").addEventListener("click", () => openClinicList("current"));
 if ($c("tab-archive")) $c("tab-archive").addEventListener("click", () => openClinicList("archive"));
 if ($c("tab-notes")) $c("tab-notes").addEventListener("click", showClinicNotes);
+if ($c("tab-reports")) $c("tab-reports").addEventListener("click", showClinicReports);
+if ($c("home-notes")) $c("home-notes").addEventListener("click", showClinicNotes);
+if ($c("home-reports")) $c("home-reports").addEventListener("click", showClinicReports);
 if ($c("mail-negotiate-btn")) $c("mail-negotiate-btn").addEventListener("click", submitVisitNegotiate);
-if ($c("mail-close")) $c("mail-close").addEventListener("click", () => {
-  if ($c("overlay-mail")) $c("overlay-mail").hidden = true;
+if ($c("mail-close")) $c("mail-close").addEventListener("click", closeMailOverlay);
+if ($c("overlay-mail")) {
+  $c("overlay-mail").addEventListener("click", (event) => {
+    if (event.target === $c("overlay-mail")) closeMailOverlay();
+  });
+}
+if ($c("mail-open-report")) $c("mail-open-report").addEventListener("click", openHealthFromMail);
+if ($c("clinic-health-open")) $c("clinic-health-open").addEventListener("click", () => {
+  const plan = clinic.code ? loadPlans().plans[clinic.code] : null;
+  if (plan) openHealthReport(plan);
+});
+if ($c("health-close")) $c("health-close").addEventListener("click", closeHealthReport);
+if ($c("overlay-health")) {
+  $c("overlay-health").addEventListener("click", (event) => {
+    if (event.target === $c("overlay-health")) closeHealthReport();
+  });
+}
+window.addEventListener("message", (event) => {
+  if (!event.data || event.data.type !== "elak-health-report") return;
+  if (typeof paintNotesDot === "function") paintNotesDot();
+  if (clinic.page === "notes" && typeof renderClinicInbox === "function") renderClinicInbox();
+  const plan = clinic.code ? loadPlans().plans[clinic.code] : null;
+  if (plan) renderReport(plan);
 });
 if ($c("home-current")) $c("home-current").addEventListener("click", () => openClinicList("current"));
 if ($c("home-archive")) $c("home-archive").addEventListener("click", () => openClinicList("archive"));

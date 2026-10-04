@@ -38,10 +38,18 @@
     z-index: 1;
     pointer-events: none;
     overflow: hidden;
+    background-image:
+      linear-gradient(rgba(111, 88, 64, 0.16) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(111, 88, 64, 0.16) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: shapeGridDrift 20s linear infinite;
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, transparent 8%, rgba(0,0,0,0.22) 16%, #000 26%, #000 58%, rgba(0,0,0,0.4) 80%, transparent 100%);
   }
   .shapegrid-canvas { width: 100%; height: 100%; display: block; }
+  @keyframes shapeGridDrift {
+    to { background-position: 40px 40px; }
+  }
   button, input, select, textarea { font: inherit; color: inherit; }
   input, select, textarea {
     border: 1px solid var(--line);
@@ -1026,25 +1034,26 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .quest { transition: none; }
+    .shape-grid { animation: none; }
   }
 </style>
 </head>
 <body>
 <div id="page-fade" style="position:fixed;inset:0;background:#0b0b0f;z-index:99999;pointer-events:none;opacity:1;transition:opacity .55s ease"></div>
 <div id="shape-grid" class="shape-grid" aria-hidden="true"></div>
-<script type="module" src="shape-grid.js?v=29"></script>
+<script src="shape-grid.js?v=30"></script>
 <div id="app">
   <header>
     <button class="brand" id="home" type="button"><img class="mark" src="elak-logo.png?v=2" alt=""> ELAK</button>
-    <div class="header-actions">
+    <div class="header-actions" id="header-actions" hidden>
       <span class="chip" id="streak" hidden></span>
       <button class="ghost" id="home-open" type="button" hidden>Home</button>
       <button class="ghost" id="book-open" type="button" hidden>Edit schedule</button>
       <button class="ghost" id="notes-open" type="button" hidden>Notifications<span class="notes-dot" id="patient-notes-dot" hidden></span></button>
       <button class="ghost" id="films-open" type="button" hidden>Films</button>
       <button class="ghost" id="stories-open" type="button" hidden>Rewards</button>
-      <button class="ghost" id="patient-out" type="button">Sign out</button>
-      <button class="ghost" id="mute" type="button">Sound on</button>
+      <button class="ghost" id="patient-out" type="button" hidden>Sign out</button>
+      <button class="ghost" id="mute" type="button" hidden>Sound on</button>
     </div>
   </header>
 
@@ -1410,9 +1419,9 @@
 <video id="cam" playsinline muted hidden></video>
 
 <script src="shared.js?v=85"></script>
-<script src="calendar-plugin.js?v=89"></script>
-<script src="agent.js?v=87"></script>
-<script src="buddy.js?v=94"></script>
+<script src="calendar-plugin.js?v=94"></script>
+<script src="agent.js?v=88"></script>
+<script src="buddy.js?v=95"></script>
 <script>
 const SAVE_KEY = "full-range-v1";
 const UP = 0.40;
@@ -1685,6 +1694,7 @@ function show(screen) {
 function updateChrome() {
   const plan = activePlan();
   const inApp = patientUiOn() && S.screen !== "signin";
+  if ($("header-actions")) $("header-actions").hidden = !inApp;
   $("stories-open").hidden = !plan || !inApp;
   if ($("notes-open")) $("notes-open").hidden = !plan || !inApp;
   $("films-open").hidden = !plan || !inApp;
